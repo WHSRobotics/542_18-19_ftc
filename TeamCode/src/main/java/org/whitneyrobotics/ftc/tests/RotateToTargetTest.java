@@ -3,8 +3,11 @@ package org.whitneyrobotics.ftc.tests;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
+import com.acmerobotics.dashboard.telemetry.*;
+import com.acmerobotics.dashboard.FtcDashboard;
 
 /**
  * Created by Amar2 on 11/15/2017.
@@ -12,11 +15,18 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 @Autonomous(name = "RotateToTargetTest", group = "tests")
 public class RotateToTargetTest extends OpMode {
     WHSRobotImpl robot;
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    Telemetry dashboardTelemetry = dashboard.getTelemetry();
     @Override
     public void init() {
+        TelemetryPacket packet = new TelemetryPacket();
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        // dashboard.sendTelemetryPacket(packet);
+
         robot = new WHSRobotImpl(hardwareMap);
         robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
-        telemetry.setMsTransmissionInterval(10);
+        //telemetry.setMsTransmissionInterval(10);
     }
 
     @Override

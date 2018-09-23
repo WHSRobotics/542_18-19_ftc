@@ -54,12 +54,12 @@ public class IMU {
     }
 
     public double getHeading(){
-        double heading = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.XYZ).secondAngle - calibration;
+        double heading = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.XYZ).thirdAngle - calibration;
         heading = Functions.normalizeAngle(heading); //-180 to 180 deg
         return heading;
     }
     public void zeroHeading(){
-        calibration = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.XYZ).secondAngle ;
+        calibration = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.XYZ).thirdAngle ;
     }
 
 /*public void setHeading(double setValue){
