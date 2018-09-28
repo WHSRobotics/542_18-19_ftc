@@ -19,6 +19,8 @@ public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
+    Position p = new Position(-600, 600, 150);
+    boolean backwards = true;
 
     @Override
     public void init() {
@@ -31,13 +33,13 @@ public class DriveToTargetTest extends OpMode {
 
     @Override
     public void start(){
-        robot.driveToTarget(new Position(-600, 600, 150), true);
+        robot.driveToTarget(p, backwards);
     }
 
     @Override
     public void loop() {
         if(robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
-            robot.driveToTarget(new Position(-600, 600, 150), true);
+            robot.driveToTarget(p, backwards);
         }
         robot.estimatePosition();
         robot.estimateHeading();

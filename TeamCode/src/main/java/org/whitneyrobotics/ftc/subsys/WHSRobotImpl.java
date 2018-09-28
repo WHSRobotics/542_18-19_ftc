@@ -22,9 +22,9 @@ public class WHSRobotImpl implements WHSRobot {
     private double lastKnownHeading = 0.1;
     private static final double DEADBAND_DRIVE_TO_TARGET = 110; //in mm
     private static final double DEADBAND_ROTATE_TO_TARGET = 2.5; //in degrees
-    private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.37, 0.4, 0.43, 0.46}; //{0.33, 0.6, 0.7, 0.9};
+    private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.37/2, 0.4/2, 0.43/2, 0.46/2}; //{0.33, 0.6, 0.7, 0.9};
     private static final double[] DRIVE_TO_TARGET_THRESHOLD = {DEADBAND_DRIVE_TO_TARGET, 300, 600, 1200};
-    private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.30, 0.35, 0.5};
+    private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.30/2, 0.35/2, 0.5/2};
     private static final double[] ROTATE_TO_TARGET_THRESHOLD = {DEADBAND_ROTATE_TO_TARGET, 30, 60};
     private double rightMultiplier = 1.0;
     private int count = 0;
