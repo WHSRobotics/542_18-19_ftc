@@ -19,28 +19,41 @@ public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
-    Position p = new Position(-600, 600, 150);
+    Position p1 = new Position(-1500, 1500, 150);
+    Position p2 = new Position(600,1500,150);
     boolean backwards = true;
-
+    boolean b = true;
     @Override
     public void init() {
         TelemetryPacket packet = new TelemetryPacket();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         robot = new WHSRobotImpl(hardwareMap);
-        robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
+        robot.setInitialCoordinate(new Coordinate(-300, 300, 150, 0));
         //telemetry.setMsTransmissionInterval(10);
     }
 
     @Override
     public void start(){
-        robot.driveToTarget(p, backwards);
+        robot.driveToTarget(p1, backwards);
     }
 
     @Override
     public void loop() {
-        if(robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
-            robot.driveToTarget(p, backwards);
+        if((robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) && b) {
+            robot.driveToTarget(p1, backwards);
         }
+        else if (b){
+            b=false;
+           robot.driveToTarget(p2, backwards);
+
+
+        }
+        else if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()){
+            robot.driveToTarget(p2, backwards);
+
+        }
+
+
         robot.estimatePosition();
         robot.estimateHeading();
 
