@@ -1,5 +1,6 @@
 package org.whitneyrobotics.ftc.subsys;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.vuforia.Vuforia;
 
@@ -16,6 +17,7 @@ public class WHSRobotImpl implements WHSRobot {
 
     public TileRunner drivetrain;
     public IMU imu;
+    public OmniArm omniArm;
     Coordinate currentCoord;
     public double targetHeading; //field frame
     public double angleToTargetDebug;
@@ -38,7 +40,7 @@ public class WHSRobotImpl implements WHSRobot {
         drivetrain = new TileRunner(hardwareMap);
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
-
+        omniArm = new OmniArm(hardwareMap);
     }
 
     @Override
