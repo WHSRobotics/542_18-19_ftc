@@ -14,6 +14,7 @@ public class WHSAuto extends OpMode{
 
     Coordinate[] startingCoordinateArray = new Coordinate[2];
     Position[] landerClearancePositionArray = new Position[2];
+    Position[][] goldPositionsArray = new Position[2][3];
 
 
     static final int CRATER = 0;
@@ -62,6 +63,17 @@ public class WHSAuto extends OpMode{
 
         landerClearancePositionArray[CRATER] = new Position(500, 500, 150);
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
+
+        //setting the three different particle positions for the creater side
+        goldPositionsArray[CRATER][0] = new Position(600,120, 150);
+        goldPositionsArray[CRATER][1] = new Position(900,900,150);
+        goldPositionsArray[CRATER][2] = new Position(1200,600,150);
+
+        //setting the three differnt particle positions for the depot side
+        goldPositionsArray[DEPOT][0] = new Position(-1200,600,150);
+        goldPositionsArray[DEPOT][1] = new Position(-900,900,150);
+        goldPositionsArray[DEPOT][2]=  new Position(-600,1200, 150);
+
     }
 
     @Override
