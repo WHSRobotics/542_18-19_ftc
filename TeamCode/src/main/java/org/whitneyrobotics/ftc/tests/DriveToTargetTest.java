@@ -19,16 +19,17 @@ public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
-    Position p1 = new Position(-1500, 1500, 150);
-    Position p2 = new Position(600,1500,150);
+    Position p1 = new Position(600, 600, 150);
+    Position p2 = new Position(600,1200,150);
     boolean backwards = true;
     boolean b = true;
+    int i = 0;
     @Override
     public void init() {
         TelemetryPacket packet = new TelemetryPacket();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         robot = new WHSRobotImpl(hardwareMap);
-        robot.setInitialCoordinate(new Coordinate(-300, 300, 150, 0));
+        robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
         //telemetry.setMsTransmissionInterval(10);
     }
 
@@ -39,7 +40,7 @@ public class DriveToTargetTest extends OpMode {
 
     @Override
     public void loop() {
-        if((robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) && b) {
+        /*if((robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) && b) {
             robot.driveToTarget(p1, backwards);
         }
         else if (b){
@@ -52,7 +53,21 @@ public class DriveToTargetTest extends OpMode {
             robot.driveToTarget(p2, backwards);
 
         }
-
+        */
+        switch (i){
+            case 0:
+                robot.driveToTarget(p1, backwards);
+                if(robot.hasDriveToTargetExited()){
+                    i = 1;
+                }
+            case 1:
+                robot.driveToTarget(p2, backwards);
+                if(robot.hasDriveToTargetExited()){
+                    i = 2;
+                }
+            case 2:
+                break;
+        }
 
         robot.estimatePosition();
         robot.estimateHeading();
