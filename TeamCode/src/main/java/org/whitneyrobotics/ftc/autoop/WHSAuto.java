@@ -3,6 +3,7 @@ package org.whitneyrobotics.ftc.autoop;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
@@ -14,11 +15,18 @@ public class WHSAuto extends OpMode{
 
     Coordinate[] startingCoordinateArray = new Coordinate[2];
     Position[] landerClearancePositionArray = new Position[2];
-    Position[][] goldPositionsArray = new Position[2][3];
+    Position[][] goldPositionArray = new Position[2][3];
+    Position wallPosition = new Position(-300,1600,150);
+    Position depotPosition = new Position(1600,-1600,150);
+    Position[] craterPositonArray = new Position[2];
 
 
     static final int CRATER = 0;
     static final int DEPOT = 1;
+
+    static final int LEFT = 0;
+    static final int CENTER = 1;
+    static final int RIGHT = 2;
 
     static final int STARTING_POSITION = CRATER;
 
@@ -28,7 +36,7 @@ public class WHSAuto extends OpMode{
     static final int SAMPLE_PIECE = 2;
     static final int CLAIM_DEPOT = 3;
     static final int DRIVE_TO_CRATER = 4;
-    static final int EXIT = 5;
+    static final int END = 5;
 
     static final int NUM_OF_STATES = 6;
 
@@ -40,12 +48,17 @@ public class WHSAuto extends OpMode{
         stateEnabled[SAMPLE_PIECE] = true;
         stateEnabled[CLAIM_DEPOT] = true;
         stateEnabled[DRIVE_TO_CRATER] = true;
-        stateEnabled[EXIT] = true;
+        stateEnabled[END] = true;
     }
 
     int currentState;
     String currentStateDesc;
     String subStateDesc;
+
+    GoldPositionDetector.GoldPosition goldPosition;
+
+    boolean drivingToGold;
+    boolean drivingToWall;
 
     boolean performStateEntry;
     boolean performStateExit;
@@ -64,16 +77,18 @@ public class WHSAuto extends OpMode{
         landerClearancePositionArray[CRATER] = new Position(500, 500, 150);
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
 
-        //setting the three different particle positions for the creater side
-        goldPositionsArray[CRATER][0] = new Position(600,120, 150);
-        goldPositionsArray[CRATER][1] = new Position(900,900,150);
-        goldPositionsArray[CRATER][2] = new Position(1200,600,150);
+        //setting the three different particle positions for the crater side
+        goldPositionArray[CRATER][LEFT] = new Position(600,120, 150);
+        goldPositionArray[CRATER][CENTER] = new Position(900,900,150);
+        goldPositionArray[CRATER][RIGHT] = new Position(1200,600,150);
 
-        //setting the three differnt particle positions for the depot side
-        goldPositionsArray[DEPOT][0] = new Position(-1200,600,150);
-        goldPositionsArray[DEPOT][1] = new Position(-900,900,150);
-        goldPositionsArray[DEPOT][2]=  new Position(-600,1200, 150);
+        //setting the three different particle positions for the depot side
+        goldPositionArray[DEPOT][LEFT] = new Position(-1200,600,150);
+        goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
+        goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
 
+        craterPositonArray[CRATER] = new Position(800,1600,150);
+        craterPositonArray[DEPOT] = new Position(-1600,-800,150);
     }
 
     @Override
@@ -90,10 +105,10 @@ public class WHSAuto extends OpMode{
             case DROP_FROM_LANDER:
                 if (performStateEntry) {
                     //drop from lander, unlatch
+                    robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
                     performStateEntry = false;
                     subStateDesc = "entry";
                 }
-                robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
 
                 if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
                     robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
@@ -109,18 +124,53 @@ public class WHSAuto extends OpMode{
             case SAMPLE_PIECE:
                 if (performStateEntry) {
                     //vision stuff
+                    robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
+                    drivingToGold = true;
                     performStateEntry = false;
                     subStateDesc = "entry";
+                }
+                if (drivingToGold) {
+                    if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
+                    } else {
+                        drivingToGold = false;
+                    }
+                } else {
+                    if (STARTING_POSITION == CRATER) {
+                        robot.driveToTarget(landerClearancePositionArray[CRATER], true);
+                    }
+                    if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
+                        robot.driveToTarget(landerClearancePositionArray[CRATER], true);
+                    }
                 }
                 advanceState();
                 break;
             case CLAIM_DEPOT:
+                if (performStateEntry) {
+                    if (STARTING_POSITION == CRATER) {
+                        robot.driveToTarget(wallPosition, true);
+                        drivingToWall = true;
+                    } else if (STARTING_POSITION == DEPOT) {
+                        robot.driveToTarget(depotPosition, true);
+                    }
+                    performStateEntry = false;
+                    subStateDesc = "entry";
+                }
+                if (STARTING_POSITION == CRATER) {
+                    if (drivingToWall && (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress())) {
+                        robot.driveToTarget(wallPosition, true);
+                    } else {
+                        drivingToWall = false;
+                        robot.driveToTarget(depotPosition, true);
+                    }
+
+                }
                 advanceState();
                 break;
             case DRIVE_TO_CRATER:
                 advanceState();
                 break;
-            case EXIT:
+            case END:
                 advanceState();
                 break;
         }
