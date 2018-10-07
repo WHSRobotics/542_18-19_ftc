@@ -52,24 +52,17 @@ public class WHSAuto extends OpMode{
     }
 
     int currentState;
+    int subState;
     String currentStateDesc;
     String subStateDesc;
 
     GoldPositionDetector.GoldPosition goldPosition;
 
-    boolean drivingToGold;
-    boolean drivingToWall;
-
-    boolean performStateEntry;
-    boolean performStateExit;
-
     @Override
     public void init() {
         robot = new WHSRobotImpl(hardwareMap);
         currentState = INIT;
-
-        performStateEntry = true;
-        performStateExit = false;
+        subState = 0;
 
         startingCoordinateArray[CRATER] = new Coordinate(300, 300, 150, 45);
         startingCoordinateArray[DEPOT] = new Coordinate(-300, 300, 150, 135);
@@ -103,82 +96,119 @@ public class WHSAuto extends OpMode{
                 advanceState();
                 break;
             case DROP_FROM_LANDER:
-                if (performStateEntry) {
-                    //drop from lander, unlatch
-                    robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
-                    performStateEntry = false;
-                    subStateDesc = "entry";
-                }
-
-                if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
-                    robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
-                } else {
-                    performStateExit = true;
-                }
-                if (performStateExit) {
-                    performStateEntry = true;
-                    performStateExit = false;
-                    advanceState();
+                currentStateDesc = "dropping from lander";
+                switch (subState) {
+                    case 0:
+                        subStateDesc = "entry";
+                        // drop from lander, unlatch
+                        subState++;
+                        break;
+                    case 1:
+                        subStateDesc = "driving to lander clearance";
+                        robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                        break;
+                    case 2:
+                        subStateDesc = "exit";
+                        advanceState();
+                        break;
                 }
                 break;
             case SAMPLE_PIECE:
-                if (performStateEntry) {
-                    //vision stuff
-                    robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
-                    drivingToGold = true;
-                    performStateEntry = false;
-                    subStateDesc = "entry";
-                }
-                if (drivingToGold) {
-                    if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
+                currentStateDesc = "sampling piece";
+                switch (subState) {
+                    case 0:
+                        subStateDesc = "entry";
+                        //vision stuff
                         robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
-                    } else {
-                        drivingToGold = false;
-                    }
-                } else {
-                    if (STARTING_POSITION == CRATER) {
-                        robot.driveToTarget(landerClearancePositionArray[CRATER], true);
-                    }
-                    if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
-                        robot.driveToTarget(landerClearancePositionArray[CRATER], true);
-                    }
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                        break;
+                    case 1:
+                        subStateDesc = "driving to gold particle";
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                        break;
+                    case 2:
+                        subStateDesc = "driving back to lander clearance";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.driveToTarget(landerClearancePositionArray[CRATER], true);
+                        } else {
+                            subState++;
+                        }
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                        break;
+                    case 3:
+                        subStateDesc = "exit";
+                        advanceState();
+                        break;
                 }
-                advanceState();
                 break;
             case CLAIM_DEPOT:
-                if (performStateEntry) {
-                    if (STARTING_POSITION == CRATER) {
-                        robot.driveToTarget(wallPosition, true);
-                        drivingToWall = true;
-                    } else if (STARTING_POSITION == DEPOT) {
-                        robot.driveToTarget(depotPosition, true);
-                    }
-                    performStateEntry = false;
-                    subStateDesc = "entry";
+                currentStateDesc = "claiming depot";
+                switch (subState) {
+                    case 0:
+                        subStateDesc = "entry";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.driveToTarget(wallPosition, true);
+                        } else if (STARTING_POSITION == DEPOT) {
+                            robot.driveToTarget(depotPosition, true);
+                        }
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                        break;
+                    case 1:
+                        subStateDesc = "driving to depot";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.driveToTarget(depotPosition, true);
+                        } else {
+                            subState++;
+                        }
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                    case 2:
+                        subStateDesc = "exit";
+                        advanceState();
+                        break;
                 }
-                if (STARTING_POSITION == CRATER) {
-                    if (drivingToWall && (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress())) {
-                        robot.driveToTarget(wallPosition, true);
-                    } else {
-                        drivingToWall = false;
-                        robot.driveToTarget(depotPosition, true);
-                    }
-
-                }
-                advanceState();
                 break;
             case DRIVE_TO_CRATER:
-                advanceState();
+                currentStateDesc = "drive to crater";
+                switch (subState) {
+                    case 0:
+                        subStateDesc = "driving to crater";
+                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
+                        if (robot.hasDriveToTargetExited()) {
+                            subState++;
+                        }
+                        break;
+                    case 1:
+                        subStateDesc = "exit";
+                        advanceState();
+                        break;
+                }
                 break;
             case END:
+                currentStateDesc = "end";
                 advanceState();
                 break;
+            default: break;
         }
     }
 
     public void advanceState() {
         if (stateEnabled[(currentState + 1)]) {
             currentState = currentState + 1;
+            subState = 0;
         } else {
             currentState = currentState + 1;
             advanceState();

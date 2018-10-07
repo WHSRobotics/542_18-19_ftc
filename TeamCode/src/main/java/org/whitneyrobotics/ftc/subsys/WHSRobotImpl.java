@@ -32,8 +32,8 @@ public class WHSRobotImpl implements WHSRobot {
     private int count = 0;
     private boolean driveBackwards;
 
-    private boolean driveToTargetInProgress;
-    private boolean rotateToTargetInProgress;
+    private boolean driveToTargetInProgress = false;
+    private boolean rotateToTargetInProgress = false;
 
     private boolean hasDriveToTargetExited;
     private boolean hasRotateToTargetExited;
