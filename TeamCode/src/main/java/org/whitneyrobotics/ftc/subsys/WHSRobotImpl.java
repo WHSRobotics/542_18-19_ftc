@@ -18,6 +18,7 @@ public class WHSRobotImpl implements WHSRobot {
     public TileRunner drivetrain;
     public IMU imu;
     public OmniArm omniArm;
+    public Lift lift;
     Coordinate currentCoord;
     public double targetHeading; //field frame
     public double angleToTargetDebug;
@@ -41,6 +42,7 @@ public class WHSRobotImpl implements WHSRobot {
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
         omniArm = new OmniArm(hardwareMap);
+        lift = new Lift(hardwareMap);
     }
 
     @Override
