@@ -12,20 +12,16 @@ import org.whitneyrobotics.ftc.subsys.Lift;
 public class LiftEncoderPositionTest extends OpMode {
 
     DcMotor lift;
-    Toggler tog = new Toggler(20);
-    int i = 0;
     int encoderPos = 0;
 
 
     @Override
     public void init() {
         lift = hardwareMap.dcMotor.get("liftMotor");
-        tog.setState(10);
     }
 
     @Override
     public void loop() {
-        i++;
         if(gamepad1.a ){
             encoderPos++;
         }
@@ -34,14 +30,18 @@ public class LiftEncoderPositionTest extends OpMode {
         }
         if(gamepad1.x){
             lift.setPower(.666);
-        }else if (gamepad1.y){
+        }else if (gamepad1.y) {
             lift.setPower(-.666);
+        }
+        else if(gamepad1.right_bumper) {
+            lift.setPower(1.0);
+        }else if(gamepad1.right_trigger > 0.10){
+            lift.setPower(-1.0);
         }else{
             lift.setPower(0);
         }
-        tog.changeState(gamepad1.dpad_up, gamepad1.dpad_down);
-        lift.setTargetPosition(encoderPos + tog.currentState() - 10);
-        telemetry.addData("motorthing", encoderPos);
-        telemetry.addData("motoradfasdf", lift.getCurrentPosition());
+        lift.setTargetPosition(encoderPos);
+        telemetry.addData("Motor Current Pos", encoderPos);
+        telemetry.addData("Motor Target Pos", lift.getCurrentPosition());
     }
 }
