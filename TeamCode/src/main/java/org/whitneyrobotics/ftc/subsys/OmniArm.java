@@ -1,16 +1,13 @@
 package org.whitneyrobotics.ftc.subsys;
 
-import android.print.PageRange;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class OmniArm {
 
     public DcMotor extendMotor;
     public DcMotor intakeMotor;
-    public DcMotor swtichMotor;
+    public DcMotor switchMotor;
 
     private final int EXTEND_LENGTH = 0;
     private final int CONTRACT_LENGTH = 0;
@@ -24,9 +21,9 @@ public class OmniArm {
     public OmniArm(HardwareMap armMap) {
         extendMotor = armMap.dcMotor.get("extendMotor");
         intakeMotor = armMap.dcMotor.get("intakeMotor");
-        swtichMotor = armMap.dcMotor.get("switchMotor");
+        switchMotor = armMap.dcMotor.get("switchMotor");
         extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        swtichMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public void  intake(){
@@ -45,14 +42,14 @@ public class OmniArm {
         intakeMotor.setTargetPosition(CONTRACT_LENGTH);
     }
 
-    public void changemode(){
-        if(swtichMotor.getTargetPosition()== INTAKE_MODE){
+    public void changeMode(){
+        if(switchMotor.getTargetPosition()== INTAKE_MODE){
 
-            swtichMotor.setTargetPosition(OUTTAKE_MODE);
+            switchMotor.setTargetPosition(OUTTAKE_MODE);
 
-        }else if (swtichMotor.getTargetPosition()==OUTTAKE_MODE){
+        }else if (switchMotor.getTargetPosition()==OUTTAKE_MODE){
 
-            swtichMotor.setTargetPosition(INTAKE_MODE);
+            switchMotor.setTargetPosition(INTAKE_MODE);
 
         }
     }

@@ -1,9 +1,6 @@
 package org.whitneyrobotics.ftc.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
@@ -39,7 +36,7 @@ public class WHSTeleOp extends OpMode{
         }
 
         if (gamepad2.x){
-            robot.omniArm.changemode();
+            robot.omniArm.changeMode();
         }
 
 
