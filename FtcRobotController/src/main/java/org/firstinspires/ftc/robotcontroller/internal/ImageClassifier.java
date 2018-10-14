@@ -21,6 +21,8 @@ import android.graphics.Bitmap;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.disnodeteam.dogecv.OpenCVPipeline;
+
 import org.tensorflow.lite.Interpreter;
 
 import java.io.BufferedReader;
@@ -39,13 +41,13 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 /** Classifies images with Tensorflow Lite. */
-public class ImageClassifier {
+public class ImageClassifier extends OpenCVPipeline{
 
   /** Tag for the {@link Log}. */
   private static final String TAG = "TfLiteCameraDemo";
 
   /** Name of the model file stored in Assets. */
-  private static final String MODEL_PATH = "graph.lite";
+  private static final String MODEL_PATH = "graph.mp3";
 
   /** Name of the label file stored in Assets. */
   private static final String LABEL_PATH = "labels.txt";

@@ -16,4 +16,6 @@ apply from: '../build.common.gradle'
 
 dependencies {
     implementation 'org.tensorflow:tensorflow-lite:+'
+    implementation project(':openCVLibrary3')
+    implementation project(':DogeCV')
 }

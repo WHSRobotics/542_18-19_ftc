@@ -1,11 +1,5 @@
 package org.firstinspires.ftc.robotcontroller.internal;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,14 +7,19 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.util.Log;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * TeleOp Mode
  * <p>
  *Enables control of the robot via the gamepad
  */
-@TeleOp(name = "TensorFlowTest", group = "tests")
+@Autonomous(name = "TensorFlowTest", group = "tests")
 public class CameraOp extends OpMode {
     private Camera camera;
     public CameraPreview preview;
@@ -32,19 +31,6 @@ public class CameraOp extends OpMode {
     private String data;
 
     ImageClassifier imageClassifier;
-    Activity activity = new Activity();
-
-    private int red(int pixel) {
-        return (pixel >> 16) & 0xff;
-    }
-
-    private int green(int pixel) {
-        return (pixel >> 8) & 0xff;
-    }
-
-    private int blue(int pixel) {
-        return pixel & 0xff;
-    }
 
     private Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
         public void onPreviewFrame(byte[] data, Camera camera)
@@ -103,7 +89,15 @@ public class CameraOp extends OpMode {
     public void loop() {
         if (yuvImage != null) {
             convertImage();
-            telemetry.addData("Gold Position: ", imageClassifier.classifyFrame(image));
+            if(image != null) {
+                String str = imageClassifier.classifyFrame(image);
+                try {
+                    telemetry.addData("Gold Position: ", (str == null | str.length() == 0) ? "null" : "not null");
+                }
+                catch (NullPointerException e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
