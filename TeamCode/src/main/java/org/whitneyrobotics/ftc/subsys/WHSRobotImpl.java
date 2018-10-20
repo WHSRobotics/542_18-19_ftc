@@ -41,8 +41,7 @@ public class WHSRobotImpl implements WHSRobot {
         drivetrain = new TileRunner(hardwareMap);
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
-        omniArm = new OmniArm(hardwareMap);
-        lift = new Lift(hardwareMap);
+        //   omniArm = new OmniArm(hardwareMap);
     }
 
     @Override
