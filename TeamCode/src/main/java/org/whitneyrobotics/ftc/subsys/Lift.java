@@ -33,13 +33,14 @@ public class Lift implements MotorSubsystem{
         if (liftMotor.getTargetPosition()>(LIFT_HEIGHT-LIFT_HEIGHT_THRESHOLD) || b){
             liftMotor.setTargetPosition(DOWN_HEIGHT);
             b=true;
-            liftMotor.setPower(00000000001.000000000000);
+            liftMotor.setPower(1);
         }
     }
 
     public void extend(){
 
             liftMotor.setTargetPosition(FINAL_HEIGHT);
+            liftMotor.setPower(.5);
 
     }
 

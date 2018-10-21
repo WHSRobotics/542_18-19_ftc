@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
+import org.whitneyrobotics.ftc.subsys.MarkerDrop;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 @Autonomous(name="WHSAuto", group="auto")
@@ -40,7 +41,9 @@ public class WHSAuto extends OpMode{
 
     static final int NUM_OF_STATES = 6;
 
+    boolean markerDropped;
     boolean[] stateEnabled = new boolean[NUM_OF_STATES];
+    private double finishTime;
 
     public void defineStateEnabledStatus() {
         stateEnabled[INIT] = true;
@@ -109,7 +112,7 @@ public class WHSAuto extends OpMode{
                     performStateEntry = false;
                     subStateDesc = "entry";
                 }
-
+                    //drive to the Lander Clearance Area
                 if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) {
                     robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
                 } else {
@@ -124,6 +127,8 @@ public class WHSAuto extends OpMode{
             case SAMPLE_PIECE:
                 if (performStateEntry) {
                     //vision stuff
+
+                    //drive to the correct gold position
                     robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
                     drivingToGold = true;
                     performStateEntry = false;
@@ -146,6 +151,8 @@ public class WHSAuto extends OpMode{
                 advanceState();
                 break;
             case CLAIM_DEPOT:
+
+                //drive to the depot
                 if (performStateEntry) {
                     if (STARTING_POSITION == CRATER) {
                         robot.driveToTarget(wallPosition, true);
@@ -153,6 +160,8 @@ public class WHSAuto extends OpMode{
                     } else if (STARTING_POSITION == DEPOT) {
                         robot.driveToTarget(depotPosition, true);
                     }
+
+
                     performStateEntry = false;
                     subStateDesc = "entry";
                 }
@@ -165,13 +174,41 @@ public class WHSAuto extends OpMode{
                     }
 
                 }
+                //drop the marker
+                robot.markerDrop.operateMarkerDrop(markerDropped);
                 advanceState();
                 break;
             case DRIVE_TO_CRATER:
+                    //drive to the crater
+                if (performStateEntry) {
+
+                    robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
+                    performStateEntry = false;
+                    subStateDesc = "entry";
+                }
+
+                if (STARTING_POSITION==CRATER){
+                    if (robot.driveToTargetInProgress()||robot.rotateToTargetInProgress()){
+                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
+                    }
+
+                    if (STARTING_POSITION == DEPOT){
+                        if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()){
+                            robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
+                        }
+                    }
+                }
                 advanceState();
                 break;
             case END:
+                if (performStateEntry) {
+                    finishTime = System.currentTimeMillis();
+                    performStateEntry = false;
+                }
+
                 advanceState();
+                break;
+            default:
                 break;
         }
     }

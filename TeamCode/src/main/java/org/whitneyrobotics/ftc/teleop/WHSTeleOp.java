@@ -35,9 +35,17 @@ public class WHSTeleOp extends OpMode{
             robot.omniArm.outtake();
         }
 
-        if (gamepad2.x){
-            robot.omniArm.changeMode();
+        if (gamepad2.dpad_up){
+            robot.omniArm.extendIntake();
         }
+
+        if (gamepad2.dpad_down){
+            robot.omniArm.contractIntake();
+        }
+
+
+        robot.omniArm.OperateModeSwitch(gamepad2.x, gamepad2.y);
+
 
 
         if (gamepad1.left_trigger>0.01 && gamepad1.right_trigger>0.01){

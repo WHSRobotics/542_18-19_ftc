@@ -18,6 +18,7 @@ public class WHSRobotImpl implements WHSRobot {
     public TileRunner drivetrain;
     public IMU imu;
     public OmniArm omniArm;
+    public MarkerDrop markerDrop;
     public Lift lift;
     Coordinate currentCoord;
     public double targetHeading; //field frame
