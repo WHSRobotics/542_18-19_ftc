@@ -16,8 +16,8 @@ public class WHSAuto extends OpMode{
     Coordinate[] startingCoordinateArray = new Coordinate[2];
     Position[] landerClearancePositionArray = new Position[2];
     Position[][] goldPositionArray = new Position[2][3];
-    Position wallPosition = new Position(-300,1600,150);
-    Position depotPosition = new Position(1600,-1600,150);
+    Position wallPosition;
+    Position depotPosition;
     Position[] craterPositonArray = new Position[2];
 
 
@@ -28,7 +28,7 @@ public class WHSAuto extends OpMode{
     static final int CENTER = 1;
     static final int RIGHT = 2;
 
-    static final int STARTING_POSITION = CRATER;
+    static final int STARTING_POSITION = DEPOT;
 
     //State Definitions
     static final int INIT = 0;
@@ -80,8 +80,13 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
 
-        craterPositonArray[CRATER] = new Position(800,1600,150);
-        craterPositonArray[DEPOT] = new Position(-1600,-800,150);
+        wallPosition = new Position(-300,1450,150);
+        depotPosition = new Position(-1450,1450,150);
+
+        craterPositonArray[CRATER] = new Position(800,1450,150);
+        craterPositonArray[DEPOT] = new Position(-1450,-800,150);
+
+        defineStateEnabledStatus();
     }
 
     @Override
@@ -122,14 +127,14 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "entry";
                         //vision stuff
-                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][1],true);//goldPosition.ordinal()], true);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
                     case 1:
                         subStateDesc = "driving to gold particle";
-                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][1]/*[goldPosition.ordinal()]*/, true);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
@@ -175,6 +180,7 @@ public class WHSAuto extends OpMode{
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
+                        break;
                     case 2:
                         subStateDesc = "exit";
                         advanceState();
@@ -199,10 +205,11 @@ public class WHSAuto extends OpMode{
                 break;
             case END:
                 currentStateDesc = "end";
-                advanceState();
                 break;
             default: break;
         }
+
+        telemetry.addData("Substate: ", currentStateDesc + ", " + subStateDesc);
     }
 
     public void advanceState() {
