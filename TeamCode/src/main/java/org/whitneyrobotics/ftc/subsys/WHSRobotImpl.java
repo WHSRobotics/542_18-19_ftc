@@ -25,24 +25,27 @@ public class WHSRobotImpl implements WHSRobot {
     public double angleToTargetDebug;
     private double lastKnownHeading = 0.1;
     private static final double DEADBAND_DRIVE_TO_TARGET = 110; //in mm
-    private static final double DEADBAND_ROTATE_TO_TARGET = 2.5; //in degrees
-    private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.37/2, 0.4/2, 0.43/2, 0.46/2}; //{0.33, 0.6, 0.7, 0.9};
+    private static final double DEADBAND_ROTATE_TO_TARGET = 2.8; //in degrees
+    private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.25, 0.32, 0.4, 0.45}; //{0.33, 0.6, 0.7, 0.9};
     private static final double[] DRIVE_TO_TARGET_THRESHOLD = {DEADBAND_DRIVE_TO_TARGET, 300, 600, 1200};
-    private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.22, 0.32, 0.5};
+    private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.305, 0.38, 0.45};
     private static final double[] ROTATE_TO_TARGET_THRESHOLD = {DEADBAND_ROTATE_TO_TARGET, 30, 60};
     private double rightMultiplier = 1.0;
     private int count = 0;
     private boolean driveBackwards;
 
-    public boolean rotateToTargetInProgress;
-    public boolean driveToTargetInProgress;
+    private boolean driveToTargetInProgress = false;
+    private boolean rotateToTargetInProgress = false;
+
+    private boolean hasDriveToTargetExited;
+    private boolean hasRotateToTargetExited;
 
     public double distanceToTargetDebug = 0;
     public WHSRobotImpl(HardwareMap hardwareMap){
         drivetrain = new TileRunner(hardwareMap);
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
-        //   omniArm = new OmniArm(hardwareMap);
+        //omniArm = new OmniArm(hardwareMap);
     }
 
     @Override
@@ -56,19 +59,11 @@ public class WHSRobotImpl implements WHSRobot {
         //double degreesToRotate = Math.atan2(targetPos.getY(), targetPos.getX()); //from -pi to pi rad
         degreesToRotate = degreesToRotate * 180 / Math.PI;
         /*double*/ targetHeading = Functions.normalizeAngle(currentCoord.getHeading() + degreesToRotate); //-180 to 180 deg
-        if(count == 0) {
+        if (!hasRotateToTargetExited()) {
             rotateToTarget(targetHeading, backwards);
-            count++;
-        }
-        else if(rotateToTargetInProgress) {
-            rotateToTarget(targetHeading, backwards);
-        }
-
-        if (rotateToTargetInProgress) {
-            //if rotating, do nothing
-        }
-        else if (!driveBackwards && distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
-
+            hasDriveToTargetExited = false;
+        } else if (!driveBackwards && distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
+            hasDriveToTargetExited = false;
             if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[3]) {
                 drivetrain.operateRight(DRIVE_TO_TARGET_POWER_LEVEL[3]);
                 drivetrain.operateLeft(DRIVE_TO_TARGET_POWER_LEVEL[3]);
@@ -91,7 +86,7 @@ public class WHSRobotImpl implements WHSRobot {
             }
         }
         else if (driveBackwards && distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
-
+            hasDriveToTargetExited = false;
             if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[3]) {
                 drivetrain.operateRight(-DRIVE_TO_TARGET_POWER_LEVEL[3]);
                 drivetrain.operateLeft(-DRIVE_TO_TARGET_POWER_LEVEL[3]);
@@ -119,6 +114,8 @@ public class WHSRobotImpl implements WHSRobot {
             driveToTargetInProgress = false;
             rotateToTargetInProgress = false;
             count = 0;
+            hasDriveToTargetExited = true;
+            hasRotateToTargetExited = false;
         }
     }
 
@@ -143,7 +140,7 @@ public class WHSRobotImpl implements WHSRobot {
         //drivetrain.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         if (angleToTarget < -DEADBAND_ROTATE_TO_TARGET) {
-
+            hasRotateToTargetExited = false;
             //targetQuadrant = 4;
             if(angleToTarget < -ROTATE_TO_TARGET_THRESHOLD[2]) {
                 drivetrain.operateLeft(ROTATE_TO_TARGET_POWER_LEVEL[2]);
@@ -162,7 +159,7 @@ public class WHSRobotImpl implements WHSRobot {
             }
         }
         else if (angleToTarget > DEADBAND_ROTATE_TO_TARGET) {
-
+            hasRotateToTargetExited = false;
             //targetQuadrant = 1;
             if(angleToTarget > ROTATE_TO_TARGET_THRESHOLD[2]) {
                 drivetrain.operateLeft(-ROTATE_TO_TARGET_POWER_LEVEL[2]);
@@ -184,7 +181,8 @@ public class WHSRobotImpl implements WHSRobot {
             drivetrain.operateLeft(0.0);
             drivetrain.operateRight(0.0);
             rotateToTargetInProgress = false;
-
+            hasRotateToTargetExited = true;
+            hasDriveToTargetExited = false;
         }
     }
 
@@ -196,6 +194,16 @@ public class WHSRobotImpl implements WHSRobot {
     @Override
     public boolean rotateToTargetInProgress() {
         return rotateToTargetInProgress;
+    }
+
+    @Override
+    public boolean hasDriveToTargetExited() {
+        return hasDriveToTargetExited;
+    }
+
+    @Override
+    public boolean hasRotateToTargetExited() {
+        return hasRotateToTargetExited;
     }
 
     @Override

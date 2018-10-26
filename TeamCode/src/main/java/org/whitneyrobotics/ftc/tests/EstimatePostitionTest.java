@@ -24,8 +24,6 @@ public class EstimatePostitionTest extends OpMode {
 
     @Override
     public void loop() {
-        robot.driveToTargetInProgress = true;
-        robot.rotateToTargetInProgress = false;
         robot.estimatePosition();
         robot.estimateHeading();
         telemetry.addData("DriveToTarget in progress: ", robot.driveToTargetInProgress());
