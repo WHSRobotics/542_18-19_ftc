@@ -1,19 +1,19 @@
-package org.whitneyrobotics.ftc.tensorschmoe;
+package org.firstinspires.ftc.robotcontroller;
 
+import android.app.Fragment;
 import android.util.Log;
 
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
-import org.firstinspires.ftc.robotcontroller.internal.ImageClassifier;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 
 
 import java.io.IOException;
 
 
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -24,6 +24,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
@@ -36,8 +37,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 /**
  * Created by ivanm on 10/13/2018.
  */
-@Autonomous(name = "DogeFlow", group = "tests")
-public class DogeFlow extends OpMode {
+@Autonomous(name = "DogeFlowTest", group = "tests")
+public class DogeFlowTest extends OpMode {
 
     private ImageClassifier imageClassifier;
 
@@ -60,11 +61,10 @@ public class DogeFlow extends OpMode {
         try {
             imageClassifier = new ImageClassifier((FtcRobotControllerActivity)hardwareMap.appContext);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("Rip, ", "Failed to initialize an image classifier.");
         }
         imageClassifier.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         imageClassifier.enable();
-
 
 
 
@@ -137,6 +137,8 @@ public class DogeFlow extends OpMode {
 
     @Override
     public void loop() {
+
+        //telemetry.addData("Stuff: ", Arrays.toString(imageClassifier.localesArray));
 
         targetVisible = false;
         for (VuforiaTrackable trackable : allTrackables) {

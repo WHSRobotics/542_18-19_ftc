@@ -11,6 +11,9 @@ import android.hardware.Camera;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcontroller.FtcRobotControllerActivity;
+import org.firstinspires.ftc.robotcontroller.ImageClassifier;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -61,7 +64,7 @@ public class CameraOp extends OpMode {
         Camera.Parameters parameters = camera.getParameters();
         data = parameters.flatten();
 
-        ((FtcRobotControllerActivity) hardwareMap.appContext).initPreview(camera, this, previewCallback);
+        //((FtcRobotControllerActivity) hardwareMap.appContext).initPreview(camera, this, previewCallback);
 
         try {
             imageClassifier = new ImageClassifier((Activity) hardwareMap.appContext);

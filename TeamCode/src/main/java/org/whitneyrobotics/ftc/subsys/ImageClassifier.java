@@ -46,7 +46,7 @@ public class ImageClassifier extends OpenCVPipeline {
   private static final String TAG = "TfLiteCameraDemo";
 
   /** Name of the model file stored in Assets. */
-  private static final String MODEL_PATH = "graph.mp3";
+  private static final String MODEL_PATH = "graph.lite";
 
   /** Name of the label file stored in Assets. */
   private static final String LABEL_PATH = "labels.txt";

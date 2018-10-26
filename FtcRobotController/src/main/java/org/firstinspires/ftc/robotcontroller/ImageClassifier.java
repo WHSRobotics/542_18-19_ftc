@@ -13,12 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.firstinspires.ftc.robotcontroller.internal;
+package org.firstinspires.ftc.robotcontroller;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.Path;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import com.disnodeteam.dogecv.OpenCVPipeline;
@@ -26,9 +29,12 @@ import com.disnodeteam.dogecv.OpenCVPipeline;
 import org.tensorflow.lite.Interpreter;
 
 import java.io.BufferedReader;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -47,7 +53,7 @@ public class ImageClassifier extends OpenCVPipeline{
   private static final String TAG = "TfLiteCameraDemo";
 
   /** Name of the model file stored in Assets. */
-  private static final String MODEL_PATH = "graph.mp3";
+  private static final String MODEL_PATH = "graph.lite";
 
   /** Name of the label file stored in Assets. */
   private static final String LABEL_PATH = "labels.txt";
@@ -65,6 +71,8 @@ public class ImageClassifier extends OpenCVPipeline{
 
   private static final int IMAGE_MEAN = 128;
   private static final float IMAGE_STD = 128.0f;
+
+  String[] localesArray;
 
 
   /* Preallocated buffers for storing image data in. */
@@ -97,9 +105,13 @@ public class ImageClassifier extends OpenCVPipeline{
           });
 
   /** Initializes an {@code ImageClassifier}. */
-  public ImageClassifier(Activity activity) throws IOException {
-    tflite = new Interpreter(loadModelFile(activity));
-    labelList = loadLabelList(activity);
+  public ImageClassifier(Context context) throws IOException {
+    try {
+      tflite = new Interpreter(loadModelFile(context));
+    } catch(IOException e) {
+      Log.e("Rip, ", "Can't load model file.");
+    }
+    labelList = loadLabelList(context);
     imgData =
         ByteBuffer.allocateDirect(
             4 * DIM_BATCH_SIZE * DIM_IMG_SIZE_X * DIM_IMG_SIZE_Y * DIM_PIXEL_SIZE);
@@ -162,10 +174,10 @@ public class ImageClassifier extends OpenCVPipeline{
   }
 
   /** Reads label list from Assets. */
-  private List<String> loadLabelList(Activity activity) throws IOException {
+  private List<String> loadLabelList(Context context) throws IOException {
     List<String> labelList = new ArrayList<String>();
     BufferedReader reader =
-        new BufferedReader(new InputStreamReader(activity.getAssets().open(LABEL_PATH)));
+        new BufferedReader(new InputStreamReader(context.getAssets().open(LABEL_PATH)));
     String line;
     while ((line = reader.readLine()) != null) {
       labelList.add(line);
@@ -175,12 +187,22 @@ public class ImageClassifier extends OpenCVPipeline{
   }
 
   /** Memory-map the model file in Assets. */
-  private MappedByteBuffer loadModelFile(Activity activity) throws IOException {
-    AssetFileDescriptor fileDescriptor = activity.getAssets().openFd(MODEL_PATH);
-    FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+  private MappedByteBuffer loadModelFile(Context context) throws IOException {
+    Log.e("Rip, ", "before line 1");
+    AssetManager assetManager = context.getAssets();
+    InputStream is = assetManager.open("graph.lite", 2);
+    Log.e("Rip, ", "before line 1.1");
+    //localesArray = assetManager.list("");
+    AssetFileDescriptor fileDescriptor = assetManager.openFd("graph.lite");
+    Log.e("Rip, ", "after line 1");
+    FileInputStream inputStream = fileDescriptor.createInputStream();
+    Log.e("Rip, ", "after line 2");
     FileChannel fileChannel = inputStream.getChannel();
+    Log.e("Rip, ", "after line 3");
     long startOffset = fileDescriptor.getStartOffset();
+    Log.e("Rip, ", "after line 4");
     long declaredLength = fileDescriptor.getDeclaredLength();
+    Log.e("Rip, ", "after line 5");
     return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
   }
 
