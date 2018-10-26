@@ -29,12 +29,16 @@ public class OmniArm {
         switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
-    public void  intake(){
-        intakeMotor.setPower(INTAKE_SPEED);
-    }
-
-    public void outtake(){
-        intakeMotor.setPower(OUTTAKE_SPEED);
+    public void operateIntake(boolean gamepadInputIntake, boolean gamepadInputOuttake){
+        if(gamepadInputIntake){
+            intakeMotor.setPower(INTAKE_SPEED);
+        }
+        else if(gamepadInputOuttake){
+            intakeMotor.setPower(OUTTAKE_SPEED);
+        }
+        else {
+            intakeMotor.setPower(0.0);
+        }
     }
 
     public void extendIntake(){
