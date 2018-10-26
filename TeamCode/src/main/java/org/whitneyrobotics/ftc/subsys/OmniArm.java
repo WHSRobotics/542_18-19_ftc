@@ -1,6 +1,7 @@
 package org.whitneyrobotics.ftc.subsys;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -24,6 +25,7 @@ public class OmniArm {
     public OmniArm(HardwareMap armMap) {
         extendMotor = armMap.dcMotor.get("extendMotor");
         intakeMotor = armMap.dcMotor.get("intakeMotor");
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         switchMotor = armMap.dcMotor.get("switchMotor");
         extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -52,24 +54,15 @@ public class OmniArm {
     }
 
     public void OperateModeSwitch(boolean gamepadInput1, boolean gamepadInput2){
-//TODO set orientation of switch motors
+        //TODO set orientation of switch motors
         if (gamepadInput1){
                 switchMotor.setTargetPosition(OUTTAKE_MODE);
                 switchMotor.setPower(.75);
-
         }
-
         if (gamepadInput2){
                 switchMotor.setTargetPosition(INTAKE_MODE);
                 switchMotor.setPower(-.75);
 
         }
-
-
-        }
-
     }
-
-
-
-
+}

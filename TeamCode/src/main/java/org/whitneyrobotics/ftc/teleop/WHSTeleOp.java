@@ -1,11 +1,12 @@
 package org.whitneyrobotics.ftc.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 
-
+@TeleOp(name="TeleOp", group="tele")
 public class WHSTeleOp extends OpMode{
 
     WHSRobotImpl robot;
@@ -26,14 +27,7 @@ public class WHSTeleOp extends OpMode{
         }
 
         robot.drivetrain.switchOrientation(gamepad1.a);
-
-        if (gamepad2.right_trigger > 0.01){
-            robot.omniArm.intake();
-        }
-
-        if (gamepad2.left_trigger > 0.01){
-            robot.omniArm.outtake();
-        }
+        robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
 
         if (gamepad2.dpad_up){
             robot.omniArm.extendIntake();
