@@ -38,7 +38,7 @@ public class WHSTeleOp extends OpMode{
         }
 
 
-        robot.omniArm.OperateModeSwitch(gamepad2.x, gamepad2.y);
+        robot.omniArm.operateModeSwitch(gamepad2.x, gamepad2.y);
 
 
 

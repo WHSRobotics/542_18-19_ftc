@@ -67,6 +67,7 @@ public class WHSAuto extends OpMode{
         currentState = INIT;
         subState = 0;
 
+        //These are all in terms blue alliance
         startingCoordinateArray[CRATER] = new Coordinate(300, 300, 150, 45);
         startingCoordinateArray[DEPOT] = new Coordinate(-300, 300, 150, 135);
 

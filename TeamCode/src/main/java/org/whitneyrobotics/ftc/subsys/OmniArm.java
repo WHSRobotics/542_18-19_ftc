@@ -18,7 +18,7 @@ public class OmniArm {
     private final int INTAKE_MODE = 200;
     private final int OUTTAKE_MODE = -100;
     private final double INTAKE_SPEED = 0.75;
-    private final double OUTTAKE_SPEED = -0.75;
+    private final double OUTTAKE_SPEED = -1.0;
 
     Toggler toggler = new Toggler(2);
 
@@ -53,7 +53,7 @@ public class OmniArm {
         extendMotor.setPower(-.5);
     }
 
-    public void OperateModeSwitch(boolean gamepadInput1, boolean gamepadInput2){
+    public void operateModeSwitch(boolean gamepadInput1, boolean gamepadInput2){
         //TODO set orientation of switch motors
         if (gamepadInput1){
                 switchMotor.setTargetPosition(OUTTAKE_MODE);
