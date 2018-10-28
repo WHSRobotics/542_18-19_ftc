@@ -44,5 +44,9 @@ public class ArmCurrentTest extends OpMode {
         else {
             switchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
+        telemetry.addData("CurrentEncoderPos", switchMotor.getCurrentPosition());
+        telemetry.addData("CommandedEncoderPos", switchMotor.getTargetPosition());
+        telemetry.addData("Brake On?", brakeTog.currentState()==0 ? "Yes" : "No");
+
     }
 }
