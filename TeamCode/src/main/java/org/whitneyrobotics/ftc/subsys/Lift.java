@@ -15,7 +15,7 @@ public class Lift implements MotorSubsystem {
     }
 
     //STORED, IN_LATCH, ABOVE_LATCH, FINAL
-    private final int[] LIFT_POSITIONS = {0, 3600, 4200, 0};
+    private final int[] LIFT_POSITIONS = {0, 3900, 4200, 0};
     private final int STORED_HEIGHT = LIFT_POSITIONS[LiftPosition.STORED.ordinal()];
     private final int IN_LATCH_HEIGHT = LIFT_POSITIONS[LiftPosition.IN_LATCH.ordinal()];
     private final int ABOVE_HEIGHT = LIFT_POSITIONS[LiftPosition.ABOVE_LATCH.ordinal()];
@@ -46,9 +46,8 @@ public class Lift implements MotorSubsystem {
     }
 
     public void setLiftPosition(LiftPosition liftPosition) {
-        liftMotor.setTargetPosition(liftPosition.ordinal());
+        liftMotor.setTargetPosition(LIFT_POSITIONS[liftPosition.ordinal()]);
         liftMotor.setPower(LIFT_POWER);
-
     }
 
     @Override
