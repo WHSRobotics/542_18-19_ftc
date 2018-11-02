@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.whitneyrobotics.ftc.subsys.OmniArm;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
-@TeleOp(name = "OmniArmTester", group = "test")
+@TeleOp(name = "OmniArmTest", group = "tests")
 public class OmniArmTest extends OpMode{
 
     DcMotor switchMotor;
