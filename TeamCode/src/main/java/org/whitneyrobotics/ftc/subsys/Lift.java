@@ -1,6 +1,7 @@
 package org.whitneyrobotics.ftc.subsys;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.whitneyrobotics.ftc.lib.subsys.MotorSubsystem;
@@ -8,19 +9,24 @@ import org.whitneyrobotics.ftc.lib.subsys.MotorSubsystem;
 public class Lift implements MotorSubsystem {
 
     private DcMotor liftMotor;
-    private final int LIFT_HEIGHT = 3600;
-    private final int FINAL_HEIGHT = 5376;
-    private final int DOWN_HEIGHT = 0;
-    private final int LIFT_HEIGHT_THRESHOLD = 400;
-    boolean hasLiftReachedTargetHeight = false;
 
-    enum LiftPositions{
-
+    public enum LiftPosition {
+        STORED, IN_LATCH, ABOVE_LATCH, FINAL
     }
+
+    //STORED, IN_LATCH, ABOVE_LATCH, FINAL
+    private final int[] LIFT_POSITIONS = {0, 3900, 4200, 0};
+    private final int STORED_HEIGHT = LIFT_POSITIONS[LiftPosition.STORED.ordinal()];
+    private final int IN_LATCH_HEIGHT = LIFT_POSITIONS[LiftPosition.IN_LATCH.ordinal()];
+    private final int ABOVE_HEIGHT = LIFT_POSITIONS[LiftPosition.ABOVE_LATCH.ordinal()];
+    private final int LIFT_HEIGHT_THRESHOLD = 200;
+    private final double LIFT_POWER = 0.8;
+    boolean hasLiftReachedTargetHeight = false;
 
     public Lift(HardwareMap liftMap) {
         liftMotor = liftMap.dcMotor.get("liftMotor");
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void setLiftMotorPower(double power){
@@ -29,18 +35,19 @@ public class Lift implements MotorSubsystem {
 
     public void liftUpRobot() {
         if (!hasLiftReachedTargetHeight) {
-            liftMotor.setTargetPosition(LIFT_HEIGHT);
+            liftMotor.setTargetPosition(IN_LATCH_HEIGHT);
             liftMotor.setPower(1.0);
         }
-        if (liftMotor.getCurrentPosition() > (LIFT_HEIGHT - LIFT_HEIGHT_THRESHOLD) || hasLiftReachedTargetHeight) {
-            liftMotor.setTargetPosition(DOWN_HEIGHT);
+        if (liftMotor.getCurrentPosition() > (IN_LATCH_HEIGHT - LIFT_HEIGHT_THRESHOLD) || hasLiftReachedTargetHeight) {
+            liftMotor.setTargetPosition(STORED_HEIGHT);
             hasLiftReachedTargetHeight = true;
             liftMotor.setPower(1.0);
         }
     }
 
-    public void setLiftPosition() {
-
+    public void setLiftPosition(LiftPosition liftPosition) {
+        liftMotor.setTargetPosition(LIFT_POSITIONS[liftPosition.ordinal()]);
+        liftMotor.setPower(LIFT_POWER);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.whitneyrobotics.ftc.tests;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.whitneyrobotics.ftc.lib.util.Toggler;
@@ -29,6 +30,8 @@ public class LiftEncoderPositionTest extends OpMode {
         switchMotor = hardwareMap.dcMotor.get("switchMotor");
         extendMotor = hardwareMap.dcMotor.get("extendMotor");
         intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
+
+        lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
