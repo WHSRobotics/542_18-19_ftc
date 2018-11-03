@@ -1,11 +1,15 @@
 package org.whitneyrobotics.ftc.autoop;
 
+import com.disnodeteam.dogecv.CameraViewDisplay;
+import com.disnodeteam.dogecv.DogeCV;
+import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
+import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
 import org.whitneyrobotics.ftc.subsys.MarkerDrop;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
@@ -41,7 +45,6 @@ public class WHSAuto extends OpMode{
 
     static final int NUM_OF_STATES = 6;
 
-    boolean markerDropped;
     boolean[] stateEnabled = new boolean[NUM_OF_STATES];
     private double finishTime;
 
@@ -59,7 +62,13 @@ public class WHSAuto extends OpMode{
     String currentStateDesc;
     String subStateDesc;
 
+    SimpleTimer storedToDumpedTimer = new SimpleTimer();
+    SimpleTimer dumpedToStoredTimer = new SimpleTimer();
+    static final double MARKER_DROP_DELAY = 0.75;
+
+    private GoldAlignDetector detector;
     GoldPositionDetector.GoldPosition goldPosition;
+    double xpos;
 
     @Override
     public void init() {
@@ -68,8 +77,8 @@ public class WHSAuto extends OpMode{
         subState = 0;
 
         //These are all in terms blue alliance
-        startingCoordinateArray[CRATER] = new Coordinate(300, 300, 150, 45);
-        startingCoordinateArray[DEPOT] = new Coordinate(-300, 300, 150, 135);
+        startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 45);
+        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
 
         landerClearancePositionArray[CRATER] = new Position(500, 500, 150);
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
@@ -91,6 +100,12 @@ public class WHSAuto extends OpMode{
         craterPositonArray[DEPOT] = new Position(-1450,-800,150);
 
         defineStateEnabledStatus();
+
+        //Vision initialization
+        detector = new GoldAlignDetector();
+        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
+        detector.useDefaults();
+        detector.enable();
     }
 
     @Override
@@ -113,13 +128,25 @@ public class WHSAuto extends OpMode{
                         subState++;
                         break;
                     case 1:
+                        //vision stuff
+                        xpos = detector.getXPosition();
+                        if (xpos < 300){
+                            goldPosition = GoldPositionDetector.GoldPosition.LEFT;
+                        } else if (xpos >= 300){
+                            goldPosition = GoldPositionDetector.GoldPosition.CENTER;
+                        } else {
+                            goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
+                        }
+                        subState++;
+                        break;
+                    case 2:
                         subStateDesc = "driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
-                    case 2:
+                    case 3:
                         subStateDesc = "exit";
                         advanceState();
                         break;
@@ -130,31 +157,21 @@ public class WHSAuto extends OpMode{
                 switch (subState) {
                     case 0:
                         subStateDesc = "entry";
-                        //vision stuff
-                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][1],true);//goldPosition.ordinal()], true);
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
                     case 1:
-                        subStateDesc = "driving to gold particle";
-                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][1]/*[goldPosition.ordinal()]*/, true);
+                        subStateDesc = "driving back to lander clearance";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.driveToTarget(landerClearancePositionArray[CRATER], true);
+                        }
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
                     case 2:
-                        subStateDesc = "driving back to lander clearance";
-                        if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(landerClearancePositionArray[CRATER], true);
-                        } else {
-                            subState++;
-                        }
-                        if (robot.hasDriveToTargetExited()) {
-                            subState++;
-                        }
-                        break;
-                    case 3:
                         subStateDesc = "exit";
                         advanceState();
                         break;
@@ -178,14 +195,28 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "driving to depot";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(depotPosition, true);
-                        } else {
-                            subState++;
                         }
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
+                        storedToDumpedTimer.set(MARKER_DROP_DELAY);
                         break;
                     case 2:
+                        subStateDesc = "dumping marker";
+                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
+                        if (storedToDumpedTimer.isExpired()) {
+                            subState++;
+                        }
+                        dumpedToStoredTimer.set(MARKER_DROP_DELAY);
+                        break;
+                    case 3:
+                        subStateDesc = "storing marker drop";
+                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
+                        if (dumpedToStoredTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
+                    case 4:
                         subStateDesc = "exit";
                         advanceState();
                         break;

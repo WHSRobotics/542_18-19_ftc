@@ -31,6 +31,8 @@ public class LiftEncoderPositionTest extends OpMode {
         extendMotor = hardwareMap.dcMotor.get("extendMotor");
         intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
 
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setPower(0.0);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
