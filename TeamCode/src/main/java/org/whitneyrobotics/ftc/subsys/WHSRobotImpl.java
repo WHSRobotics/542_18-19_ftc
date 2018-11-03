@@ -46,6 +46,8 @@ public class WHSRobotImpl implements WHSRobot {
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
         omniArm = new OmniArm(hardwareMap);
+        markerDrop = new MarkerDrop(hardwareMap);
+        lift = new Lift(hardwareMap);
     }
 
     @Override

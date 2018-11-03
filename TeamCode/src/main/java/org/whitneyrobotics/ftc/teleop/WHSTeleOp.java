@@ -25,7 +25,6 @@ public class WHSTeleOp extends OpMode{
         } else {
             robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y, gamepad1.right_stick_y);
         }
-
         robot.drivetrain.switchOrientation(gamepad1.a);
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
@@ -35,9 +34,9 @@ public class WHSTeleOp extends OpMode{
         telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());
 
 
-        if (gamepad1.left_trigger>0.01 && gamepad1.right_trigger>0.01){
-            robot.lift.liftUpRobot();
-        }
+        robot.lift.liftUpRobot(gamepad1.right_bumper);
+        robot.lift.bringDownRobot(gamepad2.dpad_down);
+        robot.lift.bringDownHook(gamepad2.dpad_left);
         
     }
 }

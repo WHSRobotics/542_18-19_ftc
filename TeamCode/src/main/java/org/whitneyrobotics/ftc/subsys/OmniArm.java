@@ -12,11 +12,11 @@ public class OmniArm {
     public DcMotor intakeMotor;
     public DcMotor switchMotor;
 
-    private final int EXTEND_LENGTH = 1154;
+    private final int EXTEND_LENGTH = 1120;
     private final int RETRACT_LENGTH = 0;
-    private final int INTAKE_MODE = 2124;
-    private final int OUTTAKE_MODE = 100;
-    private final double INTAKE_SPEED = 0.75;
+    private final int INTAKE_MODE = 2245;
+    private final int OUTTAKE_MODE = 900;
+    private final double INTAKE_SPEED = 1.0;
     private final double OUTTAKE_SPEED = -1.0;
 
     Toggler extensionToggler = new Toggler(2);
@@ -67,10 +67,10 @@ public class OmniArm {
         switchToggler.changeState(gamepadInput);
         if(switchToggler.currentState() == 0) {
             switchMotor.setTargetPosition(OUTTAKE_MODE);
-            switchMotor.setPower(0.1);
+            switchMotor.setPower(0.25);
         } else if (switchToggler.currentState() == 1) {
             switchMotor.setTargetPosition(INTAKE_MODE);
-            switchMotor.setPower(0.1);
+            switchMotor.setPower(0.25);
         }
     }
 }

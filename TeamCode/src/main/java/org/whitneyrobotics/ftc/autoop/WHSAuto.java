@@ -128,7 +128,14 @@ public class WHSAuto extends OpMode{
                         subState++;
                         break;
                     case 1:
-                        //vision stuff
+                        subStateDesc = "bringing robot down";
+                        robot.lift.bringDownRobot(true);
+                        if (robot.lift.isRobotDown) {
+                            subState++;
+                        }
+                        break;
+                    case 2:
+                        subStateDesc = "scanning minerals";
                         xpos = detector.getXPosition();
                         if (xpos < 300){
                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
@@ -139,14 +146,23 @@ public class WHSAuto extends OpMode{
                         }
                         subState++;
                         break;
-                    case 2:
+                    case 3:
                         subStateDesc = "driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
-                    case 3:
+                    case 4:
+                        subStateDesc = "bringing hook down";
+                        robot.lift.bringDownHook(true);
+                        subState++;
+                        break;
+                    case 5:
+                        if (robot.lift.isHookDown) {
+                            subState++;
+                        }
+                    case 6:
                         subStateDesc = "exit";
                         advanceState();
                         break;
