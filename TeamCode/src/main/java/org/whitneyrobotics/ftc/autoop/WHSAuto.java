@@ -112,6 +112,9 @@ public class WHSAuto extends OpMode{
     public void loop() {
         robot.estimateHeading();
         robot.estimatePosition();
+        if (robot.lift.getDigitalTouch()) {
+            robot.lift.resetEncoderValue();
+        }
 
         switch (currentState) {
             case INIT:

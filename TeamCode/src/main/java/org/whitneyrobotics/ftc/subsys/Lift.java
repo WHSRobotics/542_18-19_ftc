@@ -2,13 +2,16 @@ package org.whitneyrobotics.ftc.subsys;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorDigitalTouch;
 import org.whitneyrobotics.ftc.lib.subsys.MotorSubsystem;
 
 public class Lift implements MotorSubsystem {
 
     private DcMotor liftMotor;
+    private DigitalChannel liftSwitch;
 
     public enum LiftPosition {
         STORED, IN_LATCH, ABOVE_LATCH, FINAL
@@ -32,6 +35,8 @@ public class Lift implements MotorSubsystem {
 
     public Lift(HardwareMap liftMap) {
         liftMotor = liftMap.dcMotor.get("liftMotor");
+        liftSwitch = liftMap.digitalChannel.get("liftSwitch");
+        liftSwitch.setMode(DigitalChannel.Mode.INPUT);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -195,4 +200,10 @@ public class Lift implements MotorSubsystem {
     public double getAbsPowerAverage() {
         return 0;
     }
+
+    public void resetEncoderValue() {
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public boolean getDigitalTouch() { return liftSwitch.getState(); }
 }
