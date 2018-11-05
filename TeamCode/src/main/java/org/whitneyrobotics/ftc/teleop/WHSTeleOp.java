@@ -35,8 +35,18 @@ public class WHSTeleOp extends OpMode{
 
 
         robot.lift.liftUpRobot(gamepad1.right_bumper);
-        robot.lift.bringDownRobot(gamepad2.dpad_down);
-        robot.lift.bringDownHook(gamepad2.dpad_left);
+        //robot.lift.bringDownRobot(gamepad2.dpad_down);
+        //robot.lift.bringDownHook(gamepad2.dpad_left);
+
+        if (gamepad2.dpad_down) {
+            if (gamepad1.dpad_up) {
+                robot.lift.setLiftMotorPower(0.6);
+            } else if (gamepad1.dpad_down) {
+                robot.lift.setLiftMotorPower(-0.66);
+            } else {
+                robot.lift.setLiftMotorPower(0.0);
+            }
+        }
         
     }
 }

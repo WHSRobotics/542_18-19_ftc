@@ -84,20 +84,20 @@ public class WHSAuto extends OpMode{
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
 
         //setting the three different particle positions for the crater side
-        goldPositionArray[CRATER][LEFT] = new Position(600,120, 150);
-        goldPositionArray[CRATER][CENTER] = new Position(900,900,150);
-        goldPositionArray[CRATER][RIGHT] = new Position(1200,600,150);
+        goldPositionArray[CRATER][LEFT] = new Position(590, 110, 150);//(600,120, 150);
+        goldPositionArray[CRATER][CENTER] = new Position(890, 890, 150);//(900,900,150);
+        goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);//(1200,600,150);
 
         //setting the three different particle positions for the depot side
         goldPositionArray[DEPOT][LEFT] = new Position(-1200,600,150);
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
 
-        wallPosition = new Position(-300,1450,150);
-        depotPosition = new Position(-1450,1450,150);
+        wallPosition = new Position(-300,1425,150);
+        depotPosition = new Position(-1425,1425,150);
 
-        craterPositonArray[CRATER] = new Position(800,1450,150);
-        craterPositonArray[DEPOT] = new Position(-1450,-800,150);
+        craterPositonArray[CRATER] = new Position(800,1425,150);
+        craterPositonArray[DEPOT] = new Position(-1425,-800,150);
 
         defineStateEnabledStatus();
 
@@ -154,15 +154,15 @@ public class WHSAuto extends OpMode{
                         }
                         break;
                     case 4:
-                        subStateDesc = "bringing hook down";
+                       subStateDesc = "bringing hook down";
                         robot.lift.bringDownHook(true);
-                        subState++;
-                        break;
-                    case 5:
-                        if (robot.lift.isHookDown) {
+                       if (robot.lift.isHookDown) {
                             subState++;
-                        }
-                    case 6:
+                       }
+                       subState++; //DELETE
+                       break;
+
+                    case 5:
                         subStateDesc = "exit";
                         advanceState();
                         break;

@@ -15,7 +15,7 @@ public class Lift implements MotorSubsystem {
     }
 
     //STORED, IN_LATCH, ABOVE_LATCH, FINAL
-    private final int[] LIFT_POSITIONS = {-68, 4680, 4720, 542};
+    private final int[] LIFT_POSITIONS = {-68, 4680, 4830, 542};
     private final int STORED_HEIGHT = LIFT_POSITIONS[LiftPosition.STORED.ordinal()];
     private final int IN_LATCH_HEIGHT = LIFT_POSITIONS[LiftPosition.IN_LATCH.ordinal()];
     private final int ABOVE_HEIGHT = LIFT_POSITIONS[LiftPosition.ABOVE_LATCH.ordinal()];
@@ -39,6 +39,9 @@ public class Lift implements MotorSubsystem {
 
     public void setLiftMotorPower(double power){
         liftMotor.setPower(power);
+        if(power > 0.01) {
+            liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
     }
 
     public void liftUpRobot(boolean gamepadInput) {
@@ -46,6 +49,7 @@ public class Lift implements MotorSubsystem {
         switch (liftState){
             case 0:
                 if(gamepadInput){
+                    liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     liftState = 1;
                 }
                 break;
