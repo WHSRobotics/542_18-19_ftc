@@ -29,7 +29,11 @@ public class WHSTeleOp extends OpMode{
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         robot.omniArm.operateExtension(gamepad2.y);
-        robot.omniArm.operateModeSwitch(gamepad2.x);
+        if (gamepad1.left_bumper) {
+            robot.omniArm.storeOmniArm(gamepad1.left_bumper);
+        } else {
+            robot.omniArm.operateModeSwitch(gamepad2.x);
+        }
         telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());
         telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());
 
@@ -47,6 +51,5 @@ public class WHSTeleOp extends OpMode{
                 robot.lift.setLiftMotorPower(0.0);
             }
         }
-        
     }
 }
