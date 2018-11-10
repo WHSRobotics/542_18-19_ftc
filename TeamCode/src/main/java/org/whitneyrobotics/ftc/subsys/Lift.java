@@ -11,13 +11,13 @@ import org.whitneyrobotics.ftc.lib.subsys.MotorSubsystem;
 public class Lift implements MotorSubsystem {
 
     private DcMotor liftMotor;
-    private DigitalChannel liftSwitch;
+    private DigitalChannel limitSwitch;
 
     public enum LiftPosition {
         STORED, IN_LATCH, ABOVE_LATCH, FINAL
     }
 
-    //STORED, IN_LATCH, ABOVE_LATCH, FINAL
+    // STORED, IN_LATCH, ABOVE_LATCH, FINAL
     private final int[] LIFT_POSITIONS = {-68, 4680, 4830, 542};
     private final int STORED_HEIGHT = LIFT_POSITIONS[LiftPosition.STORED.ordinal()];
     private final int IN_LATCH_HEIGHT = LIFT_POSITIONS[LiftPosition.IN_LATCH.ordinal()];
@@ -35,11 +35,12 @@ public class Lift implements MotorSubsystem {
 
     public Lift(HardwareMap liftMap) {
         liftMotor = liftMap.dcMotor.get("liftMotor");
-        liftSwitch = liftMap.digitalChannel.get("liftSwitch");
-        liftSwitch.setMode(DigitalChannel.Mode.INPUT);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        limitSwitch = liftMap.digitalChannel.get("limitSwitch");
+        limitSwitch.setMode(DigitalChannel.Mode.INPUT);
     }
 
     public void setLiftMotorPower(double power){
@@ -82,26 +83,6 @@ public class Lift implements MotorSubsystem {
                 liftState = 0;
                 break;
         }
-
-        /*
-        if(gamepadInput || liftInProgress) {
-            liftInProgress = true;
-
-            if (!hasLiftReachedTargetHeight) {
-                liftMotor.setTargetPosition(IN_LATCH_HEIGHT);
-                liftMotor.setPower(1.0);
-            }
-            if (liftMotor.getCurrentPosition() > (IN_LATCH_HEIGHT - LIFT_HEIGHT_THRESHOLD) || hasLiftReachedTargetHeight) {
-                liftMotor.setTargetPosition(STORED_HEIGHT);
-                hasLiftReachedTargetHeight = true;
-                liftMotor.setPower(1.0);
-            } else {
-                liftMotor.setPower(0.0);
-                liftInProgress = false;
-                hasLiftReachedTargetHeight = false;
-            }
-
-        }*/
     }
 
 
@@ -130,18 +111,6 @@ public class Lift implements MotorSubsystem {
                 dropState = 0;
                 break;
         }
-
-        /*if(gamepadInput || isRobotDown){
-        if(!hasLiftReachedTargetHeight){
-            liftMotor.setTargetPosition(ABOVE_HEIGHT);
-            liftMotor.setPower(1.0);
-        }if (liftMotor.getCurrentPosition() > (ABOVE_HEIGHT - LIFT_HEIGHT_THRESHOLD) || hasLiftReachedTargetHeight){
-            liftMotor.setTargetPosition(FINAL_HEIGHTT);
-            liftMotor.setPower(1.0);
-        }else{
-            liftMotor.setPower(0);
-        }
-    }*/
     }
 
     public void bringDownHook(boolean gamepadInput){
@@ -169,16 +138,6 @@ public class Lift implements MotorSubsystem {
                 hookState = 0;
                 break;
         }
-
-        /*if(gamepadInput || isHookDown){
-        if(!hasLiftReachedTargetHeight){
-            liftMotor.setTargetPosition(STORED_HEIGHT);
-            liftMotor.setPower(1.0);
-        }
-        if(liftMotor.getCurrentPosition() < (ABOVE_HEIGHT-LIFT_HEIGHT_THRESHOLD) || hasLiftReachedTargetHeight){
-            liftMotor.setPower(0);
-        }
-    }*/
     }
 
     public void setLiftPosition(LiftPosition liftPosition) {
@@ -193,7 +152,7 @@ public class Lift implements MotorSubsystem {
 
     @Override
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-
+        // required for lift to implement MotorSubsystem
     }
 
     @Override
@@ -205,5 +164,5 @@ public class Lift implements MotorSubsystem {
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
-    public boolean getDigitalTouch() { return liftSwitch.getState(); }
+    public boolean getDigitalTouch() { return limitSwitch.getState(); }
 }

@@ -25,7 +25,6 @@ public class WHSAuto extends OpMode{
     Position depotPosition;
     Position[] craterPositonArray = new Position[2];
 
-
     static final int CRATER = 0;
     static final int DEPOT = 1;
 
@@ -35,7 +34,7 @@ public class WHSAuto extends OpMode{
 
     static final int STARTING_POSITION = DEPOT;
 
-    //State Definitions
+    // state definitions
     static final int INIT = 0;
     static final int DROP_FROM_LANDER = 1;
     static final int SAMPLE_PIECE = 2;
@@ -76,19 +75,19 @@ public class WHSAuto extends OpMode{
         currentState = INIT;
         subState = 0;
 
-        //These are all in terms blue alliance
+        // from the perspective of blue alliance
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 45);
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
 
         landerClearancePositionArray[CRATER] = new Position(500, 500, 150);
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
 
-        //setting the three different particle positions for the crater side
+        // setting the three different particle positions for the crater side
         goldPositionArray[CRATER][LEFT] = new Position(590, 110, 150);//(600,120, 150);
         goldPositionArray[CRATER][CENTER] = new Position(890, 890, 150);//(900,900,150);
         goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);//(1200,600,150);
 
-        //setting the three different particle positions for the depot side
+        // setting the three different particle positions for the depot side
         goldPositionArray[DEPOT][LEFT] = new Position(-1200,600,150);
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
@@ -101,7 +100,7 @@ public class WHSAuto extends OpMode{
 
         defineStateEnabledStatus();
 
-        //Vision initialization
+        // vision initialization
         detector = new GoldAlignDetector();
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         detector.useDefaults();
@@ -112,6 +111,8 @@ public class WHSAuto extends OpMode{
     public void loop() {
         robot.estimateHeading();
         robot.estimatePosition();
+
+        // reset encoder value on the lift if the limit switch is pressed
         if (robot.lift.getDigitalTouch()) {
             robot.lift.resetEncoderValue();
         }
@@ -127,7 +128,6 @@ public class WHSAuto extends OpMode{
                 switch (subState) {
                     case 0:
                         subStateDesc = "entry";
-                        // drop from lander, unlatch
                         subState++;
                         break;
                     case 1:
@@ -162,9 +162,7 @@ public class WHSAuto extends OpMode{
                        if (robot.lift.isHookDown) {
                             subState++;
                        }
-                       subState++; //DELETE
                        break;
-
                     case 5:
                         subStateDesc = "exit";
                         advanceState();
