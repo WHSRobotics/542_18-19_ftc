@@ -12,7 +12,6 @@ public class Lift implements MotorSubsystem {
 
     private DcMotor liftMotor;
     private DigitalChannel limitSwitch;
-
     public enum LiftPosition {
         STORED, IN_LATCH, ABOVE_LATCH, FINAL
     }
