@@ -10,7 +10,7 @@ import org.whitneyrobotics.ftc.lib.subsys.MotorSubsystem;
 
 public class Lift implements MotorSubsystem {
 
-    private DcMotor liftMotor;
+    public DcMotor liftMotor;
     private DigitalChannel limitSwitch;
     public enum LiftPosition {
         STORED, IN_LATCH, ABOVE_LATCH, FINAL
@@ -37,7 +37,6 @@ public class Lift implements MotorSubsystem {
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
         limitSwitch = liftMap.digitalChannel.get("limitSwitch");
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
     }
@@ -160,8 +159,14 @@ public class Lift implements MotorSubsystem {
     }
 
     public void resetEncoderValue() {
-        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(getDigitalTouch()) {
+            liftMotor.setPower(-.65);
+        }
+        if(!getDigitalTouch()){
+        liftMotor.setPower(0);
+    }
     }
 
     public boolean getDigitalTouch() { return limitSwitch.getState(); }
+
 }

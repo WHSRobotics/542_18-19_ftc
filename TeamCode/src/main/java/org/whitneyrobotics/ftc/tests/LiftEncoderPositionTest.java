@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.whitneyrobotics.ftc.lib.util.Toggler;
@@ -17,10 +18,11 @@ public class LiftEncoderPositionTest extends OpMode {
     DcMotor switchMotor;
     DcMotor extendMotor;
     DcMotor intakeMotor;
+    DigitalChannel limitSwitch;
     Toggler xtog = new Toggler(2);
     Toggler ytog = new Toggler(2);
     int encoderPos = 0;
-   // WHSRobotImpl robot;
+    //WHSRobotImpl robot;
     Toggler runToPositionTog = new Toggler(2);
 
     @Override
@@ -30,10 +32,11 @@ public class LiftEncoderPositionTest extends OpMode {
         switchMotor = hardwareMap.dcMotor.get("switchMotor");
         extendMotor = hardwareMap.dcMotor.get("extendMotor");
         intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
-
+        limitSwitch = hardwareMap.digitalChannel.get("limitSwitch");
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setPower(0.0);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
     }
 
@@ -42,13 +45,10 @@ public class LiftEncoderPositionTest extends OpMode {
 
         runToPositionTog.changeState(gamepad1.left_bumper);
 
-        if(gamepad1.a ){
-            encoderPos++;
-        }
-        else if(gamepad1.b){
+         if(gamepad1.b){
             encoderPos--;
         }
-
+        if(limitSwitch.getState()){
         if(gamepad1.x){
             lift.setPower(.666);
         }else if (gamepad1.y){
@@ -113,9 +113,15 @@ public class LiftEncoderPositionTest extends OpMode {
         else if(runToPositionTog.currentState() == 1){
             robot.lift.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
-*/
+*/      }
+
+        if(!limitSwitch.getState()){
+            lift.setPower(0);
+        }
 
         telemetry.addData("Motor Target Pos", encoderPos);
         telemetry.addData("Motor Current Pos", lift.getCurrentPosition());
+        telemetry.addData("LimitSwitchState", limitSwitch.getState());
     }
+
 }
