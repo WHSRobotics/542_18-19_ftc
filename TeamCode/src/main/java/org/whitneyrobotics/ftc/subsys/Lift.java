@@ -17,11 +17,11 @@ public class Lift implements MotorSubsystem {
     }
 
     // STORED, IN_LATCH, ABOVE_LATCH, FINAL
-    private final int[] LIFT_POSITIONS = {-68, 4680, 4830, 542};
+    private final int[] LIFT_POSITIONS = {-68, 4830, 5242, 542};
     private final int STORED_HEIGHT = LIFT_POSITIONS[LiftPosition.STORED.ordinal()];
     private final int IN_LATCH_HEIGHT = LIFT_POSITIONS[LiftPosition.IN_LATCH.ordinal()];
     private final int ABOVE_HEIGHT = LIFT_POSITIONS[LiftPosition.ABOVE_LATCH.ordinal()];
-    private final int FINAL_HEIGHTT = LIFT_POSITIONS[LiftPosition.FINAL.ordinal()];
+    private final int FINAL_HEIGHT = LIFT_POSITIONS[LiftPosition.FINAL.ordinal()];
     private final int LIFT_HEIGHT_THRESHOLD =50;
     private final double LIFT_POWER = 0.8;
     boolean hasLiftReachedTargetHeight = false;
@@ -126,7 +126,7 @@ public class Lift implements MotorSubsystem {
                 hookState = 2;
                 break;
             case 2:
-                if (liftMotor.getCurrentPosition() < (STORED_HEIGHT + LIFT_HEIGHT_THRESHOLD)) {
+                if (!limitSwitch.getState()) {
                     hookState = 3;
                 }
                 break;
