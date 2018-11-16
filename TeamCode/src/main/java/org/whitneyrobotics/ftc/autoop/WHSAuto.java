@@ -37,12 +37,13 @@ public class WHSAuto extends OpMode{
     // state definitions
     static final int INIT = 0;
     static final int DROP_FROM_LANDER = 1;
-    static final int SAMPLE_PIECE = 2;
-    static final int CLAIM_DEPOT = 3;
-    static final int DRIVE_TO_CRATER = 4;
-    static final int END = 5;
+    static final int DRIVE_FROM_LANDER = 2;
+    static final int SAMPLE_PIECE = 3;
+    static final int CLAIM_DEPOT = 4;
+    static final int DRIVE_TO_CRATER = 5;
+    static final int END = 6;
 
-    static final int NUM_OF_STATES = 6;
+    static final int NUM_OF_STATES = 7;
 
     boolean[] stateEnabled = new boolean[NUM_OF_STATES];
     private double finishTime;
@@ -50,6 +51,7 @@ public class WHSAuto extends OpMode{
     public void defineStateEnabledStatus() {
         stateEnabled[INIT] = true;
         stateEnabled[DROP_FROM_LANDER] = true;
+        stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_PIECE] = true;
         stateEnabled[CLAIM_DEPOT] = true;
         stateEnabled[DRIVE_TO_CRATER] = true;
@@ -138,32 +140,41 @@ public class WHSAuto extends OpMode{
                         }
                         break;
                     case 2:
+                        subStateDesc = "exit";
+                        advanceState();
+                        break;
+                }
+                break;
+            case DRIVE_FROM_LANDER:
+                currentStateDesc = "driving from lander";
+                switch (subState) {
+                    case 0:
                         subStateDesc = "scanning minerals";
                         xpos = detector.getXPosition();
-                        if (xpos < 300){
+                        if (xpos < 300) {
                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
-                        } else if (xpos >= 300){
+                        } else if (xpos >= 300) {
                             goldPosition = GoldPositionDetector.GoldPosition.CENTER;
                         } else {
                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
                         }
                         subState++;
                         break;
-                    case 3:
+                    case 1:
                         subStateDesc = "driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
-                    case 4:
-                       subStateDesc = "bringing hook down";
+                    case 2:
+                        subStateDesc = "bringing hook down";
                         robot.lift.bringDownHook(true);
-                       if (robot.lift.isHookDown) {
+                        if (robot.lift.isHookDown) {
                             subState++;
-                       }
-                       break;
-                    case 5:
+                        }
+                        break;
+                    case 3:
                         subStateDesc = "exit";
                         advanceState();
                         break;
