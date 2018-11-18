@@ -20,6 +20,6 @@ public interface MotorSubsystem {
      */
     void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior);
 
-    double getAbsPowerAverage();
+
 
 }

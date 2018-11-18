@@ -1,7 +1,6 @@
 package org.whitneyrobotics.ftc.autoop;
 
 import com.disnodeteam.dogecv.CameraViewDisplay;
-import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -10,6 +9,7 @@ import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetec
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
 import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
+import org.whitneyrobotics.ftc.subsys.Lift;
 import org.whitneyrobotics.ftc.subsys.MarkerDrop;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
@@ -63,8 +63,11 @@ public class WHSAuto extends OpMode{
     String currentStateDesc;
     String subStateDesc;
 
+    SimpleTimer omniArmMoveTimer = new SimpleTimer();
     SimpleTimer storedToDumpedTimer = new SimpleTimer();
     SimpleTimer dumpedToStoredTimer = new SimpleTimer();
+
+    static final double OMNI_ARM_MOVE_DELAY = 1.5;
     static final double MARKER_DROP_DELAY = 0.75;
 
     private GoldAlignDetector detector;
@@ -114,11 +117,6 @@ public class WHSAuto extends OpMode{
         robot.estimateHeading();
         robot.estimatePosition();
 
-        // reset encoder value on the lift if the limit switch is pressed
-        if (robot.lift.getDigitalTouch()) {
-            robot.lift.resetEncoderValue();
-        }
-
         switch (currentState) {
             case INIT:
                 currentStateDesc = "starting auto";
@@ -135,7 +133,7 @@ public class WHSAuto extends OpMode{
                     case 1:
                         subStateDesc = "bringing robot down";
                         robot.lift.bringDownRobot(true);
-                        if (robot.lift.isRobotDown) {
+                        if (robot.lift.getLiftState() == Lift.LiftState.WAITING_FOR_DRIVETRAIN) {
                             subState++;
                         }
                         break;
@@ -163,18 +161,26 @@ public class WHSAuto extends OpMode{
                     case 1:
                         subStateDesc = "driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
+                        omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
                         }
                         break;
                     case 2:
-                        subStateDesc = "bringing hook down";
-                        robot.lift.bringDownHook(true);
-                        if (robot.lift.isHookDown) {
+                        subStateDesc = "moving omniarm out of the way";
+                        robot.omniArm.storeOmniArm(true);
+                        if (omniArmMoveTimer.isExpired()) {
                             subState++;
                         }
                         break;
                     case 3:
+                        subStateDesc = "bringing hook down";
+                        robot.lift.bringDownHook(true);
+                        if (robot.lift.getLiftState() == Lift.LiftState.STANDING_BY_FOR_END_GAME) {
+                            subState++;
+                        }
+                        break;
+                    case 4:
                         subStateDesc = "exit";
                         advanceState();
                         break;

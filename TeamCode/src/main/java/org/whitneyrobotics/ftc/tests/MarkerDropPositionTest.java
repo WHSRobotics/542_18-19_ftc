@@ -11,7 +11,7 @@ import org.whitneyrobotics.ftc.subsys.MarkerDrop;
  * Created by ivanm on 11/4/2017.
  */
 @TeleOp(name = "MarkerDrop Test", group = "tests")
-public class MarkerDropTest extends OpMode {
+public class MarkerDropPositionTest extends OpMode {
 
     MarkerDrop markerDrop;
     Toggler toggler;
