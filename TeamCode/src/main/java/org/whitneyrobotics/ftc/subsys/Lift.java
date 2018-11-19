@@ -3,14 +3,17 @@ package org.whitneyrobotics.ftc.subsys;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.whitneyrobotics.ftc.lib.subsys.MotorSubsystem;
 
 public class Lift implements MotorSubsystem {
 
     public DcMotor liftMotor;
     private DigitalChannel limitSwitch;
+    public DistanceSensor distancer;
 
     public enum LiftPosition {
         STORED, IN_LATCH, ABOVE_LATCH, FINAL
@@ -30,11 +33,14 @@ public class Lift implements MotorSubsystem {
     private final double LIFT_POWER = 0.8;
     boolean hasLiftReachedTargetHeight = false;
     boolean liftInProgress = false;
+    int sensorLiftInLatch = 500;
 
     int liftUpRobotState = 0;
     int bringDownRobotState = 0;
     int bringDownHookState = 0;
     private LiftState liftState;
+    boolean liftApproached = false;
+    int sensorLiftState;
 
     public Lift(HardwareMap liftMap) {
         liftMotor = liftMap.dcMotor.get("liftMotor");
@@ -44,6 +50,7 @@ public class Lift implements MotorSubsystem {
         limitSwitch = liftMap.digitalChannel.get("limitSwitch");
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         //liftState = LiftState.START;
+        distancer = liftMap.get(DistanceSensor.class, "distanceSensor");
     }
 
     public void setLiftMotorPower(double power){
@@ -179,4 +186,32 @@ public class Lift implements MotorSubsystem {
         return !limitSwitch.getState();
     }
 
+    public void sensorLift(boolean gamepadInput) {
+        switch (sensorLiftState) {
+            case 0:
+                if (gamepadInput) {
+                    if (!liftApproached) {
+                        liftMotor.setPower(.66);
+                    }
+                    if (distancer.getDistance(DistanceUnit.MM) < 10) {
+                        liftApproached = true;
+                        liftMotor.setPower(0);
+                        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        sensorLiftState++;
+
+                    }
+
+                }
+
+            case 2:
+                liftMotor.setTargetPosition(sensorLiftInLatch);
+                sensorLiftState++;
+
+            case 3:
+                liftMotor.setPower(.66);
+                if(liftMotor.getCurrentPosition()> sensorLiftInLatch - LIFT_HEIGHT_THRESHOLD ){
+                    liftMotor.setPower(0);
+                }
+        }
+    }
 }
