@@ -191,27 +191,40 @@ public class Lift implements MotorSubsystem {
             case 0:
                 if (gamepadInput) {
                     if (!liftApproached) {
-                        liftMotor.setPower(.66);
-                    }
+                            liftMotor.setPower(.66);
+                        }
+
                     if (distancer.getDistance(DistanceUnit.MM) < 10) {
                         liftApproached = true;
                         liftMotor.setPower(0);
                         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         sensorLiftState++;
-
                     }
 
                 }
+                break;
 
             case 2:
                 liftMotor.setTargetPosition(sensorLiftInLatch);
                 sensorLiftState++;
 
+
             case 3:
                 liftMotor.setPower(.66);
                 if(liftMotor.getCurrentPosition()> sensorLiftInLatch - LIFT_HEIGHT_THRESHOLD ){
                     liftMotor.setPower(0);
+                    sensorLiftState++;
                 }
+                break;
+
+            case 4:
+                liftMotor.setTargetPosition(FINAL_HEIGHT);
+                liftMotor.setPower(0);
+                if (getDigitalTouch()){
+                    liftMotor.setPower(0);
+                    sensorLiftState++;
+                }
+                break;
         }
     }
 }

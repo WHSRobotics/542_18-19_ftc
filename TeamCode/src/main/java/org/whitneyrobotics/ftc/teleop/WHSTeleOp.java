@@ -29,6 +29,7 @@ public class WHSTeleOp extends OpMode{
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         robot.omniArm.operateExtension(gamepad2.a);
+        robot.lift.sensorLift(gamepad1.y);
         if (gamepad1.right_bumper) {
            robot.omniArm.storeOmniArm(gamepad1.right_bumper);
 
