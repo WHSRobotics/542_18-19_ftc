@@ -3,6 +3,7 @@ package org.whitneyrobotics.ftc.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 
@@ -30,6 +31,8 @@ public class WHSTeleOp extends OpMode{
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         robot.omniArm.operateExtension(gamepad2.a);
         robot.lift.sensorLift(gamepad1.y);
+        telemetry.addData("Sensor Lift", gamepad1.y);
+        telemetry.addData("Lift State", robot.lift.getSensorLiftState());
         if (gamepad1.right_bumper) {
            robot.omniArm.storeOmniArm(gamepad1.right_bumper);
 
@@ -38,7 +41,7 @@ public class WHSTeleOp extends OpMode{
         }
         telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());
         telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());
-
+        telemetry.addData("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
         if (gamepad2.dpad_down) {
             if (gamepad1.dpad_up) {
                 robot.lift.setLiftMotorPower(0.6);

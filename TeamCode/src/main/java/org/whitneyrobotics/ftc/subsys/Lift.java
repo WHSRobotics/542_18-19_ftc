@@ -33,14 +33,13 @@ public class Lift implements MotorSubsystem {
     private final double LIFT_POWER = 0.8;
     boolean hasLiftReachedTargetHeight = false;
     boolean liftInProgress = false;
-    int sensorLiftInLatch = 500;
+    int sensorLiftInLatch = 256;
 
     int liftUpRobotState = 0;
     int bringDownRobotState = 0;
     int bringDownHookState = 0;
     private LiftState liftState;
-    boolean liftApproached = false;
-    int sensorLiftState;
+    private int sensorLiftState = 0;
 
     public Lift(HardwareMap liftMap) {
         liftMotor = liftMap.dcMotor.get("liftMotor");
@@ -186,45 +185,50 @@ public class Lift implements MotorSubsystem {
         return !limitSwitch.getState();
     }
 
-    public void sensorLift(boolean gamepadInput) {
-        switch (sensorLiftState) {
-            case 0:
-                if (gamepadInput) {
-                    if (!liftApproached) {
-                            liftMotor.setPower(.66);
-                        }
+    public int getSensorLiftState() {
+        return sensorLiftState;
+    }
 
-                    if (distancer.getDistance(DistanceUnit.MM) < 10) {
-                        liftApproached = true;
+    public void sensorLift(boolean gamepadInput) {
+        if (gamepadInput) {
+            switch (sensorLiftState) {
+                case 0:
+
+                    liftMotor.setPower(LIFT_POWER);
+
+                    if (distancer.getDistance(DistanceUnit.MM) < 15) {
                         liftMotor.setPower(0);
                         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         sensorLiftState++;
                     }
+                    break;
 
-                }
-                break;
-
-            case 2:
-                liftMotor.setTargetPosition(sensorLiftInLatch);
-                sensorLiftState++;
-
-
-            case 3:
-                liftMotor.setPower(.66);
-                if(liftMotor.getCurrentPosition()> sensorLiftInLatch - LIFT_HEIGHT_THRESHOLD ){
-                    liftMotor.setPower(0);
+                case 1:
+                    liftMotor.setTargetPosition(sensorLiftInLatch);
                     sensorLiftState++;
-                }
-                break;
+                    break;
 
-            case 4:
-                liftMotor.setTargetPosition(FINAL_HEIGHT);
-                liftMotor.setPower(0);
-                if (getDigitalTouch()){
-                    liftMotor.setPower(0);
-                    sensorLiftState++;
-                }
-                break;
+                case 2:
+                    liftMotor.setPower(LIFT_POWER);
+                    if (liftMotor.getCurrentPosition() > sensorLiftInLatch - LIFT_HEIGHT_THRESHOLD) {
+                        liftMotor.setPower(0);
+                        sensorLiftState++;
+                    }
+                    break;
+
+                case 3:
+
+                    liftMotor.setPower(-LIFT_POWER);
+                    if (getDigitalTouch()) {
+                        liftMotor.setPower(0);
+                        sensorLiftState++;
+                    }
+                    break;
+            }
+        }
+        if(!gamepadInput || sensorLiftState !=3){
+            liftMotor.setPower(0);
         }
     }
 }
