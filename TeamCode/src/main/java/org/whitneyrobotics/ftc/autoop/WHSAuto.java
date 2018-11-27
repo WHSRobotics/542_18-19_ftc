@@ -22,8 +22,8 @@ public class WHSAuto extends OpMode{
     Position[] landerClearancePositionArray = new Position[2];
     Position[][] goldPositionArray = new Position[2][3];
     Position wallPosition;
-    Position depotPosition;
     Position[] craterPositonArray = new Position[2];
+    Position[] depotPositionArray = new Position[2];
 
     static final int CRATER = 0;
     static final int DEPOT = 1;
@@ -32,7 +32,7 @@ public class WHSAuto extends OpMode{
     static final int CENTER = 1;
     static final int RIGHT = 2;
 
-    static final int STARTING_POSITION = DEPOT;
+    static final int STARTING_POSITION = CRATER;
 
     // state definitions
     static final int INIT = 0;
@@ -84,7 +84,7 @@ public class WHSAuto extends OpMode{
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 45);
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
 
-        landerClearancePositionArray[CRATER] = new Position(500, 500, 150);
+        landerClearancePositionArray[CRATER] = new Position(700, 700, 150);
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
 
         // setting the three different particle positions for the crater side
@@ -97,8 +97,10 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
 
-        wallPosition = new Position(-300,1425,150);
-        depotPosition = new Position(-1425,1425,150);
+        wallPosition = new Position(150,1425,150);
+
+        depotPositionArray[DEPOT] = new Position(-1450,1450,150);
+        depotPositionArray[CRATER] = new Position(-1300,1425,150);
 
         craterPositonArray[CRATER] = new Position(800,1425,150);
         craterPositonArray[DEPOT] = new Position(-1425,-800,150);
@@ -149,15 +151,13 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "scanning minerals";
                         xpos = detector.getXPosition();
-                        if (xpos < 300) {
+                        if (xpos < 240) {
                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
-                        } else if (xpos >= 300) {
+                        } else if (xpos >= 240) {
                             goldPosition = GoldPositionDetector.GoldPosition.CENTER;
                         } else {
                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
                         }
-                        telemetry.addData("xpos ", xpos);
-                        telemetry.addData("gold pos ", goldPosition);
                         subState++;
                         break;
                     case 1:
@@ -221,7 +221,7 @@ public class WHSAuto extends OpMode{
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(wallPosition, true);
                         } else if (STARTING_POSITION == DEPOT) {
-                            robot.driveToTarget(depotPosition, true);
+                            robot.driveToTarget(depotPositionArray[DEPOT], true);
                         }
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
@@ -230,7 +230,7 @@ public class WHSAuto extends OpMode{
                     case 1:
                         subStateDesc = "driving to depot";
                         if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(depotPosition, true);
+                            robot.driveToTarget(depotPositionArray[CRATER], true);
                         }
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
