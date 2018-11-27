@@ -88,7 +88,7 @@ public class WHSAuto extends OpMode{
         landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
 
         // setting the three different particle positions for the crater side
-        goldPositionArray[CRATER][LEFT] = new Position(590, 110, 150);//(600,120, 150);
+        goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);//(600,1200, 150);
         goldPositionArray[CRATER][CENTER] = new Position(890, 890, 150);//(900,900,150);
         goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);//(1200,600,150);
 
@@ -156,6 +156,8 @@ public class WHSAuto extends OpMode{
                         } else {
                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
                         }
+                        telemetry.addData("xpos ", xpos);
+                        telemetry.addData("gold pos ", goldPosition);
                         subState++;
                         break;
                     case 1:

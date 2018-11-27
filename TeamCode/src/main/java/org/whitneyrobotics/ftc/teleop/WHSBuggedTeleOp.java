@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 import org.whitneyrobotics.ftc.lib.util.Toggler;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
@@ -21,11 +22,10 @@ public class WHSBuggedTeleOp extends OpMode{
     WHSRobotImpl robot;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    Telemetry dashboardTelemetry = dashboard.getTelemetry();
     TelemetryPacket packet = new TelemetryPacket();
 
     private double leftMultiplier = 1, rightMultiplier = 1;
-    private double totalMultiplier = 1/2.54;
+    private double totalMultiplier = 1;
     private boolean canDrive = true;
     private boolean canIntake = true;
     private boolean canExtend = true;
@@ -34,7 +34,6 @@ public class WHSBuggedTeleOp extends OpMode{
 
     @Override
     public void init() {
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         robot = new WHSRobotImpl(hardwareMap);
     }
 
@@ -51,15 +50,21 @@ public class WHSBuggedTeleOp extends OpMode{
         canLift = RobotConstants.canLift;
 
         packet.fieldOverlay()
-                .setFill("blue")
-                .fillRect(-20, -20, 40, 40);
+                .setStroke("blue")
+                .strokeRect(robot.getCoordinate().getX()/100/2.54, robot.getCoordinate().getY()/100/2.54, 20, 20);
+        packet.put("Switch Current Pos ", robot.omniArm.switchMotor.getCurrentPosition());
+        packet.put("Switch Target Pos ", robot.omniArm.switchMotor.getTargetPosition());
+        packet.put("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
+        packet.put("Coordinates", robot.getCoordinate());
+        packet.put("Sensor Lift", gamepad1.y);
+        packet.put("Lift State", robot.lift.getSensorLiftState());
         dashboard.sendTelemetryPacket(packet);
 
+        /* DRIVETRAIN */
+        //Precision driving mode
         if (canDrive) {
-            /* DRIVETRAIN */
-            //Precision driving mode
             if (gamepad1.left_bumper || gamepad2.b) {
-                robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y * leftMultiplier * totalMultiplier, gamepad1.right_stick_y * rightMultiplier * totalMultiplier);
+                robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y / 2.54 * leftMultiplier * totalMultiplier, gamepad1.right_stick_y / 2.54 * rightMultiplier * totalMultiplier);
             } else {
                 robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y * leftMultiplier * totalMultiplier, gamepad1.right_stick_y * rightMultiplier * totalMultiplier);
             }
@@ -72,27 +77,28 @@ public class WHSBuggedTeleOp extends OpMode{
         if (canExtend) {
             robot.omniArm.operateExtension(gamepad2.a);
         }
-
-        if (gamepad1.right_bumper) {
-           if (canStoreArm) {
-               robot.omniArm.storeOmniArm(gamepad1.right_bumper);
-           }
-        } else {
-            robot.omniArm.operateModeSwitch(gamepad2.x);
+        if (canLift) {
+            robot.lift.sensorLift(gamepad1.y);
         }
-        telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());
-        telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());
+        if (canStoreArm) {
+            if (gamepad1.right_bumper) {
+                robot.omniArm.storeOmniArm(gamepad1.right_bumper);
 
-        if (gamepad2.dpad_down) {
-            if (gamepad1.dpad_up) {
-                robot.lift.setLiftMotorPower(0.6);
-            } else if (gamepad1.dpad_down) {
-                robot.lift.setLiftMotorPower(-0.66);
             } else {
-                robot.lift.setLiftMotorPower(0.0);
+                robot.omniArm.operateModeSwitch(gamepad2.x);
             }
-        } else {
-            if (canLift) {
+        }
+
+        if (canLift) {
+            if (gamepad2.dpad_down) {
+                if (gamepad1.dpad_up) {
+                    robot.lift.setLiftMotorPower(0.6);
+                } else if (gamepad1.dpad_down) {
+                    robot.lift.setLiftMotorPower(-0.66);
+                } else {
+                    robot.lift.setLiftMotorPower(0.0);
+                }
+            } else {
                 robot.lift.liftUpRobot(gamepad2.dpad_up);
             }
         }
