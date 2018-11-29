@@ -26,11 +26,11 @@ public class WHSBuggedTeleOp extends OpMode{
 
     private double leftMultiplier = 1, rightMultiplier = 1;
     private double totalMultiplier = 1;
-    private boolean canDrive = true;
-    private boolean canIntake = true;
-    private boolean canExtend = true;
-    private boolean canStoreArm = true;
-    private boolean canLift = true;
+    private int canDrive = 1;
+    private int canIntake = 1;
+    private int canExtend = 1;
+    private int canStoreArm = 1;
+    private int canLift = 1;
 
     @Override
     public void init() {
@@ -62,7 +62,7 @@ public class WHSBuggedTeleOp extends OpMode{
 
         /* DRIVETRAIN */
         //Precision driving mode
-        if (canDrive) {
+        if (canDrive == 1) {
             if (gamepad1.left_bumper || gamepad2.b) {
                 robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y / 2.54 * leftMultiplier * totalMultiplier, gamepad1.right_stick_y / 2.54 * rightMultiplier * totalMultiplier);
             } else {
@@ -71,16 +71,16 @@ public class WHSBuggedTeleOp extends OpMode{
             robot.drivetrain.switchOrientation(gamepad1.a);
         }
 
-        if (canIntake) {
+        if (canIntake == 1) {
             robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         }
-        if (canExtend) {
+        if (canExtend == 1) {
             robot.omniArm.operateExtension(gamepad2.a);
         }
         if (canLift) {
           //  robot.lift.sensorLift(gamepad1.y);
         }
-        if (canStoreArm) {
+        if (canStoreArm == 1) {
             if (gamepad1.right_bumper) {
                 robot.omniArm.storeOmniArm(gamepad1.right_bumper);
 
@@ -89,7 +89,7 @@ public class WHSBuggedTeleOp extends OpMode{
             }
         }
 
-        if (canLift) {
+        if (canLift == 1) {
             if (gamepad2.dpad_down) {
                 if (gamepad1.dpad_up) {
                     robot.lift.setLiftMotorPower(0.6);
