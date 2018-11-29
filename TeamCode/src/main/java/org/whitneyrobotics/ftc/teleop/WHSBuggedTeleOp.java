@@ -54,7 +54,7 @@ public class WHSBuggedTeleOp extends OpMode{
                 .strokeRect(robot.getCoordinate().getX()/100/2.54, robot.getCoordinate().getY()/100/2.54, 20, 20);
         packet.put("Switch Current Pos ", robot.omniArm.switchMotor.getCurrentPosition());
         packet.put("Switch Target Pos ", robot.omniArm.switchMotor.getTargetPosition());
-        packet.put("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
+        //packet.put("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
         packet.put("Coordinates", robot.getCoordinate());
         packet.put("Sensor Lift", gamepad1.y);
         packet.put("Lift State", robot.lift.getSensorLiftState());
@@ -78,7 +78,7 @@ public class WHSBuggedTeleOp extends OpMode{
             robot.omniArm.operateExtension(gamepad2.a);
         }
         if (canLift) {
-            robot.lift.sensorLift(gamepad1.y);
+          //  robot.lift.sensorLift(gamepad1.y);
         }
         if (canStoreArm) {
             if (gamepad1.right_bumper) {

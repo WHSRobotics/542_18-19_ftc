@@ -13,7 +13,7 @@ public class Lift implements MotorSubsystem {
 
     public DcMotor liftMotor;
     private DigitalChannel limitSwitch;
-    public DistanceSensor distancer;
+   // public DistanceSensor distancer;
 
     public enum LiftPosition {
         STORED, IN_LATCH, ABOVE_LATCH, FINAL
@@ -49,7 +49,7 @@ public class Lift implements MotorSubsystem {
         limitSwitch = liftMap.digitalChannel.get("limitSwitch");
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
         //liftState = LiftState.START;
-        distancer = liftMap.get(DistanceSensor.class, "distanceSensor");
+        //distancer = liftMap.get(DistanceSensor.class, "distanceSensor");
     }
 
     public void setLiftMotorPower(double power){
@@ -189,7 +189,7 @@ public class Lift implements MotorSubsystem {
         return sensorLiftState;
     }
 
-    public void sensorLift(boolean gamepadInput) {
+  /*  public void sensorLift(boolean gamepadInput) {
         if (gamepadInput) {
             switch (sensorLiftState) {
                 case 0:
@@ -230,5 +230,5 @@ public class Lift implements MotorSubsystem {
         if(!gamepadInput || sensorLiftState !=3){
             liftMotor.setPower(0);
         }
-    }
+    }*/
 }

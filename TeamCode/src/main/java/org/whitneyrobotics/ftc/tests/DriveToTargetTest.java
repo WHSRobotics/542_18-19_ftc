@@ -15,6 +15,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
  * Created by Amar2 on 11/15/2017.
  */
 @Autonomous(name = "DriveToTargetTest", group = "tests")
+
 public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -30,7 +31,8 @@ public class DriveToTargetTest extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         robot = new WHSRobotImpl(hardwareMap);
         robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
-        //telemetry.setMsTransmissionInterval(10);
+        //telemetry.setMsTransmissionInterval(10); sAKEHT THICCCCCCCCCCC IVAN LOWKEY HOT AF
+        ///WAIT 30 CALL YE YE BIG BOI JONATHAN LOWKEY A SNACK
     }
 
     @Override

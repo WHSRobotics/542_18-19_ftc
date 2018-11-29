@@ -97,7 +97,7 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
 
-        wallPosition = new Position(150,1425,150);
+        wallPosition = new Position(-150,1425,150);
 
         depotPositionArray[DEPOT] = new Position(-1450,1450,150);
         depotPositionArray[CRATER] = new Position(-1300,1425,150);
