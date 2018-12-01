@@ -22,6 +22,8 @@ public class WHSAuto extends OpMode{
     Position[] landerClearancePositionArray = new Position[2];
     Position[][] goldPositionArray = new Position[2][3];
     Position wallPosition;
+    Position depotCornerPosition;
+    Position depotSidePosition;
     Position[] craterPositonArray = new Position[2];
     Position[] depotPositionArray = new Position[2];
 
@@ -66,9 +68,11 @@ public class WHSAuto extends OpMode{
     SimpleTimer omniArmMoveTimer = new SimpleTimer();
     SimpleTimer storedToDumpedTimer = new SimpleTimer();
     SimpleTimer dumpedToStoredTimer = new SimpleTimer();
+    SimpleTimer driveForwardSmallBitTimer = new SimpleTimer();
 
     static final double OMNI_ARM_MOVE_DELAY = 1.5;
     static final double MARKER_DROP_DELAY = 0.75;
+    static final double DRIVE_FORWARD_SMALL_BIT_DURATION = 0.2;
 
     private GoldAlignDetector detector;
     GoldPositionDetector.GoldPosition goldPosition;
@@ -77,6 +81,7 @@ public class WHSAuto extends OpMode{
     @Override
     public void init() {
         robot = new WHSRobotImpl(hardwareMap);
+        robot.lift.liftMotor.setPower(0);
         currentState = INIT;
         subState = 0;
 
@@ -99,11 +104,14 @@ public class WHSAuto extends OpMode{
 
         wallPosition = new Position(-150,1425,150);
 
-        depotPositionArray[DEPOT] = new Position(-1450,1450,150);
+        depotCornerPosition = new Position(-1200,1200,150);
+        depotSidePosition = new Position(-1460, 1200, 150);
+
+        depotPositionArray[DEPOT] = new Position(-1410,1410,150);
         depotPositionArray[CRATER] = new Position(-1300,1425,150);
 
         craterPositonArray[CRATER] = new Position(800,1425,150);
-        craterPositonArray[DEPOT] = new Position(-1425,-800,150);
+        craterPositonArray[DEPOT] = new Position(-1410,-800,150);
 
         defineStateEnabledStatus();
 
@@ -112,6 +120,16 @@ public class WHSAuto extends OpMode{
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         detector.useDefaults();
         detector.enable();
+    }
+
+    @Override
+    public void init_loop() {
+        // If you are using Motorola E4 phones,
+        // you should send telemetry data while waiting for start.
+        telemetry.addData("status", "loop test... waiting for start");
+        if(stateEnabled[DROP_FROM_LANDER]) {
+            robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
+        }
     }
 
     @Override
@@ -151,9 +169,9 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "scanning minerals";
                         xpos = detector.getXPosition();
-                        if (xpos < 240) {
+                        if (xpos < 230) {
                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
-                        } else if (xpos >= 240) {
+                        } else if (xpos >= 230) {
                             goldPosition = GoldPositionDetector.GoldPosition.CENTER;
                         } else {
                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
@@ -219,9 +237,9 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "entry";
                         if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(wallPosition, true);
+                            robot.driveToTarget(wallPosition, false);
                         } else if (STARTING_POSITION == DEPOT) {
-                            robot.driveToTarget(depotPositionArray[DEPOT], true);
+                            robot.driveToTarget(depotCornerPosition, true);
                         }
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
@@ -231,6 +249,8 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "driving to depot";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(depotPositionArray[CRATER], true);
+                        } else if (STARTING_POSITION == DEPOT) {
+                            robot.driveToTarget(depotSidePosition, false);
                         }
                         if (robot.hasDriveToTargetExited()) {
                             subState++;
@@ -261,6 +281,7 @@ public class WHSAuto extends OpMode{
             case DRIVE_TO_CRATER:
                 currentStateDesc = "drive to crater";
                 switch (subState) {
+
                     case 0:
                         subStateDesc = "driving to crater";
                         robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
@@ -281,6 +302,9 @@ public class WHSAuto extends OpMode{
         }
 
         telemetry.addData("Substate: ", currentStateDesc + ", " + subStateDesc);
+        telemetry.addData("Current X", robot.getCoordinate().getX());
+        telemetry.addData("Current Y", robot.getCoordinate().getY());
+
     }
 
     public void advanceState() {

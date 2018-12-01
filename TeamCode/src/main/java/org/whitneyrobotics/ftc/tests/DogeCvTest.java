@@ -49,6 +49,7 @@ public class DogeCvTest extends OpMode {
             telemetry.addData("Position","Right" );
 
         }
+        telemetry.addData("Xposition : ", Xpos);
 
     }
 }

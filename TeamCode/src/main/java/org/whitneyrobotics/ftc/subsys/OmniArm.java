@@ -15,7 +15,7 @@ public class OmniArm {
     private final int EXTEND_LENGTH = 1120;
     private final int RETRACT_LENGTH = 0;
     private final int INTAKE_MODE = 2150;
-    private final int STORED_MODE = 200;
+    private final int STORED_MODE = 300;
     private final int OUTTAKE_MODE = 900;
     private final double INTAKE_SPEED = 1.0;
     private final double OUTTAKE_SPEED = -1.0;

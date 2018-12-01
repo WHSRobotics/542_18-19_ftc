@@ -77,7 +77,7 @@ public class WHSBuggedTeleOp extends OpMode{
         if (canExtend == 1) {
             robot.omniArm.operateExtension(gamepad2.a);
         }
-        if (canLift) {
+        if (canLift == 1) {
           //  robot.lift.sensorLift(gamepad1.y);
         }
         if (canStoreArm == 1) {

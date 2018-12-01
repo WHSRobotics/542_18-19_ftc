@@ -25,7 +25,7 @@ public class TileRunner implements TankDrivetrain, MotorSubsystem {
     private static final double RADIUS_OF_WHEEL = 50;               //in mm
     private static final double CIRC_OF_WHEEL = RADIUS_OF_WHEEL * 2 * Math.PI;
     private static final double ENCODER_TICKS_PER_REV = 537.6;      //Neverest Orbital 20
-    private static final double GEAR_RATIO = 9.0/7.0;
+    private static final double GEAR_RATIO = 7.0/9.0;
     private static final double ENCODER_TICKS_PER_MM = ENCODER_TICKS_PER_REV / (CIRC_OF_WHEEL * GEAR_RATIO);
 
     private double[] encoderValues = {0.0, 0.0};

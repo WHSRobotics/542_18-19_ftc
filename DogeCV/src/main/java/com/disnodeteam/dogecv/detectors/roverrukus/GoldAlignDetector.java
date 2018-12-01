@@ -92,7 +92,7 @@ public class GoldAlignDetector extends DogeCVDetector {
         }
 
 
-        double alignX = (getAdjustedSize().width / 2) + alignPosOffset;
+        double alignX = (getAdjustedSize().height / 2) + alignPosOffset;
         double alignXMin = alignX - (alignSize / 2);
         double alignXMax = alignX +(alignSize / 2);
         double xPos = 0;
