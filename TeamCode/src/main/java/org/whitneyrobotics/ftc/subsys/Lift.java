@@ -147,9 +147,7 @@ public class Lift implements MotorSubsystem {
                 }
                 break;
             case 5:
-                liftMotor.setPower(0.0);
-                liftState = LiftState.END;
-                liftUpRobotState = 0;
+                setLiftPosition(LiftPosition.FINAL);
                 break;
         }
     }

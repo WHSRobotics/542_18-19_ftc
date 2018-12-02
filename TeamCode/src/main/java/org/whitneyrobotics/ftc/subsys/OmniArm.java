@@ -14,6 +14,7 @@ public class OmniArm {
 
     private final int EXTEND_LENGTH = 1120;
     private final int RETRACT_LENGTH = 0;
+    private final int RESET_MODE = 0;
     private final int INTAKE_MODE = 2150;
     private final int STORED_MODE = 300;
     private final int OUTTAKE_MODE = 900;
@@ -77,6 +78,11 @@ public class OmniArm {
 
     public void storeOmniArm(boolean gamepadInput) {
         switchMotor.setTargetPosition(STORED_MODE);
+        switchMotor.setPower(0.25);
+    }
+
+    public void resetOmniArm(boolean gamepadInput) {
+        switchMotor.setTargetPosition(RESET_MODE);
         switchMotor.setPower(0.25);
     }
 }

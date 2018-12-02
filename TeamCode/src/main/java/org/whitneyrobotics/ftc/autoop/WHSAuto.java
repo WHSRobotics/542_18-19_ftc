@@ -34,7 +34,7 @@ public class WHSAuto extends OpMode{
     static final int CENTER = 1;
     static final int RIGHT = 2;
 
-    static final int STARTING_POSITION = CRATER;
+    static final int STARTING_POSITION = DEPOT;
 
     // state definitions
     static final int INIT = 0;
@@ -68,7 +68,6 @@ public class WHSAuto extends OpMode{
     SimpleTimer omniArmMoveTimer = new SimpleTimer();
     SimpleTimer storedToDumpedTimer = new SimpleTimer();
     SimpleTimer dumpedToStoredTimer = new SimpleTimer();
-    SimpleTimer driveForwardSmallBitTimer = new SimpleTimer();
 
     static final double OMNI_ARM_MOVE_DELAY = 1.5;
     static final double MARKER_DROP_DELAY = 0.75;
@@ -89,8 +88,8 @@ public class WHSAuto extends OpMode{
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 45);
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
 
-        landerClearancePositionArray[CRATER] = new Position(700, 700, 150);
-        landerClearancePositionArray[DEPOT] = new Position(-500, 500, 150);
+        landerClearancePositionArray[CRATER] = new Position(650, 650, 150);
+        landerClearancePositionArray[DEPOT] = new Position(-650, 650, 150);
 
         // setting the three different particle positions for the crater side
         goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);//(600,1200, 150);
@@ -104,14 +103,14 @@ public class WHSAuto extends OpMode{
 
         wallPosition = new Position(-150,1425,150);
 
-        depotCornerPosition = new Position(-1200,1200,150);
-        depotSidePosition = new Position(-1460, 1200, 150);
+        depotCornerPosition = new Position(-1280,1200,150);
+        depotSidePosition = new Position(-1475, 1200, 150);
 
-        depotPositionArray[DEPOT] = new Position(-1410,1410,150);
+        depotPositionArray[DEPOT] = new Position(-1440,1410,150);
         depotPositionArray[CRATER] = new Position(-1300,1425,150);
 
-        craterPositonArray[CRATER] = new Position(800,1425,150);
-        craterPositonArray[DEPOT] = new Position(-1410,-800,150);
+        craterPositonArray[CRATER] = new Position(800,1440,150);
+        craterPositonArray[DEPOT] = new Position(-1475,-800,150);
 
         defineStateEnabledStatus();
 
@@ -199,8 +198,16 @@ public class WHSAuto extends OpMode{
                         if (robot.lift.getLiftState() == Lift.LiftState.STANDING_BY_FOR_END_GAME) {
                             subState++;
                         }
+                        omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
                         break;
                     case 4:
+                        subStateDesc = "storing omniarm";
+                        robot.omniArm.resetOmniArm(true);
+                        if (omniArmMoveTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
+                    case 5:
                         subStateDesc = "exit";
                         advanceState();
                         break;
