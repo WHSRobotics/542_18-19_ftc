@@ -14,7 +14,7 @@ import org.whitneyrobotics.ftc.lib.util.Position;
  */
 
 public class WHSRobotImpl implements WHSRobot {
-//IVAN HAS A LARGE HAT AND NO ONE SHOULD TAKE IT FROM HIM. aCCORDING TO ALL KNOWN LAWS OF AVIATION IT SHOULD BE IMPOSDSIBLE FOR A BEE TO FLY. iTS WINGS ARE TOO TINY DOR ITAA Ddasfsiafhfstdtortilla
+
     public TileRunner drivetrain;
     public IMU imu;
     public OmniArm omniArm;
@@ -57,6 +57,8 @@ public class WHSRobotImpl implements WHSRobot {
 
         double distanceToTarget = Functions.calculateMagnitude(vectorToTarget);
         distanceToTargetDebug = distanceToTarget;
+        //TODO test code
+        double power = Functions.map(distanceToTarget, DEADBAND_DRIVE_TO_TARGET, 2500, 0.2, 0.6);
         double degreesToRotate = Math.atan2(vectorToTarget.getY(), vectorToTarget.getX()); //from -pi to pi rad
         //double degreesToRotate = Math.atan2(targetPos.getY(), targetPos.getX()); //from -pi to pi rad
         degreesToRotate = degreesToRotate * 180 / Math.PI;
@@ -64,51 +66,17 @@ public class WHSRobotImpl implements WHSRobot {
         if (!hasRotateToTargetExited()) {
             rotateToTarget(targetHeading, backwards);
             hasDriveToTargetExited = false;
-        } else if (!driveBackwards && distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
+        } else if (!driveBackwards && distanceToTarget > DEADBAND_DRIVE_TO_TARGET) {
             hasDriveToTargetExited = false;
-            if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[3]) {
-                drivetrain.operateRight(DRIVE_TO_TARGET_POWER_LEVEL[3]);
-                drivetrain.operateLeft(DRIVE_TO_TARGET_POWER_LEVEL[3]);
-                driveToTargetInProgress = true;
-            }
-            else if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[2]) {
-                drivetrain.operateRight(DRIVE_TO_TARGET_POWER_LEVEL[2]);
-                drivetrain.operateLeft(DRIVE_TO_TARGET_POWER_LEVEL[2]);
-                driveToTargetInProgress = true;
-            }
-            else if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[1]) {
-                drivetrain.operateRight(DRIVE_TO_TARGET_POWER_LEVEL[1]);
-                drivetrain.operateLeft(DRIVE_TO_TARGET_POWER_LEVEL[1]);
-                driveToTargetInProgress = true;
-            }
-            else if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
-                drivetrain.operateRight(DRIVE_TO_TARGET_POWER_LEVEL[0]);
-                drivetrain.operateLeft(DRIVE_TO_TARGET_POWER_LEVEL[0]);
-                driveToTargetInProgress = true;
-            }
+            driveToTargetInProgress = true;
+            drivetrain.operateLeft(power);
+            drivetrain.operateRight(power);
         }
-        else if (driveBackwards && distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
+        else if (driveBackwards && distanceToTarget > DEADBAND_DRIVE_TO_TARGET) {
             hasDriveToTargetExited = false;
-            if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[3]) {
-                drivetrain.operateRight(-DRIVE_TO_TARGET_POWER_LEVEL[3]);
-                drivetrain.operateLeft(-DRIVE_TO_TARGET_POWER_LEVEL[3]);
-                driveToTargetInProgress = true;
-            }
-            else if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[2]) {
-                drivetrain.operateRight(-DRIVE_TO_TARGET_POWER_LEVEL[2]);
-                drivetrain.operateLeft(-DRIVE_TO_TARGET_POWER_LEVEL[2]);
-                driveToTargetInProgress = true;
-            }
-            else if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[1]) {
-                drivetrain.operateRight(-DRIVE_TO_TARGET_POWER_LEVEL[1]);
-                drivetrain.operateLeft(-DRIVE_TO_TARGET_POWER_LEVEL[1]);
-                driveToTargetInProgress = true;
-            }
-            else if (distanceToTarget > DRIVE_TO_TARGET_THRESHOLD[0]) {
-                drivetrain.operateRight(-DRIVE_TO_TARGET_POWER_LEVEL[0]);
-                drivetrain.operateLeft(-DRIVE_TO_TARGET_POWER_LEVEL[0]);
-                driveToTargetInProgress = true;
-            }
+            driveToTargetInProgress = true;
+            drivetrain.operateLeft(-power);
+            drivetrain.operateRight(-power);
         }
         else {
             drivetrain.operateRight(0.0);
