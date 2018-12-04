@@ -22,6 +22,7 @@ public class DogeCvTest extends OpMode {
     private GoldAlignDetector detector;
 
     double Xpos;
+    double YPos;
 
     public void init(){
 
@@ -36,20 +37,24 @@ public class DogeCvTest extends OpMode {
     @Override
     public void loop() {
         Xpos = detector.getXPosition();
-        if( Xpos < 200){
+        YPos = detector.getGoldYpos();
+        if(Xpos >200) {
+            if (YPos < 200) {
 
-            telemetry.addData("Position", "left");
+                telemetry.addData("Position", "left");
 
-        }else if (Xpos > 200 && Xpos <400){
+            } else if (YPos > 200 && Xpos < 400) {
 
-            telemetry.addData("Position", "Center");
+                telemetry.addData("Position", "Center");
 
-        }else if (Xpos >400){
+            } else if (YPos > 400) {
 
-            telemetry.addData("Position","Right" );
+                telemetry.addData("Position", "Right");
 
+            }
         }
         telemetry.addData("Xposition : ", Xpos);
+        telemetry.addData("YPosition ", YPos);
 
     }
 }
