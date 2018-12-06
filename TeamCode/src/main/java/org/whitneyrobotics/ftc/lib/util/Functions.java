@@ -109,16 +109,16 @@ public class Functions
 
     public static double map(double x, double in_min, double in_max, double out_min, double out_max)
     {
-        if (x < in_min) {
-            throw new IllegalArgumentException("x less than in_min");
+        if (x <= in_min) {
+            return 0;
         }
-        if (x > in_max) {
+        if (x >= in_max) {
             throw new IllegalArgumentException("x greater than in_max");
         }
-        if (in_min > in_max) {
+        if (in_min >= in_max) {
             throw new IllegalArgumentException("in_min greater thtan in_max");
         }
-        if (out_min > out_max) {
+        if (out_min >= out_max) {
             throw new IllegalArgumentException("out_min greater thtan out_max");
         }
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;

@@ -54,10 +54,13 @@ public class RotateToTargetTest extends OpMode {
         telemetry.addData("FR Power", robot.drivetrain.frontRight.getPower());
         telemetry.addData("BR Power", robot.drivetrain.backRight.getPower());
         telemetry.addData("Distance to target", robot.distanceToTargetDebug);
+        telemetry.addData("Angle to target", robot.angleToTargetDebug);
         telemetry.addData("BLdelta", robot.drivetrain.backLeft.getCurrentPosition());
         telemetry.addData("BRdelta", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("FLdelta", robot.drivetrain.frontLeft.getCurrentPosition());
         telemetry.addData("FRdelta", robot.drivetrain.frontRight.getCurrentPosition());
-
+        telemetry.addData("Angle To Target Sum", robot.angleToTargetSumDebug);
+        telemetry.addData("Time Sum", robot.timeSumDebug);
+        telemetry.addData("Total Time", robot.totalTime);
     }
 }
