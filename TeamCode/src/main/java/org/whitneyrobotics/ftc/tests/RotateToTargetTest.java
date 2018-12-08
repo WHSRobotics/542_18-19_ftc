@@ -9,7 +9,6 @@ import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 import com.acmerobotics.dashboard.telemetry.*;
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.qualcomm.robotcore.robot.Robot;
 
 /**
  * Created by Amar2 on 11/15/2017.
@@ -33,13 +32,13 @@ public class RotateToTargetTest extends OpMode {
 
     @Override
     public void start(){
-        robot.rotateToTarget(RobotConstants.rotateTestAngle, RobotConstants.rotateOrientation);
+        robot.rotateToTarget(RobotConstants.rotateTestAngle, false);//RobotConstants.rotateOrientation);
     }
 
     @Override
     public void loop() {
         if(robot.rotateToTargetInProgress()) {
-            robot.rotateToTarget(RobotConstants.rotateTestAngle, RobotConstants.rotateOrientation);
+            robot.rotateToTarget(RobotConstants.rotateTestAngle, false);//RobotConstants.rotateOrientation);
         }
         robot.estimatePosition();
         robot.estimateHeading();
@@ -61,10 +60,12 @@ public class RotateToTargetTest extends OpMode {
         telemetry.addData("BRdelta", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("FLdelta", robot.drivetrain.frontLeft.getCurrentPosition());
         telemetry.addData("FRdelta", robot.drivetrain.frontRight.getCurrentPosition());
-        telemetry.addData("Angle To Target Sum", robot.angleToTargetSumDebug);
+        telemetry.addData("Angle To Target Intregal", robot.angleToTargetIntegralDebug);
+        telemetry.addData("Angle To Target Derivative", robot.angleToTargetDerivativeDebug);
         telemetry.addData("Time Sum", robot.timeSumDebug);
         telemetry.addData("Total Time", robot.totalTime);
         telemetry.addData("Delta Angle", robot.deltaAngleDebug);
         telemetry.addData("Delta Time", robot.deltaTimeDebug);
+
     }
 }

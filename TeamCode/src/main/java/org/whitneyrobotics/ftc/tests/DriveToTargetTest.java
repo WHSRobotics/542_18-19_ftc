@@ -91,6 +91,6 @@ public class DriveToTargetTest extends OpMode {
         telemetry.addData("BRdelta", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("FLdelta", robot.drivetrain.frontLeft.getCurrentPosition());
         telemetry.addData("FRdelta", robot.drivetrain.frontRight.getCurrentPosition());
-        telemetry.addData("Angle To Target Sum", robot.angleToTargetSumDebug);
+        telemetry.addData("Angle To Target Sum", robot.angleToTargetIntegralDebug);
     }
 }

@@ -1,10 +1,8 @@
 package org.whitneyrobotics.ftc.subsys;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.robot.Robot;
-import com.vuforia.Vuforia;
 
+import org.opencv.core.Mat;
 import org.whitneyrobotics.ftc.lib.subsys.robot.WHSRobot;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Functions;
@@ -36,11 +34,18 @@ public class WHSRobotImpl implements WHSRobot {
     private int count = 0;
     private boolean driveBackwards;
 
-    private double angleToTargetSum = 0;
+    //TODO: TUNE PID
+    private static final double KP = 0;
+    private static final double KI = 0;
+    private static final double KD = 0;
+
+    private double angleToTargetIntegral = 0;
+    private double angleToTargetDerivative = 0;
     private double lastAngleToTarget = 0;
     private double lastTime /*on WHS Robotics */ = 0;
     private boolean firstRotateLoop = true;
-    public double angleToTargetSumDebug = 0;
+    public double angleToTargetIntegralDebug = 0;
+    public double angleToTargetDerivativeDebug = 0;
     public double timeSumDebug = 0;
     public double totalTime = 0;
     public double deltaAngleDebug = 0;
@@ -127,32 +132,33 @@ public class WHSRobotImpl implements WHSRobot {
             firstRotateLoop = false;
         }
 
+        //Integral & Derivative
         double deltaTime = System.nanoTime() / 1E9 - lastTime;
         lastTime = System.nanoTime() / 1E9;
+
+        //"Integral"
+        angleToTargetIntegral += angleToTarget * deltaTime;
+
+
+        //Derivative
         double deltaAngle = angleToTarget - lastAngleToTarget;
         lastAngleToTarget = angleToTarget;
+        angleToTargetDerivative = deltaAngle / deltaTime;
+        angleToTargetDerivativeDebug = angleToTargetDerivative;
 
-        angleToTargetSum += angleToTarget * deltaTime;
-        angleToTargetSumDebug = angleToTargetSum;
+        angleToTargetIntegralDebug = angleToTargetIntegral;
         timeSumDebug += deltaTime;
         totalTime = (System.nanoTime()/1E9)-initialTime;
-
         angleToTargetDebug = angleToTarget;
         deltaAngleDebug = deltaAngle;
         deltaTimeDebug = deltaTime;
 
+        double controllerOutput = RobotConstants.KP * angleToTarget + RobotConstants.KI * angleToTargetIntegral + RobotConstants.KD * angleToTargetDerivative;
         //drivetrain.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        double power = Functions.map(Math.abs(angleToTarget), RobotConstants.DEADBAND_ROTATE_TO_TARGET, 180, RobotConstants.rotate_min, RobotConstants.rotate_max);
-        if (angleToTarget < -RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
+        double power = Functions.map(controllerOutput, -180, 180, -RobotConstants.rotate_max, RobotConstants.rotate_max);
+
+        if (Math.abs(angleToTarget) > RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
             hasRotateToTargetExited = false;
-            //targetQuadrant = 4;
-            drivetrain.operateLeft(power);
-            drivetrain.operateRight(-power);
-            rotateToTargetInProgress = true;
-        }
-        else if (angleToTarget > RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
-            hasRotateToTargetExited = false;
-            //targetQuadrant = 1;
             drivetrain.operateLeft(-power);
             drivetrain.operateRight(power);
             rotateToTargetInProgress = true;

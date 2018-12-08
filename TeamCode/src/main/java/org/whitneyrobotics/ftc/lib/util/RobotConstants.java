@@ -14,12 +14,15 @@ public class RobotConstants {
     public static int canLift = 1;
 
     public static double DEADBAND_DRIVE_TO_TARGET = 70;
-    public static double DEADBAND_ROTATE_TO_TARGET = 1.5;
-    public static double drive_min = 0.2;
+    public static double DEADBAND_ROTATE_TO_TARGET = 0.5;
+    public static double drive_min = 0.1;
     public static double drive_max = 1;
     public static double rotate_min = 0.2;
     public static double rotate_max = 1;
+    public static double KP = 1;
+    public static double KI = 0.8;
+    public static double KD = 0.1;
 
-    public static double rotateTestAngle = 135;
+    public static double rotateTestAngle = 90;
     public static boolean rotateOrientation = true;
 }
