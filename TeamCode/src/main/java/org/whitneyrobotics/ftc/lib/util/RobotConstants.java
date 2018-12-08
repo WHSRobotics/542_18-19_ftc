@@ -19,4 +19,7 @@ public class RobotConstants {
     public static double drive_max = 1;
     public static double rotate_min = 0.2;
     public static double rotate_max = 1;
+
+    public static double rotateTestAngle = 135;
+    public static boolean rotateOrientation = true;
 }

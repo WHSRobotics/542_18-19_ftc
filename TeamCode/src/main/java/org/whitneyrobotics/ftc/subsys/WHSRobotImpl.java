@@ -43,6 +43,8 @@ public class WHSRobotImpl implements WHSRobot {
     public double angleToTargetSumDebug = 0;
     public double timeSumDebug = 0;
     public double totalTime = 0;
+    public double deltaAngleDebug = 0;
+    public double deltaTimeDebug = 0;
     double initialTime = 0;
 
     private boolean driveToTargetInProgress = false;
@@ -106,23 +108,6 @@ public class WHSRobotImpl implements WHSRobot {
         double angleToTarget = targetHeading - currentCoord.getHeading();
         angleToTarget = Functions.normalizeAngle(angleToTarget); //-180 to 180 deg
 
-        if(firstRotateLoop) {
-            lastTime = System.nanoTime() / 1E9;
-            initialTime = lastTime;
-            lastAngleToTarget = angleToTarget;
-            firstRotateLoop = false;
-        }
-
-        double deltaTime = System.nanoTime() / 1E9 - lastTime;
-        lastTime = System.nanoTime() / 1E9;
-        double deltaAngle = angleToTarget - lastAngleToTarget;
-        lastAngleToTarget = angleToTarget;
-
-        angleToTargetSum += deltaAngle*deltaTime;
-        angleToTargetSumDebug = angleToTargetSum;
-        timeSumDebug += deltaTime;
-        totalTime = (System.nanoTime()/1E9)-initialTime;
-
         if (backwards && angleToTarget > 90) {
             angleToTarget = angleToTarget - 180;
             driveBackwards = true;
@@ -134,7 +119,27 @@ public class WHSRobotImpl implements WHSRobot {
         else {
             driveBackwards = false;
         }
+
+        if (firstRotateLoop) {
+            lastTime = System.nanoTime() / 1E9;
+            initialTime = lastTime;
+            lastAngleToTarget = angleToTarget;
+            firstRotateLoop = false;
+        }
+
+        double deltaTime = System.nanoTime() / 1E9 - lastTime;
+        lastTime = System.nanoTime() / 1E9;
+        double deltaAngle = angleToTarget - lastAngleToTarget;
+        lastAngleToTarget = angleToTarget;
+
+        angleToTargetSum += angleToTarget * deltaTime;
+        angleToTargetSumDebug = angleToTargetSum;
+        timeSumDebug += deltaTime;
+        totalTime = (System.nanoTime()/1E9)-initialTime;
+
         angleToTargetDebug = angleToTarget;
+        deltaAngleDebug = deltaAngle;
+        deltaTimeDebug = deltaTime;
 
         //drivetrain.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
         double power = Functions.map(Math.abs(angleToTarget), RobotConstants.DEADBAND_ROTATE_TO_TARGET, 180, RobotConstants.rotate_min, RobotConstants.rotate_max);

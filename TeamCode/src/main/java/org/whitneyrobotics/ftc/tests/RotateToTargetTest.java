@@ -5,9 +5,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
+import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 import com.acmerobotics.dashboard.telemetry.*;
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.robot.Robot;
 
 /**
  * Created by Amar2 on 11/15/2017.
@@ -26,18 +28,18 @@ public class RotateToTargetTest extends OpMode {
 
         robot = new WHSRobotImpl(hardwareMap);
         robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
-        //telemetry.setMsTransmissionInterval(10);
+        telemetry.setMsTransmissionInterval(10);
     }
 
     @Override
     public void start(){
-        robot.rotateToTarget(135, true);
+        robot.rotateToTarget(RobotConstants.rotateTestAngle, RobotConstants.rotateOrientation);
     }
 
     @Override
     public void loop() {
         if(robot.rotateToTargetInProgress()) {
-            robot.rotateToTarget(135, true);
+            robot.rotateToTarget(RobotConstants.rotateTestAngle, RobotConstants.rotateOrientation);
         }
         robot.estimatePosition();
         robot.estimateHeading();
@@ -62,5 +64,7 @@ public class RotateToTargetTest extends OpMode {
         telemetry.addData("Angle To Target Sum", robot.angleToTargetSumDebug);
         telemetry.addData("Time Sum", robot.timeSumDebug);
         telemetry.addData("Total Time", robot.totalTime);
+        telemetry.addData("Delta Angle", robot.deltaAngleDebug);
+        telemetry.addData("Delta Time", robot.deltaTimeDebug);
     }
 }

@@ -23,6 +23,7 @@ public class OmniArm {
 
     Toggler extensionToggler = new Toggler(2);
     Toggler switchToggler = new Toggler(2);
+    Toggler storeToggler = new Toggler(2);
 
     public OmniArm(HardwareMap armMap) {
         extendMotor = armMap.dcMotor.get("extendMotor");
@@ -77,8 +78,11 @@ public class OmniArm {
     }
 
     public void storeOmniArm(boolean gamepadInput) {
-        switchMotor.setTargetPosition(STORED_MODE);
-        switchMotor.setPower(0.25);
+        storeToggler.changeState(gamepadInput);
+        if (storeToggler.currentState() == 1) {
+            switchMotor.setTargetPosition(STORED_MODE);
+            switchMotor.setPower(0.25);
+        }
     }
 
     public void resetOmniArm(boolean gamepadInput) {
