@@ -20,7 +20,7 @@ public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
-    Position p1 = new Position(600, 600, 150);
+    Position p1 = new Position(-600, 0, 150);
     Position p2 = new Position(600,1200,150);
     boolean backwards = true;
     boolean b = true;
@@ -31,8 +31,7 @@ public class DriveToTargetTest extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         robot = new WHSRobotImpl(hardwareMap);
         robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
-        //telemetry.setMsTransmissionInterval(10); sAKEHT THICCCCCCCCCCC IVAN LOWKEY HOT AF
-        ///WAIT 30 CALL YE YE BIG BOI JONATHAN LOWKEY A SNACK
+        telemetry.setMsTransmissionInterval(10);
     }
 
     @Override
@@ -42,31 +41,20 @@ public class DriveToTargetTest extends OpMode {
 
     @Override
     public void loop() {
-        /*if((robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()) && b) {
-            robot.driveToTarget(p1, backwards);
-        }
-        else if (b){
-            b=false;
-           robot.driveToTarget(p2, backwards);
 
-
-        }
-        else if (robot.driveToTargetInProgress() || robot.rotateToTargetInProgress()){
-            robot.driveToTarget(p2, backwards);
-
-        }
-        */
         switch (i){
             case 0:
                 robot.driveToTarget(p1, backwards);
                 if(robot.hasDriveToTargetExited()){
                     i = 1;
                 }
+                break;
             case 1:
                 robot.driveToTarget(p2, backwards);
                 if(robot.hasDriveToTargetExited()){
                     i = 2;
                 }
+                break;
             case 2:
                 break;
         }
@@ -91,6 +79,11 @@ public class DriveToTargetTest extends OpMode {
         telemetry.addData("BRdelta", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("FLdelta", robot.drivetrain.frontLeft.getCurrentPosition());
         telemetry.addData("FRdelta", robot.drivetrain.frontRight.getCurrentPosition());
-        telemetry.addData("Angle To Target Sum", robot.angleToTargetIntegralDebug);
+        telemetry.addData("Rotate Integral", robot.rotateController.getIntegral());
+        telemetry.addData("Rotate Derivative", robot.rotateController.getDerivative());
+        telemetry.addData("Drive Integral", robot.driveController.getIntegral());
+        telemetry.addData("Drive Derivative", robot.driveController.getDerivative());
+        telemetry.addData("Rotate Power", robot.rotateController.getOutput());
+        telemetry.addData("Drive Power", robot.driveController.getOutput());
     }
 }

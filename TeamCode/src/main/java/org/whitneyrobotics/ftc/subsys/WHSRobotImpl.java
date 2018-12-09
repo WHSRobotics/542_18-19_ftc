@@ -2,10 +2,10 @@ package org.whitneyrobotics.ftc.subsys;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.opencv.core.Mat;
 import org.whitneyrobotics.ftc.lib.subsys.robot.WHSRobot;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Functions;
+import org.whitneyrobotics.ftc.lib.util.PIDController;
 import org.whitneyrobotics.ftc.lib.util.Position;
 import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 
@@ -21,7 +21,7 @@ public class WHSRobotImpl implements WHSRobot {
     public MarkerDrop markerDrop;
     public Lift lift;
     Coordinate currentCoord;
-    public double targetHeading; //field frame
+    private double targetHeading; //field frame
     public double angleToTargetDebug;
     private double lastKnownHeading = 0.1;
     private static final double DEADBAND_DRIVE_TO_TARGET = 70; //in mm
@@ -30,27 +30,22 @@ public class WHSRobotImpl implements WHSRobot {
     private static final double[] DRIVE_TO_TARGET_THRESHOLD = {DEADBAND_DRIVE_TO_TARGET, 300, 600, 1200};
     private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.2, 0.3, 0.4};
     private static final double[] ROTATE_TO_TARGET_THRESHOLD = {DEADBAND_ROTATE_TO_TARGET, 30, 60};
-    private double rightMultiplier = 1.0;
-    private int count = 0;
     private boolean driveBackwards;
 
     //TODO: TUNE PID
-    private static final double KP = 0;
-    private static final double KI = 0;
-    private static final double KD = 0;
+    private static final double ROTATE_KP = 0;
+    private static final double ROTATE_KI = 0;
+    private static final double ROTATE_KD = 0;
 
-    private double angleToTargetIntegral = 0;
-    private double angleToTargetDerivative = 0;
-    private double lastAngleToTarget = 0;
-    private double lastTime /*on WHS Robotics */ = 0;
+    private static final double DRIVE_KP = 0;
+    private static final double DRIVE_KI = 0;
+    private static final double DRIVE_KD = 0;
+
+    public PIDController rotateController = new PIDController(RobotConstants.R_KP, RobotConstants.R_KI, RobotConstants.R_KD);
+    public PIDController driveController = new PIDController(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
+
     private boolean firstRotateLoop = true;
-    public double angleToTargetIntegralDebug = 0;
-    public double angleToTargetDerivativeDebug = 0;
-    public double timeSumDebug = 0;
-    public double totalTime = 0;
-    public double deltaAngleDebug = 0;
-    public double deltaTimeDebug = 0;
-    double initialTime = 0;
+    private boolean firstDriveLoop = true;
 
     private boolean driveToTargetInProgress = false;
     private boolean rotateToTargetInProgress = false;
@@ -72,38 +67,47 @@ public class WHSRobotImpl implements WHSRobot {
     public void driveToTarget(Position targetPos, boolean backwards) {
         Position vectorToTarget = Functions.subtractPositions(targetPos, currentCoord.getPos()); //field frame
         vectorToTarget = field2body(vectorToTarget); //body frame
-
-        double distanceToTarget = Functions.calculateMagnitude(vectorToTarget);
+        double distanceToTarget = Functions.calculateMagnitude(vectorToTarget) * (vectorToTarget.getX() >= 0 ? 1 : -1);
         distanceToTargetDebug = distanceToTarget;
-        //TODO test code
-        double power = Functions.map(distanceToTarget, RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
+
         double degreesToRotate = Math.atan2(vectorToTarget.getY(), vectorToTarget.getX()); //from -pi to pi rad
-        //double degreesToRotate = Math.atan2(targetPos.getY(), targetPos.getX()); //from -pi to pi rad
         degreesToRotate = degreesToRotate * 180 / Math.PI;
-        /*double*/ targetHeading = Functions.normalizeAngle(currentCoord.getHeading() + degreesToRotate); //-180 to 180 deg
+        targetHeading = Functions.normalizeAngle(currentCoord.getHeading() + degreesToRotate); //-180 to 180 deg
+
         if (!hasRotateToTargetExited()) {
             rotateToTarget(targetHeading, backwards);
             hasDriveToTargetExited = false;
-        } else if (!driveBackwards && distanceToTarget > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
-            hasDriveToTargetExited = false;
-            driveToTargetInProgress = true;
-            drivetrain.operateLeft(power);
-            drivetrain.operateRight(power);
-        }
-        else if (driveBackwards && distanceToTarget > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
-            hasDriveToTargetExited = false;
-            driveToTargetInProgress = true;
-            drivetrain.operateLeft(-power);
-            drivetrain.operateRight(-power);
+
         }
         else {
-            drivetrain.operateRight(0.0);
-            drivetrain.operateLeft(0.0);
-            driveToTargetInProgress = false;
-            rotateToTargetInProgress = false;
-            count = 0;
-            hasDriveToTargetExited = true;
-            hasRotateToTargetExited = false;
+
+            if(firstDriveLoop){
+                driveController.init(distanceToTarget);
+                firstDriveLoop = false;
+            }
+
+            driveController.setConstants(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
+            driveController.calculate(distanceToTarget);
+
+            //TODO test code
+            double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
+            if (distanceToTarget < 0) {
+                power = -power;
+            }
+            if (Math.abs(distanceToTarget) > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
+                hasDriveToTargetExited = false;
+                driveToTargetInProgress = true;
+                drivetrain.operateLeft(power);
+                drivetrain.operateRight(power);
+            } else {
+                drivetrain.operateRight(0.0);
+                drivetrain.operateLeft(0.0);
+                driveToTargetInProgress = false;
+                rotateToTargetInProgress = false;
+                hasDriveToTargetExited = true;
+                hasRotateToTargetExited = false;
+                firstDriveLoop = false;
+            }
         }
     }
 
@@ -112,7 +116,6 @@ public class WHSRobotImpl implements WHSRobot {
 
         double angleToTarget = targetHeading - currentCoord.getHeading();
         angleToTarget = Functions.normalizeAngle(angleToTarget); //-180 to 180 deg
-
         if (backwards && angleToTarget > 90) {
             angleToTarget = angleToTarget - 180;
             driveBackwards = true;
@@ -125,37 +128,16 @@ public class WHSRobotImpl implements WHSRobot {
             driveBackwards = false;
         }
 
+        angleToTargetDebug = angleToTarget;
+
         if (firstRotateLoop) {
-            lastTime = System.nanoTime() / 1E9;
-            initialTime = lastTime;
-            lastAngleToTarget = angleToTarget;
+            rotateController.init(angleToTarget);
             firstRotateLoop = false;
         }
 
-        //Integral & Derivative
-        double deltaTime = System.nanoTime() / 1E9 - lastTime;
-        lastTime = System.nanoTime() / 1E9;
-
-        //"Integral"
-        angleToTargetIntegral += angleToTarget * deltaTime;
-
-
-        //Derivative
-        double deltaAngle = angleToTarget - lastAngleToTarget;
-        lastAngleToTarget = angleToTarget;
-        angleToTargetDerivative = deltaAngle / deltaTime;
-        angleToTargetDerivativeDebug = angleToTargetDerivative;
-
-        angleToTargetIntegralDebug = angleToTargetIntegral;
-        timeSumDebug += deltaTime;
-        totalTime = (System.nanoTime()/1E9)-initialTime;
-        angleToTargetDebug = angleToTarget;
-        deltaAngleDebug = deltaAngle;
-        deltaTimeDebug = deltaTime;
-
-        double controllerOutput = RobotConstants.KP * angleToTarget + RobotConstants.KI * angleToTargetIntegral + RobotConstants.KD * angleToTargetDerivative;
-        //drivetrain.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        double power = Functions.map(controllerOutput, -180, 180, -RobotConstants.rotate_max, RobotConstants.rotate_max);
+        rotateController.setConstants(RobotConstants.R_KP, RobotConstants.R_KI, RobotConstants.R_KD);
+        rotateController.calculate(angleToTarget);
+        double power = Functions.map(rotateController.getOutput(), -180, 180, -RobotConstants.rotate_max, RobotConstants.rotate_max);
 
         if (Math.abs(angleToTarget) > RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
             hasRotateToTargetExited = false;

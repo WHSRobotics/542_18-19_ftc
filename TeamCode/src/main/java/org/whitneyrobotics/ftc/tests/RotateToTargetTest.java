@@ -60,12 +60,10 @@ public class RotateToTargetTest extends OpMode {
         telemetry.addData("BRdelta", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("FLdelta", robot.drivetrain.frontLeft.getCurrentPosition());
         telemetry.addData("FRdelta", robot.drivetrain.frontRight.getCurrentPosition());
-        telemetry.addData("Angle To Target Intregal", robot.angleToTargetIntegralDebug);
-        telemetry.addData("Angle To Target Derivative", robot.angleToTargetDerivativeDebug);
-        telemetry.addData("Time Sum", robot.timeSumDebug);
-        telemetry.addData("Total Time", robot.totalTime);
-        telemetry.addData("Delta Angle", robot.deltaAngleDebug);
-        telemetry.addData("Delta Time", robot.deltaTimeDebug);
+        telemetry.addData("Rotate Integral", robot.rotateController.getIntegral());
+        telemetry.addData("Rotate Derivative", robot.rotateController.getDerivative());
+        telemetry.addData("Drive Integral", robot.driveController.getIntegral());
+        telemetry.addData("Drive Derivative", robot.driveController.getDerivative());
 
     }
 }
