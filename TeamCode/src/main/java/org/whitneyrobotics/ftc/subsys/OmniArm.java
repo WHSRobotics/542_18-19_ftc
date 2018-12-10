@@ -1,8 +1,10 @@
 package org.whitneyrobotics.ftc.subsys;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.whitneyrobotics.ftc.lib.util.Toggler;
 
@@ -11,6 +13,9 @@ public class OmniArm {
     public DcMotor extendMotor;
     public DcMotor intakeMotor;
     public DcMotor switchMotor;
+
+    private CRServo leftSweep;
+    private CRServo rightSweep;
 
     private final int EXTEND_LENGTH = 1120;
     private final int RETRACT_LENGTH = 0;
@@ -29,6 +34,8 @@ public class OmniArm {
         extendMotor = armMap.dcMotor.get("extendMotor");
         intakeMotor = armMap.dcMotor.get("intakeMotor");
         switchMotor = armMap.dcMotor.get("switchMotor");
+        leftSweep = armMap.crservo.get("lSweepServo");
+        rightSweep = armMap.crservo.get("rSweepServo");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -43,21 +50,32 @@ public class OmniArm {
 
     }
 
-    public void operateIntake(boolean gamepadInputIntake, boolean gamepadInputOuttake){
-        if(gamepadInputIntake){
+    public void operateIntake(boolean gamepadInputIntake, boolean gamepadInputOuttake) {
+        if (gamepadInputIntake) {
             intakeMotor.setPower(INTAKE_SPEED);
-        }
-        else if(gamepadInputOuttake){
+        } else if (gamepadInputOuttake) {
             intakeMotor.setPower(OUTTAKE_SPEED);
-        }
-        else {
+        } else {
             intakeMotor.setPower(0.0);
+        }
+    }
+
+    public void operateSweepServos(boolean gamepadInputIntake, boolean gamepadInputOuttake) {
+        if (gamepadInputIntake) {
+            leftSweep.setPower(1);
+            rightSweep.setPower(-1);
+        } else if (gamepadInputOuttake) {
+            leftSweep.setPower(-1);
+            rightSweep.setPower(1);
+        } else {
+            leftSweep.setPower(0);
+            rightSweep.setPower(0);
         }
     }
 
     public void operateExtension(boolean gamepadInput) {
         extensionToggler.changeState(gamepadInput);
-        if(extensionToggler.currentState() == 0) {
+        if (extensionToggler.currentState() == 0) {
             extendMotor.setTargetPosition(RETRACT_LENGTH);
             extendMotor.setPower(0.1);
         } else if (extensionToggler.currentState() == 1) {
@@ -66,9 +84,9 @@ public class OmniArm {
         }
     }
 
-    public void operateModeSwitch(boolean gamepadInput){
+    public void operateModeSwitch(boolean gamepadInput) {
         switchToggler.changeState(gamepadInput);
-        if(switchToggler.currentState() == 0) {
+        if (switchToggler.currentState() == 0) {
             switchMotor.setTargetPosition(OUTTAKE_MODE);
             switchMotor.setPower(0.25);
         } else if (switchToggler.currentState() == 1) {

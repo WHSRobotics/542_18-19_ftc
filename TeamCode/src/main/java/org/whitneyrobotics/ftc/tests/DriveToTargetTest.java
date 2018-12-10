@@ -44,18 +44,30 @@ public class DriveToTargetTest extends OpMode {
 
         switch (i){
             case 0:
-                robot.driveToTarget(p1, backwards);
-                if(robot.hasDriveToTargetExited()){
+                robot.rotateToTarget(75, false);
+                if (!robot.rotateToTargetInProgress()) {
                     i = 1;
                 }
                 break;
             case 1:
-                robot.driveToTarget(p2, backwards);
-                if(robot.hasDriveToTargetExited()){
+                robot.rotateToTarget(90, true);
+                if (!robot.rotateToTargetInProgress()) {
                     i = 2;
                 }
                 break;
             case 2:
+                robot.driveToTarget(p1, backwards);
+                if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                    i = 3;
+                }
+                break;
+            case 3:
+                robot.driveToTarget(p2, backwards);
+                if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                    i = 4;
+                }
+                break;
+            case 4:
                 break;
         }
 

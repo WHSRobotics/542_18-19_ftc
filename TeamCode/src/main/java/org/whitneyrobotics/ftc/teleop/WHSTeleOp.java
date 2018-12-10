@@ -31,6 +31,7 @@ public class WHSTeleOp extends OpMode{
         robot.drivetrain.switchOrientation(gamepad1.a);
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
+        robot.omniArm.operateSweepServos(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
         robot.omniArm.operateExtension(gamepad2.a);
        // robot.lift.sensorLift(gamepad1.y);
         telemetry.addData("Sensor Lift", gamepad1.y);

@@ -181,7 +181,7 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
                         omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
-                        if (robot.hasDriveToTargetExited()) {
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
@@ -219,7 +219,7 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "entry";
                         robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
-                        if (robot.hasDriveToTargetExited()) {
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
@@ -228,7 +228,7 @@ public class WHSAuto extends OpMode{
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(landerClearancePositionArray[CRATER], true);
                         }
-                        if (robot.hasDriveToTargetExited()) {
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
@@ -248,7 +248,7 @@ public class WHSAuto extends OpMode{
                         } else if (STARTING_POSITION == DEPOT) {
                             robot.driveToTarget(depotCornerPosition, true);
                         }
-                        if (robot.hasDriveToTargetExited()) {
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
@@ -259,7 +259,7 @@ public class WHSAuto extends OpMode{
                         } else if (STARTING_POSITION == DEPOT) {
                             robot.driveToTarget(depotSidePosition, false);
                         }
-                        if (robot.hasDriveToTargetExited()) {
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         storedToDumpedTimer.set(MARKER_DROP_DELAY);
@@ -292,7 +292,7 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "driving to crater";
                         robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
-                        if (robot.hasDriveToTargetExited()) {
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;

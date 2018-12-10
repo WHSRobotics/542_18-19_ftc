@@ -47,11 +47,11 @@ public class WHSRobotImpl implements WHSRobot {
     private boolean firstRotateLoop = true;
     private boolean firstDriveLoop = true;
 
+    private int driveSwitch = 0;
+
     private boolean driveToTargetInProgress = false;
     private boolean rotateToTargetInProgress = false;
 
-    private boolean hasDriveToTargetExited;
-    private boolean hasRotateToTargetExited;
 
     public double distanceToTargetDebug = 0;
     public WHSRobotImpl(HardwareMap hardwareMap){
@@ -74,40 +74,40 @@ public class WHSRobotImpl implements WHSRobot {
         degreesToRotate = degreesToRotate * 180 / Math.PI;
         targetHeading = Functions.normalizeAngle(currentCoord.getHeading() + degreesToRotate); //-180 to 180 deg
 
-        if (!hasRotateToTargetExited()) {
-            rotateToTarget(targetHeading, backwards);
-            hasDriveToTargetExited = false;
+        switch (driveSwitch) {
+            case 0:
+                rotateToTarget(targetHeading, backwards);
+                if (!rotateToTargetInProgress()) {
+                    driveSwitch++;
+                }
+                break;
+            case 1:
 
-        }
-        else {
+                if (firstDriveLoop) {
+                    driveController.init(distanceToTarget);
+                    firstDriveLoop = false;
+                }
 
-            if(firstDriveLoop){
-                driveController.init(distanceToTarget);
-                firstDriveLoop = false;
-            }
+                driveController.setConstants(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
+                driveController.calculate(distanceToTarget);
 
-            driveController.setConstants(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
-            driveController.calculate(distanceToTarget);
-
-            //TODO test code
-            double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
-            if (distanceToTarget < 0) {
-                power = -power;
-            }
-            if (Math.abs(distanceToTarget) > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
-                hasDriveToTargetExited = false;
-                driveToTargetInProgress = true;
-                drivetrain.operateLeft(power);
-                drivetrain.operateRight(power);
-            } else {
-                drivetrain.operateRight(0.0);
-                drivetrain.operateLeft(0.0);
-                driveToTargetInProgress = false;
-                rotateToTargetInProgress = false;
-                hasDriveToTargetExited = true;
-                hasRotateToTargetExited = false;
-                firstDriveLoop = false;
-            }
+                //TODO test code x2 -- Varun
+                double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
+                if (distanceToTarget < 0) {
+                    power = -power;
+                }
+                if (Math.abs(distanceToTarget) > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
+                    driveToTargetInProgress = true;
+                    drivetrain.operateLeft(power);
+                    drivetrain.operateRight(power);
+                } else {
+                    drivetrain.operateRight(0.0);
+                    drivetrain.operateLeft(0.0);
+                    driveToTargetInProgress = false;
+                    rotateToTargetInProgress = false;
+                    firstDriveLoop = true;
+                    driveSwitch = 0;
+                }
         }
     }
 
@@ -140,7 +140,6 @@ public class WHSRobotImpl implements WHSRobot {
         double power = Functions.map(rotateController.getOutput(), -180, 180, -RobotConstants.rotate_max, RobotConstants.rotate_max);
 
         if (Math.abs(angleToTarget) > RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
-            hasRotateToTargetExited = false;
             drivetrain.operateLeft(-power);
             drivetrain.operateRight(power);
             rotateToTargetInProgress = true;
@@ -149,8 +148,6 @@ public class WHSRobotImpl implements WHSRobot {
             drivetrain.operateLeft(0.0);
             drivetrain.operateRight(0.0);
             rotateToTargetInProgress = false;
-            hasRotateToTargetExited = true;
-            hasDriveToTargetExited = false;
             firstRotateLoop = true;
         }
     }
@@ -165,15 +162,6 @@ public class WHSRobotImpl implements WHSRobot {
         return rotateToTargetInProgress;
     }
 
-    @Override
-    public boolean hasDriveToTargetExited() {
-        return hasDriveToTargetExited;
-    }
-
-    @Override
-    public boolean hasRotateToTargetExited() {
-        return hasRotateToTargetExited;
-    }
 
     @Override
     public void estimatePosition() {
