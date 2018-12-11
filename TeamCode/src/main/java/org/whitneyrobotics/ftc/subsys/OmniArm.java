@@ -62,11 +62,11 @@ public class OmniArm {
 
     public void operateSweepServos(boolean gamepadInputIntake, boolean gamepadInputOuttake) {
         if (gamepadInputIntake) {
-            leftSweep.setPower(1);
-            rightSweep.setPower(-1);
-        } else if (gamepadInputOuttake) {
             leftSweep.setPower(-1);
             rightSweep.setPower(1);
+        } else if (gamepadInputOuttake) {
+            leftSweep.setPower(1);
+            rightSweep.setPower(-1);
         } else {
             leftSweep.setPower(0);
             rightSweep.setPower(0);

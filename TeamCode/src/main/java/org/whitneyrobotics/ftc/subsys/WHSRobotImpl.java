@@ -24,8 +24,8 @@ public class WHSRobotImpl implements WHSRobot {
     private double targetHeading; //field frame
     public double angleToTargetDebug;
     private double lastKnownHeading = 0.1;
-    private static final double DEADBAND_DRIVE_TO_TARGET = 70; //in mm
-    private static final double DEADBAND_ROTATE_TO_TARGET = 1.5; //in degrees
+    private static final double DEADBAND_DRIVE_TO_TARGET = 45; //in mm
+    private static final double DEADBAND_ROTATE_TO_TARGET = 0.5; //in degrees
     private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.22, 0.28, 0.4, 0.45}; //{0.33, 0.6, 0.7, 0.9};
     private static final double[] DRIVE_TO_TARGET_THRESHOLD = {DEADBAND_DRIVE_TO_TARGET, 300, 600, 1200};
     private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.2, 0.3, 0.4};
@@ -76,14 +76,16 @@ public class WHSRobotImpl implements WHSRobot {
 
         switch (driveSwitch) {
             case 0:
+                driveToTargetInProgress = true;
                 rotateToTarget(targetHeading, backwards);
                 if (!rotateToTargetInProgress()) {
-                    driveSwitch++;
+                    driveSwitch = 1;
                 }
                 break;
             case 1:
 
                 if (firstDriveLoop) {
+                    driveToTargetInProgress = true;
                     driveController.init(distanceToTarget);
                     firstDriveLoop = false;
                 }
@@ -91,7 +93,6 @@ public class WHSRobotImpl implements WHSRobot {
                 driveController.setConstants(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
                 driveController.calculate(distanceToTarget);
 
-                //TODO test code x2 -- Varun
                 double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
                 if (distanceToTarget < 0) {
                     power = -power;
@@ -108,6 +109,7 @@ public class WHSRobotImpl implements WHSRobot {
                     firstDriveLoop = true;
                     driveSwitch = 0;
                 }
+                break;
         }
     }
 
@@ -131,6 +133,7 @@ public class WHSRobotImpl implements WHSRobot {
         angleToTargetDebug = angleToTarget;
 
         if (firstRotateLoop) {
+            rotateToTargetInProgress = true;
             rotateController.init(angleToTarget);
             firstRotateLoop = false;
         }

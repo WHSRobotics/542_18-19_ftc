@@ -36,7 +36,6 @@ public class DriveToTargetTest extends OpMode {
 
     @Override
     public void start(){
-        robot.driveToTarget(p1, backwards);
     }
 
     @Override
@@ -44,13 +43,13 @@ public class DriveToTargetTest extends OpMode {
 
         switch (i){
             case 0:
-                robot.rotateToTarget(75, false);
+                robot.rotateToTarget(60, false);
                 if (!robot.rotateToTargetInProgress()) {
                     i = 1;
                 }
                 break;
             case 1:
-                robot.rotateToTarget(90, true);
+                robot.rotateToTarget(-90, true);
                 if (!robot.rotateToTargetInProgress()) {
                     i = 2;
                 }
