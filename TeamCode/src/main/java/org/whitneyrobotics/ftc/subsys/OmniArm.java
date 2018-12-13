@@ -17,7 +17,7 @@ public class OmniArm {
     private CRServo leftSweep;
     private CRServo rightSweep;
 
-    private final int EXTEND_LENGTH = 1120;
+    private final int EXTEND_LENGTH = 2100;
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
     private final int INTAKE_MODE = 2150;

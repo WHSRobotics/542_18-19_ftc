@@ -94,6 +94,8 @@ public class WHSRobotImpl implements WHSRobot {
                 driveController.calculate(distanceToTarget);
 
                 double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
+
+                // this stuff may be causing the robot to oscillate around the target position
                 if (distanceToTarget < 0) {
                     power = -power;
                 }
@@ -109,6 +111,7 @@ public class WHSRobotImpl implements WHSRobot {
                     firstDriveLoop = true;
                     driveSwitch = 0;
                 }
+                // end of weird code
                 break;
         }
     }
