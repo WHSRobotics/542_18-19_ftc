@@ -4,6 +4,7 @@ import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.sun.tools.javac.tree.DCTree;
 
 import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
@@ -69,8 +70,8 @@ public class WHSAuto extends OpMode{
     SimpleTimer storedToDumpedTimer = new SimpleTimer();
     SimpleTimer dumpedToStoredTimer = new SimpleTimer();
 
-    static final double OMNI_ARM_MOVE_DELAY = 1.5;
-    static final double MARKER_DROP_DELAY = 0.75;
+    static final double OMNI_ARM_MOVE_DELAY = .7;
+    static final double MARKER_DROP_DELAY = 0.65;
     static final double DRIVE_FORWARD_SMALL_BIT_DURATION = 0.2;
 
     private GoldAlignDetector detector;
@@ -85,11 +86,11 @@ public class WHSAuto extends OpMode{
         subState = 0;
 
         // from the perspective of blue alliance
-        startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 45);
+        startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
 
-        landerClearancePositionArray[CRATER] = new Position(650, 650, 150);
-        landerClearancePositionArray[DEPOT] = new Position(-650, 650, 150);
+        landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
+        landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
         // setting the three different particle positions for the crater side
         goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);//(600,1200, 150);
@@ -97,20 +98,20 @@ public class WHSAuto extends OpMode{
         goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);//(1200,600,150);
 
         // setting the three different particle positions for the depot side
-        goldPositionArray[DEPOT][LEFT] = new Position(-1200,600,150);
-        goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
-        goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
+        goldPositionArray[DEPOT][LEFT] = new Position(-1190,590,150);
+        goldPositionArray[DEPOT][CENTER] = new Position(-890,890,150);
+        goldPositionArray[DEPOT][RIGHT]=  new Position(-590,1190, 150);
 
-        wallPosition = new Position(-150,1425,150);
+        wallPosition = new Position(-50,1420,150);
 
-        depotCornerPosition = new Position(-1280,1200,150);
-        depotSidePosition = new Position(-1475, 1200, 150);
+        depotCornerPosition = new Position(-1280,1240,150);
+        depotSidePosition = new Position(-1550, 1240, 150);
 
-        depotPositionArray[DEPOT] = new Position(-1440,1410,150);
+        depotPositionArray[DEPOT] = new Position(-1440,1420,150);
         depotPositionArray[CRATER] = new Position(-1300,1425,150);
 
         craterPositonArray[CRATER] = new Position(800,1440,150);
-        craterPositonArray[DEPOT] = new Position(-1475,-800,150);
+        craterPositonArray[DEPOT] = new Position(-1550,-800,150);
 
         defineStateEnabledStatus();
 
@@ -168,11 +169,11 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "scanning minerals";
                         xpos = detector.getXPosition();
-                        if (xpos < 230) {
+                        if (0< xpos && xpos < 230) {
                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
                         } else if (xpos >= 230) {
                             goldPosition = GoldPositionDetector.GoldPosition.CENTER;
-                        } else {
+                        } else if (xpos==0){
                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
                         }
                         subState++;
@@ -291,7 +292,7 @@ public class WHSAuto extends OpMode{
 
                     case 0:
                         subStateDesc = "driving to crater";
-                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], true);
+                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], STARTING_POSITION == CRATER);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -308,10 +309,22 @@ public class WHSAuto extends OpMode{
             default: break;
         }
 
-        telemetry.addData("Substate: ", currentStateDesc + ", " + subStateDesc);
-        telemetry.addData("Current X", robot.getCoordinate().getX());
-        telemetry.addData("Current Y", robot.getCoordinate().getY());
+        telemetry.addData("Angle to Target: ", robot.angleToTargetDebug);
+        telemetry.addData("DriveToTarget in progress: ", robot.driveToTargetInProgress());
+        telemetry.addData("RotateToTarget in progress: ", robot.rotateToTargetInProgress());
+        telemetry.addData("IMU", robot.imu.getHeading());
+        telemetry.addData("X", robot.getCoordinate().getX());
+        telemetry.addData("Y", robot.getCoordinate().getY());
+        telemetry.addData("Heading", robot.getCoordinate().getHeading());
+        telemetry.addData("Distance to target", robot.distanceToTargetDebug);
+        telemetry.addData("Rotate Integral", robot.rotateController.getIntegral());
+        telemetry.addData("Rotate Derivative", robot.rotateController.getDerivative());
+        telemetry.addData("Drive Integral", robot.driveController.getIntegral());
+        telemetry.addData("Drive Derivative", robot.driveController.getDerivative());
+        telemetry.addData("Rotate Power", robot.rotateController.getOutput());
+        telemetry.addData("Drive Power", robot.driveController.getOutput());
 
+        telemetry.addData("Xpos", detector.getXPosition());
     }
 
     public void advanceState() {

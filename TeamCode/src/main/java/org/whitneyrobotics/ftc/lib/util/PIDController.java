@@ -22,6 +22,7 @@ public class PIDController {
     public void init(double initialError) {
         lastKnownTime = System.nanoTime() / 1E9;
         lastKnownError = initialError;
+        integral = 0;
     }
 
     public void setConstants(double KP, double KI, double KD) {
@@ -34,8 +35,9 @@ public class PIDController {
         this.error = error;
 
         //Integral & Derivative
-        double deltaTime = System.nanoTime() / 1E9 - lastKnownTime;
-        lastKnownTime = System.nanoTime() / 1E9;
+        double currentTime = System.nanoTime() / 1E9;
+        double deltaTime = currentTime - lastKnownTime;
+        lastKnownTime = currentTime;
 
         //Integral
         integral += error * deltaTime;

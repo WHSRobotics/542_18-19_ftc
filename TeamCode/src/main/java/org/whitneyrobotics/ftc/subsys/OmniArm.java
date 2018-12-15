@@ -17,7 +17,7 @@ public class OmniArm {
     private CRServo leftSweep;
     private CRServo rightSweep;
 
-    private final int EXTEND_LENGTH = 2100;
+    private final int EXTEND_LENGTH = 2300;
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
     private final int INTAKE_MODE = 2150;
@@ -48,6 +48,7 @@ public class OmniArm {
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         switchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+
     }
 
     public void operateIntake(boolean gamepadInputIntake, boolean gamepadInputOuttake) {
@@ -73,14 +74,15 @@ public class OmniArm {
         }
     }
 
+
     public void operateExtension(boolean gamepadInput) {
         extensionToggler.changeState(gamepadInput);
         if (extensionToggler.currentState() == 0) {
             extendMotor.setTargetPosition(RETRACT_LENGTH);
-            extendMotor.setPower(0.1);
+            extendMotor.setPower(0.245);
         } else if (extensionToggler.currentState() == 1) {
             extendMotor.setTargetPosition(EXTEND_LENGTH);
-            extendMotor.setPower(0.1);
+            extendMotor.setPower(0.245);
         }
     }
 
@@ -88,10 +90,10 @@ public class OmniArm {
         switchToggler.changeState(gamepadInput);
         if (switchToggler.currentState() == 0) {
             switchMotor.setTargetPosition(OUTTAKE_MODE);
-            switchMotor.setPower(0.25);
+            switchMotor.setPower(0.35);
         } else if (switchToggler.currentState() == 1) {
             switchMotor.setTargetPosition(INTAKE_MODE);
-            switchMotor.setPower(0.25);
+            switchMotor.setPower(0.35);
         }
     }
 

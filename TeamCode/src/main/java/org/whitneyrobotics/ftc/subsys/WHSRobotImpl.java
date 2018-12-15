@@ -24,8 +24,8 @@ public class WHSRobotImpl implements WHSRobot {
     private double targetHeading; //field frame
     public double angleToTargetDebug;
     private double lastKnownHeading = 0.1;
-    private static final double DEADBAND_DRIVE_TO_TARGET = 45; //in mm
-    private static final double DEADBAND_ROTATE_TO_TARGET = 0.5; //in degrees
+    private static final double DEADBAND_DRIVE_TO_TARGET = 24.5; //in mm
+    private static final double DEADBAND_ROTATE_TO_TARGET = 2; //in degrees
     private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.22, 0.28, 0.4, 0.45}; //{0.33, 0.6, 0.7, 0.9};
     private static final double[] DRIVE_TO_TARGET_THRESHOLD = {DEADBAND_DRIVE_TO_TARGET, 300, 600, 1200};
     private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.2, 0.3, 0.4};
@@ -67,7 +67,7 @@ public class WHSRobotImpl implements WHSRobot {
     public void driveToTarget(Position targetPos, boolean backwards) {
         Position vectorToTarget = Functions.subtractPositions(targetPos, currentCoord.getPos()); //field frame
         vectorToTarget = field2body(vectorToTarget); //body frame
-        double distanceToTarget = Functions.calculateMagnitude(vectorToTarget) * (vectorToTarget.getX() >= 0 ? 1 : -1);
+        double distanceToTarget = vectorToTarget.getX()/*Functions.calculateMagnitude(vectorToTarget) * (vectorToTarget.getX() >= 0 ? 1 : -1)*/;
         distanceToTargetDebug = distanceToTarget;
 
         double degreesToRotate = Math.atan2(vectorToTarget.getY(), vectorToTarget.getX()); //from -pi to pi rad
@@ -93,11 +93,13 @@ public class WHSRobotImpl implements WHSRobot {
                 driveController.setConstants(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
                 driveController.calculate(distanceToTarget);
 
-                double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 2500, RobotConstants.drive_min, RobotConstants.drive_max);
+                double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 1500, RobotConstants.drive_min, RobotConstants.drive_max);
 
                 // this stuff may be causing the robot to oscillate around the target position
                 if (distanceToTarget < 0) {
                     power = -power;
+                } else if (distanceToTarget > 0){
+                    power = Math.abs(power);
                 }
                 if (Math.abs(distanceToTarget) > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
                     driveToTargetInProgress = true;
@@ -143,7 +145,8 @@ public class WHSRobotImpl implements WHSRobot {
 
         rotateController.setConstants(RobotConstants.R_KP, RobotConstants.R_KI, RobotConstants.R_KD);
         rotateController.calculate(angleToTarget);
-        double power = Functions.map(rotateController.getOutput(), -180, 180, -RobotConstants.rotate_max, RobotConstants.rotate_max);
+
+        double power = (rotateController.getOutput() >= 0 ? 1 : -1) * (Functions.map(Math.abs(rotateController.getOutput()),  0, 180, RobotConstants.rotate_min, RobotConstants.rotate_max));
 
         if (Math.abs(angleToTarget) > RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
             drivetrain.operateLeft(-power);

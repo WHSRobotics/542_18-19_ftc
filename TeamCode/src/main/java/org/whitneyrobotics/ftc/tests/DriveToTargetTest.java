@@ -20,7 +20,7 @@ public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
-    Position p1 = new Position(-600, 0, 150);
+    Position p1 = new Position(-600, 600, 150);
     Position p2 = new Position(600,1200,150);
     boolean backwards = true;
     boolean b = true;
@@ -43,7 +43,7 @@ public class DriveToTargetTest extends OpMode {
 
         switch (i){
             case 0:
-                robot.rotateToTarget(60, false);
+                robot.rotateToTarget(45, false);
                 if (!robot.rotateToTargetInProgress()) {
                     i = 1;
                 }
@@ -52,12 +52,22 @@ public class DriveToTargetTest extends OpMode {
                 robot.rotateToTarget(-90, true);
                 if (!robot.rotateToTargetInProgress()) {
                     i = 2;
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             case 2:
                 robot.driveToTarget(p1, backwards);
                 if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
                     i = 3;
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             case 3:

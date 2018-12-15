@@ -36,15 +36,15 @@ public class DogeCvTest extends OpMode {
     @Override
     public void loop() {
         Xpos = detector.getXPosition();
-        if( Xpos < 200){
+        if( Xpos < 230 && Xpos !=0){
 
             telemetry.addData("Position", "left");
 
-        }else if (Xpos > 200 && Xpos <400){
+        }else if (Xpos >= 230){
 
             telemetry.addData("Position", "Center");
 
-        }else if (Xpos >400){
+        }else if (Xpos == 0) {
 
             telemetry.addData("Position","Right" );
 
