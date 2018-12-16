@@ -28,19 +28,22 @@ public class WHSTeleOp extends OpMode{
         } else {
             robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y, gamepad1.right_stick_y);
         }
+
         robot.drivetrain.switchOrientation(gamepad1.a);
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
-        robot.omniArm.operateSweepServos(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
+      //  robot.omniArm.operateSweepServos(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
         robot.omniArm.operateExtension(gamepad2.a);
        // robot.lift.sensorLift(gamepad1.y);
         telemetry.addData("Sensor Lift", gamepad1.y);
         telemetry.addData("Lift State", robot.lift.getSensorLiftState());
-        if (gamepad1.right_bumper) {
-           robot.omniArm.storeOmniArm(gamepad1.right_bumper);
+        if(!(gamepad2.right_trigger > 0.1)) {
+            if (gamepad1.right_bumper) {
+                robot.omniArm.storeOmniArm(gamepad1.right_bumper);
 
-        } else {
-            robot.omniArm.operateModeSwitch(gamepad2.x);
+            } else {
+                robot.omniArm.operateModeSwitch(gamepad2.x);
+            }
         }
         telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());
         telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());

@@ -99,7 +99,7 @@ public class WHSAuto extends OpMode{
 
         // setting the three different particle positions for the depot side
         goldPositionArray[DEPOT][LEFT] = new Position(-1190,590,150);
-        goldPositionArray[DEPOT][CENTER] = new Position(-890,890,150);
+        goldPositionArray[DEPOT][CENTER] = new Position(-900,800,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-590,1190, 150);
 
         wallPosition = new Position(-50,1420,150);
@@ -111,7 +111,7 @@ public class WHSAuto extends OpMode{
         depotPositionArray[CRATER] = new Position(-1300,1425,150);
 
         craterPositonArray[CRATER] = new Position(800,1440,150);
-        craterPositonArray[DEPOT] = new Position(-1550,-800,150);
+        craterPositonArray[DEPOT] = new Position(-1625,-700,150);
 
         defineStateEnabledStatus();
 
