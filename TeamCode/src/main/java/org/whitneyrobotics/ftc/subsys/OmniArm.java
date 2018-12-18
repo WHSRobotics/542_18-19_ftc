@@ -47,8 +47,6 @@ public class OmniArm {
 
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         switchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
     }
 
     public void operateIntake(boolean gamepadInputIntake, boolean gamepadInputOuttake) {
@@ -76,6 +74,7 @@ public class OmniArm {
 
 
     public void operateExtension(boolean gamepadInput) {
+        extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         extensionToggler.changeState(gamepadInput);
         if (extensionToggler.currentState() == 0) {
             extendMotor.setTargetPosition(RETRACT_LENGTH);
@@ -87,6 +86,7 @@ public class OmniArm {
     }
 
     public void operateModeSwitch(boolean gamepadInput) {
+        switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         switchToggler.changeState(gamepadInput);
         if (switchToggler.currentState() == 0) {
             switchMotor.setTargetPosition(OUTTAKE_MODE);
@@ -98,6 +98,7 @@ public class OmniArm {
     }
 
     public void storeOmniArm(boolean gamepadInput) {
+        switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         storeToggler.changeState(gamepadInput);
         if (storeToggler.currentState() == 1) {
             switchMotor.setTargetPosition(STORED_MODE);
@@ -106,7 +107,27 @@ public class OmniArm {
     }
 
     public void resetOmniArm(boolean gamepadInput) {
+        switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         switchMotor.setTargetPosition(RESET_MODE);
         switchMotor.setPower(0.25);
+    }
+
+    public void setSwitchMotorPower(double power) {
+        switchMotor.setPower(power);
+        if (power > 0.01) {
+            switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+    }
+
+    public void setExtendMotorPower(double power) {
+        extendMotor.setPower(power);
+        if (power > 0.01) {
+            extendMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+    }
+
+    public void resetEncoders() {
+        switchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
