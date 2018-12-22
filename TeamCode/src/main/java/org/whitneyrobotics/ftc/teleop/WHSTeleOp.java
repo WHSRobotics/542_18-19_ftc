@@ -41,6 +41,7 @@ public class WHSTeleOp extends OpMode{
         //telemetry.addData("Lift State", robot.lift.getSensorLiftState());
 
         armTog.changeState(gamepad2.right_trigger > 0.01);
+        robot.omniArm.limitSwitchReset(gamepad2.y);
         if (armTog.currentState() == 0) {
             if (gamepad2.dpad_up) {
                 robot.omniArm.setSwitchMotorPower(0.25);
@@ -69,6 +70,8 @@ public class WHSTeleOp extends OpMode{
 
         telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());
         telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());
+        telemetry.addData("Current OmniArm Mode", armTog.currentState());
+        telemetry.addData("Current LimitSwitch reset state", robot.omniArm.omniArmLimitSwitchResetState);
         //telemetry.addData("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
 
         liftTog.changeState(gamepad1.left_trigger > 0.01);

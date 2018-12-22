@@ -3,6 +3,7 @@ package org.whitneyrobotics.ftc.subsys;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -17,6 +18,8 @@ public class OmniArm {
     private CRServo leftSweep;
     private CRServo rightSweep;
 
+    private DigitalChannel omniLimitSwitch;
+
     private final int EXTEND_LENGTH = 2300;
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
@@ -30,12 +33,18 @@ public class OmniArm {
     Toggler switchToggler = new Toggler(2);
     Toggler storeToggler = new Toggler(2);
 
+    public int omniArmLimitSwitchResetState = 0;
+    public boolean isLimitSwitchResetInProgress = false;
+
+
+
     public OmniArm(HardwareMap armMap) {
         extendMotor = armMap.dcMotor.get("extendMotor");
         intakeMotor = armMap.dcMotor.get("intakeMotor");
         switchMotor = armMap.dcMotor.get("switchMotor");
         leftSweep = armMap.crservo.get("lSweepServo");
         rightSweep = armMap.crservo.get("rSweepServo");
+        omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -47,6 +56,7 @@ public class OmniArm {
 
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         switchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
     }
 
     public void operateIntake(boolean gamepadInputIntake, boolean gamepadInputOuttake) {
@@ -86,7 +96,9 @@ public class OmniArm {
     }
 
     public void operateModeSwitch(boolean gamepadInput) {
-        switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (!isLimitSwitchResetInProgress) {
+            switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
         switchToggler.changeState(gamepadInput);
         if (switchToggler.currentState() == 0) {
             switchMotor.setTargetPosition(OUTTAKE_MODE);
@@ -126,6 +138,32 @@ public class OmniArm {
         }
     }
 
+    public void limitSwitchReset(boolean gamepadInput){
+        switch (omniArmLimitSwitchResetState){
+            case 0:
+                if (gamepadInput){
+                    omniArmLimitSwitchResetState = 1;
+                    isLimitSwitchResetInProgress = true;
+                }
+                 break;
+            case 1:
+                switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                omniArmLimitSwitchResetState = 2;
+                break;
+            case 2:
+
+                if (!omniLimitSwitch.getState()){
+                    switchMotor.setPower(0);
+                    switchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    isLimitSwitchResetInProgress = false;
+                    omniArmLimitSwitchResetState = 0;
+                }else{
+                    switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    switchMotor.setPower(-.4);
+                }
+        }
+
+    }
     public void resetEncoders() {
         switchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
