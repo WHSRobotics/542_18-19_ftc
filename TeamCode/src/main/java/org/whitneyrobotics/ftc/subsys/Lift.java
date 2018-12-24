@@ -54,7 +54,7 @@ public class Lift implements MotorSubsystem {
 
     public void setLiftMotorPower(double power){
         liftMotor.setPower(power);
-        if(power > 0.01) {
+        if (power > 0.01) {
             liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
         liftState = LiftState.MANUAL_OVERRIDE;

@@ -9,23 +9,18 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 @TeleOp(name = "OmniArmTest", group = "tests")
 public class OmniArmTest extends OpMode{
 
-    DcMotor switchMotor;
     OmniArm omniArm;
     @Override
     public void init() {
-        switchMotor = hardwareMap.dcMotor.get("switchMotor");
         omniArm = new OmniArm(hardwareMap);
     }
 
     @Override
     public void loop(){
-      if (gamepad1.right_bumper){
-      switchMotor.setPower(.75);
-      }else if (gamepad1.left_bumper){
-          switchMotor.setPower(-.75);
-      }else {
-          switchMotor.setPower(0);
-      }
+
+
+      omniArm.limitSwitchReset(gamepad1.a);
+      omniArm.operateSweepServos(gamepad1.left_bumper, gamepad1.right_bumper);
 
 
     }

@@ -1,5 +1,7 @@
 package org.whitneyrobotics.ftc.lib.util;
 
+import org.firstinspires.ftc.robotcore.internal.android.dx.command.dexer.Main;
+
 /**
  * General purpose functions class
  */
@@ -105,5 +107,37 @@ public class Functions
         return heading;
     }
 
+    public static double map(double x, double in_min, double in_max, double out_min, double out_max)
+    {
+        if (x <= in_min) {
+            return out_min;
+        }
+        if (x >= in_max) {
+            return out_max;
+        }
+        if (in_min >= in_max) {
+            throw new IllegalArgumentException("in_min greater thtan in_max");
+        }
+        if (out_min >= out_max) {
+            throw new IllegalArgumentException("out_min greater thtan out_max");
+        }
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
 
+    public static double rotateMap(double x, double in_min, double in_max, double out_min, double out_max)
+    {
+        if (x <= in_min) {
+            return out_min;
+        }
+        if (x >= in_max) {
+            return out_max;
+        }
+        if (in_min >= in_max) {
+            throw new IllegalArgumentException("in_min greater thtan in_max");
+        }
+        if (out_min >= out_max) {
+            throw new IllegalArgumentException("out_min greater thtan out_max");
+        }
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
 }

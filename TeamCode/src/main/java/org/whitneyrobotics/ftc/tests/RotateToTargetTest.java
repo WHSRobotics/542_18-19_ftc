@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
+import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 import com.acmerobotics.dashboard.telemetry.*;
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -26,18 +27,18 @@ public class RotateToTargetTest extends OpMode {
 
         robot = new WHSRobotImpl(hardwareMap);
         robot.setInitialCoordinate(new Coordinate(0, 0, 150, 0));
-        //telemetry.setMsTransmissionInterval(10);
+        telemetry.setMsTransmissionInterval(10);
     }
 
     @Override
     public void start(){
-        robot.rotateToTarget(135, true);
+        robot.rotateToTarget(RobotConstants.rotateTestAngle, false);//RobotConstants.rotateOrientation);
     }
 
     @Override
     public void loop() {
         if(robot.rotateToTargetInProgress()) {
-            robot.rotateToTarget(135, true);
+            robot.rotateToTarget(RobotConstants.rotateTestAngle, false);//RobotConstants.rotateOrientation);
         }
         robot.estimatePosition();
         robot.estimateHeading();
@@ -54,10 +55,15 @@ public class RotateToTargetTest extends OpMode {
         telemetry.addData("FR Power", robot.drivetrain.frontRight.getPower());
         telemetry.addData("BR Power", robot.drivetrain.backRight.getPower());
         telemetry.addData("Distance to target", robot.distanceToTargetDebug);
+        telemetry.addData("Angle to target", robot.angleToTargetDebug);
         telemetry.addData("BLdelta", robot.drivetrain.backLeft.getCurrentPosition());
         telemetry.addData("BRdelta", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("FLdelta", robot.drivetrain.frontLeft.getCurrentPosition());
         telemetry.addData("FRdelta", robot.drivetrain.frontRight.getCurrentPosition());
+        telemetry.addData("Rotate Integral", robot.rotateController.getIntegral());
+        telemetry.addData("Rotate Derivative", robot.rotateController.getDerivative());
+        telemetry.addData("Drive Integral", robot.driveController.getIntegral());
+        telemetry.addData("Drive Derivative", robot.driveController.getDerivative());
 
     }
 }

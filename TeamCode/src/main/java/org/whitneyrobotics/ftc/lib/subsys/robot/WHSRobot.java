@@ -18,10 +18,6 @@ public interface WHSRobot {
 
     public boolean rotateToTargetInProgress();
 
-    public boolean hasDriveToTargetExited();
-
-    public boolean hasRotateToTargetExited();
-
     public void estimatePosition();
 
     public void estimateHeading();
