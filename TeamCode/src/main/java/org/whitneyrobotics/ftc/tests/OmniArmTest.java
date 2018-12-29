@@ -18,9 +18,15 @@ public class OmniArmTest extends OpMode{
     @Override
     public void loop(){
 
+      omniArm.operateIntake(gamepad1.right_trigger>0.1, gamepad1.left_trigger>0.1);
 
-      omniArm.limitSwitchReset(gamepad1.a);
+          omniArm.limitSwitchReset(gamepad1.a);
+          omniArm.operateModeSwitch(gamepad1.y);
+
       omniArm.operateSweepServos(gamepad1.left_bumper, gamepad1.right_bumper);
+      omniArm.operateExtension(gamepad1.x);
+      telemetry.addData("OmniLimit State" , omniArm.getOmniDigitalTouch());
+      telemetry.addData("OmniSwitchSwitchState", omniArm.operateModeSwitch);
 
 
     }

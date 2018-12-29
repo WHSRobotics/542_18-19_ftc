@@ -34,6 +34,7 @@ public class OmniArm {
     Toggler storeToggler = new Toggler(2);
 
     public int omniArmLimitSwitchResetState = 0;
+    public int operateModeSwitch = 0;
     public boolean isLimitSwitchResetInProgress = false;
 
 
@@ -88,24 +89,40 @@ public class OmniArm {
         extensionToggler.changeState(gamepadInput);
         if (extensionToggler.currentState() == 0) {
             extendMotor.setTargetPosition(RETRACT_LENGTH);
-            extendMotor.setPower(0.245);
+            extendMotor.setPower(0.50);
         } else if (extensionToggler.currentState() == 1) {
             extendMotor.setTargetPosition(EXTEND_LENGTH);
-            extendMotor.setPower(0.245);
+            extendMotor.setPower(0.50);
         }
     }
 
     public void operateModeSwitch(boolean gamepadInput) {
-        if (!isLimitSwitchResetInProgress) {
-            switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-        switchToggler.changeState(gamepadInput);
-        if (switchToggler.currentState() == 0) {
-            switchMotor.setTargetPosition(OUTTAKE_MODE);
-            switchMotor.setPower(0.35);
-        } else if (switchToggler.currentState() == 1) {
-            switchMotor.setTargetPosition(INTAKE_MODE);
-            switchMotor.setPower(0.35);
+        switch (operateModeSwitch) {
+            case 0:
+                if (gamepadInput) {
+                    switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    switchToggler.changeState(gamepadInput);
+                }
+
+                if (switchToggler.currentState() == 0) {
+                    switchMotor.setTargetPosition(STORED_MODE);
+                    switchMotor.setPower(.35);
+                    operateModeSwitch = 1;
+                    switchToggler.setState(1);
+                } else if (switchToggler.currentState() == 1) {
+                    switchMotor.setTargetPosition(INTAKE_MODE);
+                    switchMotor.setPower(.35);
+                    switchToggler.setState(0);
+                    operateModeSwitch = 1;
+                }
+                break;
+
+            case 1:
+                if (gamepadInput){
+                    operateModeSwitch = 0;
+                }
+                break;
+
         }
     }
 
@@ -149,17 +166,17 @@ public class OmniArm {
             case 1:
                 switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 omniArmLimitSwitchResetState = 2;
+                isLimitSwitchResetInProgress = true;
                 break;
             case 2:
 
-                if (!omniLimitSwitch.getState()){
+                if (getOmniDigitalTouch()){
                     switchMotor.setPower(0);
-                    switchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     isLimitSwitchResetInProgress = false;
                     omniArmLimitSwitchResetState = 0;
                 }else{
                     switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    switchMotor.setPower(-.4);
+                    switchMotor.setPower(-.35);
                 }
         }
 
@@ -167,5 +184,9 @@ public class OmniArm {
     public void resetEncoders() {
         switchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public boolean getOmniDigitalTouch(){
+        return !omniLimitSwitch.getState();
     }
 }
