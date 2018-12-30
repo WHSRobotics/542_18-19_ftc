@@ -24,7 +24,7 @@ public class OmniArm {
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
     private final int INTAKE_MODE = 2150;
-    private final int STORED_MODE = 300;
+    private final int STORED_MODE = 260;
     private final int OUTTAKE_MODE = 900;
     private final double INTAKE_SPEED = 1.0;
     private final double OUTTAKE_SPEED = -1.0;
@@ -97,33 +97,20 @@ public class OmniArm {
     }
 
     public void operateModeSwitch(boolean gamepadInput) {
-        switch (operateModeSwitch) {
-            case 0:
-                if (gamepadInput) {
-                    switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    switchToggler.changeState(gamepadInput);
-                }
 
-                if (switchToggler.currentState() == 0) {
-                    switchMotor.setTargetPosition(STORED_MODE);
-                    switchMotor.setPower(.35);
-                    operateModeSwitch = 1;
-                    switchToggler.setState(1);
-                } else if (switchToggler.currentState() == 1) {
-                    switchMotor.setTargetPosition(INTAKE_MODE);
-                    switchMotor.setPower(.35);
-                    switchToggler.setState(0);
-                    operateModeSwitch = 1;
-                }
-                break;
-
-            case 1:
-                if (gamepadInput){
-                    operateModeSwitch = 0;
-                }
-                break;
-
+        switchToggler.changeState(gamepadInput);
+        if (gamepadInput) {
+            switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
+
+        if (switchToggler.currentState() == 0) {
+            switchMotor.setTargetPosition(STORED_MODE);
+            switchMotor.setPower(.6);
+        } else if (switchToggler.currentState() == 1) {
+            switchMotor.setTargetPosition(INTAKE_MODE);
+            switchMotor.setPower(.35);
+        }
+
     }
 
     public void storeOmniArm(boolean gamepadInput) {
