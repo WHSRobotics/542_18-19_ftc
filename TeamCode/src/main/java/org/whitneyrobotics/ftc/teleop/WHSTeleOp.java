@@ -50,10 +50,10 @@ public class WHSTeleOp extends OpMode{
             robot.omniArm.resetEncoders();
             armTog.setState(2);
         } else if (armTog.currentState() == 2) {
-            if (gamepad1.right_bumper) {
-                robot.omniArm.storeOmniArm(gamepad1.right_bumper);
-            } else {
-                robot.omniArm.operateModeSwitch(gamepad2.x);
+            if (gamepad1.x){
+                robot.omniArm.operateModeSwitch(gamepad1.x);
+            }else {
+                robot.omniArm.limitSwitchReset(gamepad1.b);
             }
         }
 

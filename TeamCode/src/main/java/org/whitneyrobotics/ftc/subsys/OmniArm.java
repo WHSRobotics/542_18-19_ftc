@@ -20,12 +20,12 @@ public class OmniArm {
 
     private DigitalChannel omniLimitSwitch;
 
-    private final int EXTEND_LENGTH = 2300;
+    private final int EXTEND_LENGTH = 2100;
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
-    private final int INTAKE_MODE = 2150;
+    private final int INTAKE_MODE = 2021; //Bender ╾━╤デ╦︻( ▀̿ Ĺ̯ ▀̿├┬┴┬
     private final int STORED_MODE = 260;
-    private final int OUTTAKE_MODE = 900;
+    private final int OUTTAKE_MODE = 400;
     private final double INTAKE_SPEED = 1.0;
     private final double OUTTAKE_SPEED = -1.0;
 
@@ -98,17 +98,21 @@ public class OmniArm {
 
     public void operateModeSwitch(boolean gamepadInput) {
 
-        switchToggler.changeState(gamepadInput);
         if (gamepadInput) {
             switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            if (switchToggler.currentState() == 0){
+                switchToggler.setState(1);
+            }else if (switchToggler.currentState()==1){
+                switchToggler.setState(0);
+            }
         }
 
         if (switchToggler.currentState() == 0) {
-            switchMotor.setTargetPosition(STORED_MODE);
-            switchMotor.setPower(.6);
+            switchMotor.setTargetPosition(OUTTAKE_MODE);
+            switchMotor.setPower(.4);
         } else if (switchToggler.currentState() == 1) {
             switchMotor.setTargetPosition(INTAKE_MODE);
-            switchMotor.setPower(.35);
+            switchMotor.setPower(.4);
         }
 
     }
@@ -149,6 +153,9 @@ public class OmniArm {
                     omniArmLimitSwitchResetState = 1;
                     isLimitSwitchResetInProgress = true;
                 }
+                else{
+                    switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                }
                  break;
             case 1:
                 switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -161,6 +168,7 @@ public class OmniArm {
                     switchMotor.setPower(0);
                     isLimitSwitchResetInProgress = false;
                     omniArmLimitSwitchResetState = 0;
+                    switchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 }else{
                     switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     switchMotor.setPower(-.35);

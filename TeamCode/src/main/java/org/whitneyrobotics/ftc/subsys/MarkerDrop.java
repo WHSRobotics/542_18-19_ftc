@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class MarkerDrop {
     private Servo markerDropServo;
-    private static final double[] MARKER_DROP_POSITIONS = {0.92,0.60}; //Stored, Dumped
+    private static final double[] MARKER_DROP_POSITIONS = {0.31,0.12}; //Stored, Dumped
     public enum MarkerDropPosition {
         STORED, DUMPED
     }
