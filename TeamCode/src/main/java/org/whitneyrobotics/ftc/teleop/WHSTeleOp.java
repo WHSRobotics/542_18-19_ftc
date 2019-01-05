@@ -57,7 +57,7 @@ public class WHSTeleOp extends OpMode{
             }
         }
 
-        //robot.lift.sensorLift(gamepad1.y);
+        //robot.lift.sensorLift(gamepad1.y);b
         //telemetry.addData("Sensor Lift", gamepad1.y);
         //telemetry.addData("Lift State", robot.lift.getSensorLiftState());
 
@@ -80,6 +80,7 @@ public class WHSTeleOp extends OpMode{
         telemetry.addData("Current OmniArm Mode", armTog.currentState());
         telemetry.addData("Current Lift Tog State", liftTog.currentState());
         telemetry.addData("Current LimitSwitch reset state", robot.omniArm.omniArmLimitSwitchResetState);
+        telemetry.addData("Current operateModeSwitch Toggler State", robot.omniArm.getOmniArmModeSwitchTogglerState());
         //telemetry.addData("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
     }
 }
