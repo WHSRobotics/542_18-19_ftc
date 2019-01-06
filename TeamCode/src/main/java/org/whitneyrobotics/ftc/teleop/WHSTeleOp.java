@@ -35,7 +35,6 @@ public class WHSTeleOp extends OpMode{
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         robot.omniArm.operateSweepServos(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
-        robot.omniArm.operateExtension(gamepad2.a);
 
         armTog.changeState(gamepad2.dpad_up);
         if (armTog.currentState() == 0) {
@@ -46,15 +45,15 @@ public class WHSTeleOp extends OpMode{
             if (gamepad2.right_stick_button) {
                 robot.omniArm.setExtendMotorPower(gamepad2.right_stick_y);
             }
+            robot.omniArm.limitSwitchReset(gamepad2.b);
+
         } else if (armTog.currentState() == 1) {
             robot.omniArm.resetEncoders();
             armTog.setState(2);
         } else if (armTog.currentState() == 2) {
-            if (gamepad2.x){
-                robot.omniArm.operateModeSwitch(gamepad2.x);
-            }else {
-                robot.omniArm.limitSwitchReset(gamepad2.b);
-            }
+            robot.omniArm.operateModeSwitch(gamepad2.x);
+            robot.omniArm.operateExtension(gamepad2.a);
+
         }
 
         //robot.lift.sensorLift(gamepad1.y);b
@@ -72,7 +71,7 @@ public class WHSTeleOp extends OpMode{
             }
         } else if (liftTog.currentState() == 1){
             robot.lift.liftUpRobot(gamepad1.dpad_right);
-            robot.lift.bringDownHook(gamepad1.dpad_left);
+           // robot.lift.bringDownHook(gamepad1.dpad_left);
         }
 
         telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());

@@ -21,7 +21,7 @@ public class OmniArm {
 
     private DigitalChannel omniLimitSwitch;
 
-    private final int EXTEND_LENGTH = 2120;
+    private final int EXTEND_LENGTH = 2200;
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
     private int INTAKE_MODE = 2021; //Bender ╾━╤デ╦︻( ▀̿ Ĺ̯ ▀̿├┬┴┬
@@ -37,9 +37,6 @@ public class OmniArm {
     public int omniArmLimitSwitchResetState = 0;
     public int operateModeSwitch = 0;
     public boolean isLimitSwitchResetInProgress = false;
-
-    private boolean MrJank0;
-    private boolean MrJank1;
 
     public OmniArm(HardwareMap armMap) {
         extendMotor = armMap.dcMotor.get("extendMotor");
@@ -99,16 +96,20 @@ public class OmniArm {
     }
 
     public void operateModeSwitch(boolean gamepadInput) {
+
         switchToggler.changeState(gamepadInput);
-        if (switchToggler.currentState() == 0) {
+        if (gamepadInput) {
             switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            switchMotor.setTargetPosition(OUTTAKE_MODE);
-            switchMotor.setPower(0.35);
-        } else if (switchToggler.currentState() == 1) {
-            switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            switchMotor.setTargetPosition(INTAKE_MODE);
-            switchMotor.setPower(0.35);
         }
+
+        if (switchToggler.currentState() == 1) {
+            switchMotor.setTargetPosition(OUTTAKE_MODE);
+            switchMotor.setPower(.6);
+        } else if (switchToggler.currentState() == 0) {
+            switchMotor.setTargetPosition(INTAKE_MODE);
+            switchMotor.setPower(.35);
+        }
+
     }
     public void storeOmniArm(boolean gamepadInput) {
         switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);

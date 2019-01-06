@@ -89,7 +89,7 @@ public class Lift implements MotorSubsystem {
         }
     }
 
-    public void bringDownHook(boolean gamepadInput){
+   public void bringDownHook(boolean gamepadInput){
 
         switch (bringDownHookState) {
             case 0:
