@@ -104,7 +104,7 @@ public class OmniArm {
 
         if (switchToggler.currentState() == 1) {
             switchMotor.setTargetPosition(OUTTAKE_MODE);
-            switchMotor.setPower(.6);
+            switchMotor.setPower(.35);
         } else if (switchToggler.currentState() == 0) {
             switchMotor.setTargetPosition(INTAKE_MODE);
             switchMotor.setPower(.35);
