@@ -1,11 +1,15 @@
 package org.whitneyrobotics.ftc.autoop;
 
-import com.disnodeteam.dogecv.CameraViewDisplay;
-import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
+//import com.disnodeteam.dogecv.CameraViewDisplay;
+//import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.sun.tools.javac.tree.DCTree;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+//import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
@@ -13,6 +17,8 @@ import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
 import org.whitneyrobotics.ftc.subsys.Lift;
 import org.whitneyrobotics.ftc.subsys.MarkerDrop;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
+
+import java.util.List;
 
 @Autonomous(name="WHSAuto", group="auto")
 public class WHSAuto extends OpMode{
@@ -75,9 +81,17 @@ public class WHSAuto extends OpMode{
     static final double MARKER_DROP_DELAY = 0.65;
     static final double DRIVE_FORWARD_SMALL_BIT_DURATION = 0.2;
 
-    private GoldAlignDetector detector;
+    //private GoldAlignDetector detector;
     GoldPositionDetector.GoldPosition goldPosition;
-    double xpos;
+    //double xpos;
+
+    private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
+    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
+    private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
+    private static final String VUFORIA_KEY = "AZpuDDL/////AAABmTx4NapZXku6l0aaFFDwgWsYaPViIxPYFdJ8R9R4gPesBY5Ublbla/sRrihytU6cN9eb5Z30d8FuDcbgxBpdrg7gwPgn8GDXm5EEVpuOZnXYEOlcMTAz1nQcnDTPHcyFz1OKJz17ZoHeYtW70mbD7gqAmu/pP4Zz1cCR44pCFw954WOg7SsmVvuiL6J5iEQFIq68QEdX2sjOK7TmaE3RPATv8pZiU/1pwS5iBxSd+8X7PpBII0Ncc88CsKzrNBhF710j9j6fyHl2BeZhcAcRZ/9Fp1W+Cz2kvMPgI5Ah+FmAvWCOJLverLIYm/lgWhEeQrzpCNhc1eAxjtIAUnq5vhBz++vugvyv8o9fuf8HAxWB";
+
+    private VuforiaLocalizer vuforia;
+    private TFObjectDetector tfod;
 
     @Override
     public void init() {
@@ -119,10 +133,22 @@ public class WHSAuto extends OpMode{
         defineStateEnabledStatus();
 
         // vision initialization
+        /*
         detector = new GoldAlignDetector();
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         detector.useDefaults();
         detector.enable();
+        */
+
+        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
+        // first.
+        initVuforia();
+
+        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+            initTfod();
+        } else {
+            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        }
     }
 
     @Override
@@ -130,8 +156,12 @@ public class WHSAuto extends OpMode{
         // If you are using Motorola E4 phones,
         // you should send telemetry data while waiting for start.
         telemetry.addData("status", "loop test... waiting for start");
-        if(stateEnabled[DROP_FROM_LANDER]) {
+        if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
+        }
+        /** Activate Tensor Flow Object Detection. */
+        if (tfod != null) {
+            tfod.activate();
         }
     }
 
@@ -139,6 +169,10 @@ public class WHSAuto extends OpMode{
     public void loop() {
         robot.estimateHeading();
         robot.estimatePosition();
+
+        if (tfod != null) {
+            tfod.shutdown();
+        }
 
         switch (currentState) {
             case INIT:
@@ -171,6 +205,7 @@ public class WHSAuto extends OpMode{
                 switch (subState) {
                     case 0:
                         subStateDesc = "scanning minerals";
+                        /*
                         xpos = detector.getXPosition();
                         if (0< xpos && xpos < 230) {
                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
@@ -178,6 +213,42 @@ public class WHSAuto extends OpMode{
                             goldPosition = GoldPositionDetector.GoldPosition.CENTER;
                         } else if (xpos==0){
                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
+                        }
+                        */
+                        if (tfod != null) {
+                            // getUpdatedRecognitions() will return null if no new information is available since
+                            // the last time that call was made.
+                            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                            if (updatedRecognitions != null) {
+                                telemetry.addData("# Object Detected", updatedRecognitions.size());
+                                if (updatedRecognitions.size() == 3) {
+                                    int goldMineralX = -1;
+                                    int silverMineral1X = -1;
+                                    int silverMineral2X = -1;
+                                    for (Recognition recognition : updatedRecognitions) {
+                                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                                            goldMineralX = (int) recognition.getLeft();
+                                        } else if (silverMineral1X == -1) {
+                                            silverMineral1X = (int) recognition.getLeft();
+                                        } else {
+                                            silverMineral2X = (int) recognition.getLeft();
+                                        }
+                                    }
+                                    if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
+                                        if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
+                                            telemetry.addData("Gold Mineral Position", "Left");
+                                            goldPosition = GoldPositionDetector.GoldPosition.LEFT;
+                                        } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
+                                            telemetry.addData("Gold Mineral Position", "Right");
+                                            goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
+                                        } else {
+                                            telemetry.addData("Gold Mineral Position", "Center");
+                                            goldPosition = GoldPositionDetector.GoldPosition.CENTER;
+                                        }
+                                    }
+                                }
+                                telemetry.update();
+                            }
                         }
                         subState++;
                         break;
@@ -352,5 +423,34 @@ public class WHSAuto extends OpMode{
             currentState = currentState + 1;
             advanceState();
         }
+    }
+
+    /**
+     * Initialize the Vuforia localization engine.
+     */
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+    }
+
+    /**
+     * Initialize the Tensor Flow Object Detection engine.
+     */
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 }
