@@ -21,10 +21,10 @@ public class OmniArm {
 
     private DigitalChannel omniLimitSwitch;
 
-    private final int EXTEND_LENGTH = 2200;
+    private final int EXTEND_LENGTH = 2000;
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
-    private int INTAKE_MODE = 2021; //Bender ╾━╤デ╦︻( ▀̿ Ĺ̯ ▀̿├┬┴┬
+    private int INTAKE_MODE = 2020;
     private final int STORED_MODE = 260;
     private final int OUTTAKE_MODE = 300;
     private final double INTAKE_SPEED = 1.0;

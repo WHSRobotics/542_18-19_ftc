@@ -9,7 +9,9 @@ import com.sun.tools.javac.tree.DCTree;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-//import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+
 import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
@@ -73,10 +75,12 @@ public class WHSAuto extends OpMode{
     String currentStateDesc;
     String subStateDesc;
 
+    SimpleTimer scanParticlesTimer = new SimpleTimer();
     SimpleTimer omniArmMoveTimer = new SimpleTimer();
     SimpleTimer storedToDumpedTimer = new SimpleTimer();
     SimpleTimer dumpedToStoredTimer = new SimpleTimer();
 
+    static final double SCAN_PARTICLES_DURATION = 5.0;
     static final double OMNI_ARM_MOVE_DELAY = .7;
     static final double MARKER_DROP_DELAY = 0.65;
     static final double DRIVE_FORWARD_SMALL_BIT_DURATION = 0.2;
@@ -92,6 +96,8 @@ public class WHSAuto extends OpMode{
 
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
+
+    private boolean TFRun = false;
 
     @Override
     public void init() {
@@ -170,10 +176,6 @@ public class WHSAuto extends OpMode{
         robot.estimateHeading();
         robot.estimatePosition();
 
-        if (tfod != null) {
-            tfod.shutdown();
-        }
-
         switch (currentState) {
             case INIT:
                 currentStateDesc = "starting auto";
@@ -196,6 +198,9 @@ public class WHSAuto extends OpMode{
                         break;
                     case 2:
                         subStateDesc = "exit";
+                        scanParticlesTimer.set(SCAN_PARTICLES_DURATION);
+                        // default gold position
+                        goldPosition = GoldPositionDetector.GoldPosition.CENTER;
                         advanceState();
                         break;
                 }
@@ -216,6 +221,7 @@ public class WHSAuto extends OpMode{
                         }
                         */
                         if (tfod != null) {
+                            TFRun = true;
                             // getUpdatedRecognitions() will return null if no new information is available since
                             // the last time that call was made.
                             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
@@ -236,13 +242,10 @@ public class WHSAuto extends OpMode{
                                     }
                                     if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
                                         if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                                            telemetry.addData("Gold Mineral Position", "Left");
                                             goldPosition = GoldPositionDetector.GoldPosition.LEFT;
                                         } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                                            telemetry.addData("Gold Mineral Position", "Right");
                                             goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
                                         } else {
-                                            telemetry.addData("Gold Mineral Position", "Center");
                                             goldPosition = GoldPositionDetector.GoldPosition.CENTER;
                                         }
                                     }
@@ -250,7 +253,9 @@ public class WHSAuto extends OpMode{
                                 telemetry.update();
                             }
                         }
-                        subState++;
+                        if (scanParticlesTimer.isExpired()) {
+                            subState++;
+                        }
                         break;
                     case 1:
                         subStateDesc = "driving to lander clearance";
@@ -393,10 +398,15 @@ public class WHSAuto extends OpMode{
                 break;
             case END:
                 currentStateDesc = "end";
+                if (tfod != null) {
+                    tfod.shutdown();
+                }
                 break;
             default: break;
         }
 
+        telemetry.addData("Gold Position: ", goldPosition);
+        telemetry.addData("TFRun: ", TFRun);
         telemetry.addData("Angle to Target: ", robot.angleToTargetDebug);
         telemetry.addData("DriveToTarget in progress: ", robot.driveToTargetInProgress());
         telemetry.addData("RotateToTarget in progress: ", robot.rotateToTargetInProgress());
@@ -412,7 +422,7 @@ public class WHSAuto extends OpMode{
         telemetry.addData("Rotate Power", robot.rotateController.getOutput());
         telemetry.addData("Drive Power", robot.driveController.getOutput());
 
-        telemetry.addData("Xpos", detector.getXPosition());
+        //telemetry.addData("Xpos", detector.getXPosition());
     }
 
     public void advanceState() {
