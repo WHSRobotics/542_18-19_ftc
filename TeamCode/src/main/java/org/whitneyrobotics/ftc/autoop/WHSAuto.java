@@ -125,7 +125,6 @@ public class WHSAuto extends OpMode{
 
         wallPosition = new Position(-50,1420,150);
 
-        intermediatePosition = new Position(-1625,0,150);
 
         depotCornerPosition = new Position(-1280,1300,150);
         depotSidePosition = new Position(-1550, 1300, 150);
@@ -371,26 +370,13 @@ public class WHSAuto extends OpMode{
 
                     case 0:
                         subStateDesc = "driving to crater";
-                        if (STARTING_POSITION == DEPOT){
-                            robot.driveToTarget(intermediatePosition, false);
-                        }else if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(craterPositonArray[STARTING_POSITION], STARTING_POSITION == CRATER);
-                        }
+                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], STARTING_POSITION == CRATER);
+
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 1:
-                        if (STARTING_POSITION == DEPOT){
-                            robot.driveToTarget(craterPositonArray[DEPOT], false);
-                        }else if (STARTING_POSITION == CRATER){
-                            subState++;
-                        }
-
-                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
-                            subState++;
-                        }
-                    case 2:
                         subStateDesc = "exit";
                         advanceState();
                         break;
