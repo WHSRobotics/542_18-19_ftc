@@ -128,14 +128,14 @@ public class OmniArm {
 
     public void setSwitchMotorPower(double power) {
         switchMotor.setPower(power);
-        if (power > 0.01) {
+        if (power != 0) {
             switchMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }
 
     public void setExtendMotorPower(double power) {
         extendMotor.setPower(power);
-        if (power > 0.01) {
+        if (power != 0) {
             extendMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }

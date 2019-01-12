@@ -41,9 +41,13 @@ public class WHSTeleOp extends OpMode{
             robot.omniArm.limitSwitchReset(gamepad2.y);     //This doesn't work in non-override mode
             if(gamepad2.left_stick_button) {
                 robot.omniArm.setSwitchMotorPower(gamepad2.left_stick_y);
+            }else {
+                robot.omniArm.setExtendMotorPower(0);
             }
             if (gamepad2.right_stick_button) {
                 robot.omniArm.setExtendMotorPower(gamepad2.right_stick_y);
+            }else {
+                robot.omniArm.setSwitchMotorPower(0);
             }
             robot.omniArm.limitSwitchReset(gamepad2.b);
 
