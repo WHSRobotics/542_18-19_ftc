@@ -29,6 +29,7 @@
 
 package org.whitneyrobotics.ftc.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -38,6 +39,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.whitneyrobotics.ftc.subsys.Lift;
 
 import java.util.List;
 
@@ -51,7 +53,7 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Tensorfow Test", group = "tests")
+@Autonomous(name = "Tensorfow Test", group = "tests")
 //@Disabled
 public class TensorFlowTest extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
@@ -84,8 +86,11 @@ public class TensorFlowTest extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
+    Lift lift;
+
     @Override
     public void runOpMode() {
+        lift = new Lift(hardwareMap);
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
         initVuforia();
@@ -108,6 +113,8 @@ public class TensorFlowTest extends LinearOpMode {
             }
 
             while (opModeIsActive()) {
+                lift.setLiftPosition(Lift.LiftPosition.STORED);
+
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.

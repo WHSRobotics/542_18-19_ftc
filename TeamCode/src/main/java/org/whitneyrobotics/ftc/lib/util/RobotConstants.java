@@ -14,15 +14,15 @@ public class RobotConstants {
     public static int canLift = 1;
 
     public static double DEADBAND_DRIVE_TO_TARGET = 24.5;
-    public static double DEADBAND_ROTATE_TO_TARGET = 2;
-    public static double drive_min = .1245;
-    public static double drive_max = .6;
+    public static double DEADBAND_ROTATE_TO_TARGET = 2.0;
+    public static double drive_min = .2;//.1245;
+    public static double drive_max = .8;//.6;
     public static double rotate_min = 0.2;
     public static double rotate_max = 1;
-    public static double R_KP = 1.19;
+    public static double R_KP = 1.3;//1.19;
     public static double R_KI = 0.82;
     public static double R_KD = 0.49;
-    public static double D_KP = 1.5;
+    public static double D_KP = 1.7;//1.5;
     public static double D_KI = 0.7;
     public static double D_KD = 0.8;
 

@@ -78,9 +78,9 @@ public class WHSAuto extends OpMode{
     SimpleTimer storedToDumpedTimer = new SimpleTimer();
     SimpleTimer dumpedToStoredTimer = new SimpleTimer();
 
-    static final double SCAN_PARTICLES_DURATION = 2.45;
-    static final double OMNI_ARM_MOVE_DELAY = .7;
-    static final double MARKER_DROP_DELAY = 0.65;
+    static final double SCAN_PARTICLES_DURATION = 3.0;
+    static final double OMNI_ARM_MOVE_DELAY = 0.38;
+    static final double MARKER_DROP_DELAY = 0.55;
 
     GoldPositionDetector.GoldPosition goldPosition;
 
@@ -104,30 +104,30 @@ public class WHSAuto extends OpMode{
 
         // from the perspective of blue alliance
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
-        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
+        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 137.5);
 
         landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
         landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
         // setting the three different particle positions for the crater side
         goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);//(600,1200, 150);
-        goldPositionArray[CRATER][CENTER] = new Position(890, 890, 150);//(900,900,150);
+        goldPositionArray[CRATER][CENTER] = new Position(930, 930, 150);//(900,900,150);
         goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);//(1200,600,150);
 
         // setting the three different particle positions for the depot side
-        goldPositionArray[DEPOT][LEFT] = new Position(-1190,590,150);
+        goldPositionArray[DEPOT][LEFT] = new Position(-1220,590,150);
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
-        goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1200, 150);
+        goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1320, 150);
 
-        wallPosition = new Position(-50,1420,150);
+        wallPosition = new Position(-20,1505,150);
         depotCornerPosition = new Position(-1280,1300,150);
-        depotSidePosition = new Position(-1550, 1300, 150);
+        depotSidePosition = new Position(-1550, 1275, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440,1420,150);
-        depotPositionArray[CRATER] = new Position(-1300,1425,150);
+        depotPositionArray[CRATER] = new Position(-1300,1505,150);
 
-        craterPositonArray[CRATER] = new Position(800,1440,150);
-        craterPositonArray[DEPOT] = new Position(-1625,-700,150);
+        craterPositonArray[CRATER] = new Position(750,1480,150);
+        craterPositonArray[DEPOT] = new Position(-1675,-640,150);
 
         defineStateEnabledStatus();
 
@@ -180,7 +180,6 @@ public class WHSAuto extends OpMode{
                 switch (subState) {
                     case 0:
                         subStateDesc = "entry";
-                        robot.omniArm.storeOmniArm(true);
                         scanParticlesTimer.set(SCAN_PARTICLES_DURATION);
                         subState++;
                         break;
@@ -224,18 +223,26 @@ public class WHSAuto extends OpMode{
 
                         // advance substate after gold particle is found, or the timer expires
                         if (/*goldParticleDetected ||*/ scanParticlesTimer.isExpired()) {
+                            omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
                             subState++;
                         }
 
                         break;
                     case 2:
+                        subStateDesc = "moving arm out of way of lift";
+                        robot.omniArm.storeOmniArm(true);
+                        if(omniArmMoveTimer.isExpired()){
+                            subState++;
+                        }
+                        break;
+                    case 3:
                         subStateDesc = "bringing robot down";
                         robot.lift.bringDownRobot(true);
                         if (robot.lift.getLiftState() == Lift.LiftState.WAITING_FOR_DRIVETRAIN) {
                             subState++;
                         }
                         break;
-                    case 3:
+                    case 4:
                         subStateDesc = "exit";
                         advanceState();
                         break;

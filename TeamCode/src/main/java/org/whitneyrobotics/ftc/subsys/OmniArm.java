@@ -25,8 +25,8 @@ public class OmniArm {
     private final int RETRACT_LENGTH = 0;
     private final int RESET_MODE = 0;
     private int INTAKE_MODE = 2020;
-    private final int STORED_MODE = 260;
-    private final int OUTTAKE_MODE = 300;
+    private final int STORED_MODE = 320;
+    private final int OUTTAKE_MODE = 270;
     private final double INTAKE_SPEED = 1.0;
     private final double OUTTAKE_SPEED = -1.0;
 
@@ -116,14 +116,14 @@ public class OmniArm {
         storeToggler.changeState(gamepadInput);
         if (storeToggler.currentState() == 1) {
             switchMotor.setTargetPosition(STORED_MODE);
-            switchMotor.setPower(0.25);
+            switchMotor.setPower(0.35);
         }
     }
 
     public void resetOmniArm(boolean gamepadInput) {
         switchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         switchMotor.setTargetPosition(RESET_MODE);
-        switchMotor.setPower(0.25);
+        switchMotor.setPower(0.35);
     }
 
     public void setSwitchMotorPower(double power) {

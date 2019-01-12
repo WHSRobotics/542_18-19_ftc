@@ -13,7 +13,8 @@ apply from: '../build.common.gradle'
 
 dependencies {
 
-
+    implementation (name: 'tfod-release', ext:'aar')
+    implementation (name: 'tensorflow-lite-0.0.0-nightly', ext:'aar')
     implementation project(':openCVLibrary3')
     implementation project(':FtcRobotController')
     implementation project(':DogeCV')
