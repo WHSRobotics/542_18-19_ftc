@@ -63,8 +63,8 @@ public class WHSAuto extends OpMode{
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_PIECE] = true;
-        stateEnabled[CLAIM_DEPOT] = true;
-        stateEnabled[DRIVE_TO_CRATER] = true;
+        stateEnabled[CLAIM_DEPOT] = false;
+        stateEnabled[DRIVE_TO_CRATER] = false;
         stateEnabled[END] = true;
     }
 
@@ -80,7 +80,7 @@ public class WHSAuto extends OpMode{
 
     static final double SCAN_PARTICLES_DURATION = 3.0;
     static final double OMNI_ARM_MOVE_DELAY = 0.38;
-    static final double MARKER_DROP_DELAY = 0.55;
+    static final double MARKER_DROP_DELAY = 0.75;
 
     GoldPositionDetector.GoldPosition goldPosition;
 
@@ -119,15 +119,15 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1320, 150);
 
-        wallPosition = new Position(-20,1505,150);
+        wallPosition = new Position(-20,1490,150);
         depotCornerPosition = new Position(-1280,1300,150);
-        depotSidePosition = new Position(-1550, 1275, 150);
+        depotSidePosition = new Position(-1400, 1275, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440,1420,150);
-        depotPositionArray[CRATER] = new Position(-1300,1505,150);
+        depotPositionArray[CRATER] = new Position(-1250,1505,150);
 
-        craterPositonArray[CRATER] = new Position(750,1480,150);
-        craterPositonArray[DEPOT] = new Position(-1675,-640,150);
+        craterPositonArray[CRATER] = new Position(750,1490,150);
+        craterPositonArray[DEPOT] = new Position(-1575,-640,150);
 
         defineStateEnabledStatus();
 
@@ -334,11 +334,25 @@ public class WHSAuto extends OpMode{
                             robot.driveToTarget(depotSidePosition, false);
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                            if (STARTING_POSITION == DEPOT) {
+                                storedToDumpedTimer.set(MARKER_DROP_DELAY);
+                            }
                             subState++;
                         }
-                        storedToDumpedTimer.set(MARKER_DROP_DELAY);
                         break;
                     case 2:
+                        subStateDesc = "[crater] rotating robot";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.rotateToTarget(90, true);
+                            if (!robot.rotateToTargetInProgress()) {
+                                storedToDumpedTimer.set(MARKER_DROP_DELAY);
+                                subState++;
+                            }
+                        } else {
+                            subState++;
+                        }
+                        break;
+                    case 3:
                         subStateDesc = "dumping marker";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
                         if (storedToDumpedTimer.isExpired()) {
@@ -346,14 +360,26 @@ public class WHSAuto extends OpMode{
                         }
                         dumpedToStoredTimer.set(MARKER_DROP_DELAY);
                         break;
-                    case 3:
+                    case 4:
                         subStateDesc = "storing marker drop";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
                         if (dumpedToStoredTimer.isExpired()) {
                             subState++;
                         }
                         break;
-                    case 4:
+                    case 5:
+                        subStateDesc = "[depot] rotating robot";
+                        if (STARTING_POSITION == DEPOT){
+                            robot.rotateToTarget(270, false);
+                            if (!robot.rotateToTargetInProgress()) {
+                                storedToDumpedTimer.set(MARKER_DROP_DELAY);
+                                subState++;
+                            }
+                        } else {
+                            subState++;
+                        }
+                        break;
+                    case 6:
                         subStateDesc = "exit";
                         advanceState();
                         break;

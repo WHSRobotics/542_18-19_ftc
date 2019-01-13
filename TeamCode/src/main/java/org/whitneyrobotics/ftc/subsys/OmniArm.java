@@ -26,7 +26,7 @@ public class OmniArm {
     private final int RESET_MODE = 0;
     private int INTAKE_MODE = 2020;
     private final int STORED_MODE = 320;
-    private final int OUTTAKE_MODE = 270;
+    private final int OUTTAKE_MODE = 290;
     private final double INTAKE_SPEED = 1.0;
     private final double OUTTAKE_SPEED = -1.0;
 
