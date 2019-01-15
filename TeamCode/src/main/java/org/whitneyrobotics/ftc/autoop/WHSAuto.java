@@ -1,10 +1,7 @@
 package org.whitneyrobotics.ftc.autoop;
 
-//import com.disnodeteam.dogecv.CameraViewDisplay;
-//import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.sun.tools.javac.tree.DCTree;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -12,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
-import org.whitneyrobotics.ftc.lib.subsys.goldpositiondetector.GoldPositionDetector;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Position;
 import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
@@ -27,6 +23,9 @@ public class WHSAuto extends OpMode{
 
     WHSRobotImpl robot;
 
+    /**
+     * Positioning
+     */
     Coordinate[] startingCoordinateArray = new Coordinate[2];
     Position[] landerClearancePositionArray = new Position[2];
     Position[][] goldPositionArray = new Position[2][3];
@@ -38,52 +37,87 @@ public class WHSAuto extends OpMode{
 
     static final int CRATER = 0;
     static final int DEPOT = 1;
-
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-
     static final int STARTING_POSITION = CRATER;
 
-    // state definitions
+    /**
+     * State Definitions
+     */
     static final int INIT = 0;
     static final int DROP_FROM_LANDER = 1;
+        /**
+         * Substates:
+         * - Entry
+         * - Scanning Minerals
+         * - Moving OmniArm out of Lift's way
+         * - Bringing robot down
+         * - Exit
+         */
     static final int DRIVE_FROM_LANDER = 2;
-    static final int SAMPLE_PIECE = 3;
+        /**
+         * Substates:
+         * - Entry
+         * - Driving to lander clearance
+         * - Bringing hook down
+         * - Resetting OmniArm
+         * - Exit
+         */
+    static final int SAMPLE_MINERAL = 3;
+        /**
+         * Substates:
+         * - Entry
+         * - Driving to particle
+         * - Driving back to lander clearance [CRATER]
+         * - Exit
+         */
     static final int CLAIM_DEPOT = 4;
+        /**
+         * Substates:
+         * - Entry
+         * - Driving to intermediate position
+         * - Driving to depot
+         * - Rotating robot [CRATER]
+         * - Dumping MarkerDrop
+         * - Storing MarkerDrop
+         * - Rotating robot [DEPOT]
+         * - Exit
+         */
     static final int DRIVE_TO_CRATER = 5;
+        /**
+         * Substates:
+         * - Entry
+         * - Driving to crater
+         * - Exit
+         */
     static final int END = 6;
 
     static final int NUM_OF_STATES = 7;
 
     boolean[] stateEnabled = new boolean[NUM_OF_STATES];
 
-    public void defineStateEnabledStatus() {
-        stateEnabled[INIT] = true;
-        stateEnabled[DROP_FROM_LANDER] = true;
-        stateEnabled[DRIVE_FROM_LANDER] = true;
-        stateEnabled[SAMPLE_PIECE] = true;
-        stateEnabled[CLAIM_DEPOT] = false;
-        stateEnabled[DRIVE_TO_CRATER] = false;
-        stateEnabled[END] = true;
-    }
-
-    int currentState;
-    int subState;
-    String currentStateDesc;
+    int state = INIT;
+    int subState = 0;
+    int goldPosition = CENTER;
+    String stateDesc;
     String subStateDesc;
 
-    SimpleTimer scanParticlesTimer = new SimpleTimer();
-    SimpleTimer omniArmMoveTimer = new SimpleTimer();
-    SimpleTimer storedToDumpedTimer = new SimpleTimer();
-    SimpleTimer dumpedToStoredTimer = new SimpleTimer();
+    /**
+     * Timers
+     */
+    SimpleTimer scanMineralsTimer = new SimpleTimer();
+    SimpleTimer moveOmniArmTimer = new SimpleTimer();
+    SimpleTimer dumpMarkerDropTimer = new SimpleTimer();
+    SimpleTimer storeMarkerDropTimer = new SimpleTimer();
 
-    static final double SCAN_PARTICLES_DURATION = 3.0;
-    static final double OMNI_ARM_MOVE_DELAY = 0.38;
-    static final double MARKER_DROP_DELAY = 0.75;
+    static final double SCAN_MINERALS_DURATION = 3.0;
+    static final double MOVE_OMNI_ARM_DURATION = 0.38;
+    static final double MOVE_MARKER_DROP_DURATION = 0.75;
 
-    GoldPositionDetector.GoldPosition goldPosition;
-
+    /**
+     * Tensorflow Variables
+     */
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
@@ -91,16 +125,102 @@ public class WHSAuto extends OpMode{
 
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
-
-    private boolean TFRun = false;
     private boolean goldParticleDetected = false;
+
+    /**
+     * Determines which states will be run.
+     */
+    public void defineStateEnabledStatus() {
+        stateEnabled[INIT] = true;
+        stateEnabled[DROP_FROM_LANDER] = true;
+        stateEnabled[DRIVE_FROM_LANDER] = true;
+        stateEnabled[SAMPLE_MINERAL] = true;
+        stateEnabled[CLAIM_DEPOT] = true;
+        stateEnabled[DRIVE_TO_CRATER] = true;
+        stateEnabled[END] = true;
+    }
+
+    /**
+     * Advances the state, skipping ones that have been disabled.
+     */
+    public void advanceState() {
+        if (stateEnabled[(state + 1)]) {
+            state++;
+            subState = 0;
+        } else {
+            state++;
+            advanceState();
+        }
+    }
+
+    /**
+     * Initializes the Vuforia localization engine.
+     */
+    private void initVuforia() {
+        // Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        // Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+    }
+
+    /**
+     * Initializes the Tensor Flow Object Detection engine.
+     */
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+    }
+
+    /**
+     * Returns position of the gold particle.
+     */
+    private int detectGoldPosition() {
+        if (tfod != null) {
+            // getUpdatedRecognitions() will return null if no new information is available since
+            // the last time that call was made.
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            if (updatedRecognitions != null) {
+                telemetry.addData("# Object Detected", updatedRecognitions.size());
+                if (updatedRecognitions.size() == 3) {
+                    int goldMineralX = -1;
+                    int silverMineral1X = -1;
+                    int silverMineral2X = -1;
+                    for (Recognition recognition : updatedRecognitions) {
+                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                            goldMineralX = (int) recognition.getLeft();
+                        } else if (silverMineral1X == -1) {
+                            silverMineral1X = (int) recognition.getLeft();
+                        } else {
+                            silverMineral2X = (int) recognition.getLeft();
+                        }
+                    }
+                    if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
+                        goldParticleDetected = true;
+                        if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
+                            return LEFT;
+                        } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
+                            return RIGHT;
+                        } else {
+                            return CENTER;
+                        }
+                    }
+                }
+            }
+        }
+        return CENTER;
+    }
 
     @Override
     public void init() {
         robot = new WHSRobotImpl(hardwareMap);
         robot.lift.liftMotor.setPower(0);
-        currentState = INIT;
-        subState = 0;
 
         // from the perspective of blue alliance
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
@@ -110,9 +230,9 @@ public class WHSAuto extends OpMode{
         landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
         // setting the three different particle positions for the crater side
-        goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);//(600,1200, 150);
-        goldPositionArray[CRATER][CENTER] = new Position(930, 930, 150);//(900,900,150);
-        goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);//(1200,600,150);
+        goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);
+        goldPositionArray[CRATER][CENTER] = new Position(930, 930, 150);
+        goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);
 
         // setting the three different particle positions for the depot side
         goldPositionArray[DEPOT][LEFT] = new Position(-1220,590,150);
@@ -131,9 +251,6 @@ public class WHSAuto extends OpMode{
 
         defineStateEnabledStatus();
 
-        // default gold position
-        goldPosition = GoldPositionDetector.GoldPosition.CENTER;
-
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
         initVuforia();
@@ -149,7 +266,7 @@ public class WHSAuto extends OpMode{
     public void init_loop() {
         // If you are using Motorola E4 phones,
         // you should send telemetry data while waiting for start.
-        telemetry.addData("status", "loop test... waiting for start");
+        telemetry.addData("Status", "Waiting for start...");
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
@@ -169,154 +286,124 @@ public class WHSAuto extends OpMode{
         robot.estimateHeading();
         robot.estimatePosition();
 
-        switch (currentState) {
+        switch (state) {
             case INIT:
-                currentStateDesc = "starting auto";
+                stateDesc = "Starting Auto";
                 robot.setInitialCoordinate(startingCoordinateArray[STARTING_POSITION]);
                 advanceState();
                 break;
             case DROP_FROM_LANDER:
-                currentStateDesc = "dropping from lander";
+                stateDesc = "Dropping from lander";
                 switch (subState) {
                     case 0:
-                        subStateDesc = "entry";
-                        scanParticlesTimer.set(SCAN_PARTICLES_DURATION);
+                        subStateDesc = "Entry";
+                        scanMineralsTimer.set(SCAN_MINERALS_DURATION);
                         subState++;
                         break;
                     case 1:
-                        subStateDesc = "scanning minerals";
+                        subStateDesc = "Scanning minerals";
+                        goldPosition = detectGoldPosition();
 
-                        // particle detection
-                        if (tfod != null) {
-                            TFRun = true;
-                            // getUpdatedRecognitions() will return null if no new information is available since
-                            // the last time that call was made.
-                            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                            if (updatedRecognitions != null) {
-                                telemetry.addData("# Object Detected", updatedRecognitions.size());
-                                if (updatedRecognitions.size() == 3) {
-                                    int goldMineralX = -1;
-                                    int silverMineral1X = -1;
-                                    int silverMineral2X = -1;
-                                    for (Recognition recognition : updatedRecognitions) {
-                                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                            goldMineralX = (int) recognition.getLeft();
-                                        } else if (silverMineral1X == -1) {
-                                            silverMineral1X = (int) recognition.getLeft();
-                                        } else {
-                                            silverMineral2X = (int) recognition.getLeft();
-                                        }
-                                    }
-                                    if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                                        goldParticleDetected = true;
-                                        if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                                            goldPosition = GoldPositionDetector.GoldPosition.LEFT;
-                                        } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                                            goldPosition = GoldPositionDetector.GoldPosition.RIGHT;
-                                        } else {
-                                            goldPosition = GoldPositionDetector.GoldPosition.CENTER;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // advance substate after gold particle is found, or the timer expires
-                        if (/*goldParticleDetected ||*/ scanParticlesTimer.isExpired()) {
-                            omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
+                        if (scanMineralsTimer.isExpired()) {
+                            moveOmniArmTimer.set(MOVE_OMNI_ARM_DURATION);
                             subState++;
                         }
 
                         break;
                     case 2:
-                        subStateDesc = "moving arm out of way of lift";
+                        subStateDesc = "Moving OmniArm out of Lift's way";
                         robot.omniArm.storeOmniArm(true);
-                        if(omniArmMoveTimer.isExpired()){
+                        if (moveOmniArmTimer.isExpired()) {
                             subState++;
                         }
                         break;
                     case 3:
-                        subStateDesc = "bringing robot down";
+                        subStateDesc = "Bringing robot down";
                         robot.lift.bringDownRobot(true);
                         if (robot.lift.getLiftState() == Lift.LiftState.WAITING_FOR_DRIVETRAIN) {
                             subState++;
                         }
                         break;
                     case 4:
-                        subStateDesc = "exit";
+                        subStateDesc = "Exit";
                         advanceState();
                         break;
                 }
                 break;
             case DRIVE_FROM_LANDER:
-                currentStateDesc = "driving from lander";
+                stateDesc = "Driving from lander";
                 switch (subState) {
                     case 0:
-                        subStateDesc = "driving to lander clearance";
+                        subStateDesc = "Entry";
+                        subState++;
+                    case 1:
+                        subStateDesc = "Driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
-                        omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
+
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
-                    case 1:
-                        subStateDesc = "moving omniarm out of the way";
-                        robot.omniArm.storeOmniArm(true);
-                        if (omniArmMoveTimer.isExpired()) {
-                            subState++;
-                        }
-                        break;
                     case 2:
-                        subStateDesc = "bringing hook down";
+                        subStateDesc = "Bringing hook down";
                         robot.lift.bringDownHook(true);
                         if (robot.lift.getLiftState() == Lift.LiftState.STANDING_BY_FOR_END_GAME) {
+                            moveOmniArmTimer.set(MOVE_OMNI_ARM_DURATION);
                             subState++;
                         }
-                        omniArmMoveTimer.set(OMNI_ARM_MOVE_DELAY);
                         break;
                     case 3:
-                        subStateDesc = "storing omniarm";
+                        subStateDesc = "Resetting OmniArm";
                         robot.omniArm.resetOmniArm(true);
-                        if (omniArmMoveTimer.isExpired()) {
+                        if (moveOmniArmTimer.isExpired()) {
                             subState++;
                         }
                         break;
                     case 4:
-                        subStateDesc = "exit";
+                        subStateDesc = "Exit";
                         advanceState();
                         break;
                 }
                 break;
-            case SAMPLE_PIECE:
-                currentStateDesc = "sampling piece";
+            case SAMPLE_MINERAL:
+                stateDesc = "Sampling mineral";
                 switch (subState) {
                     case 0:
-                        subStateDesc = "entry";
-                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition.ordinal()], true);
-                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
-                            subState++;
-                        }
-                        break;
+                        subStateDesc = "Entry";
+                        subState++;
                     case 1:
-                        subStateDesc = "driving back to lander clearance";
-                        if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(landerClearancePositionArray[CRATER], true);
-                        }
+                        subStateDesc = "Driving to particle";
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition], true);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 2:
-                        subStateDesc = "exit";
+                        subStateDesc = "Driving back to lander clearance";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.driveToTarget(landerClearancePositionArray[CRATER], true);
+                            if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                                subState++;
+                            }
+                        } else {
+                            subState++;
+                        }
+                        break;
+                    case 3:
+                        subStateDesc = "Exit";
                         advanceState();
                         break;
                 }
                 break;
             case CLAIM_DEPOT:
-                currentStateDesc = "claiming depot";
+                stateDesc = "Claiming depot";
                 switch (subState) {
                     case 0:
-                        subStateDesc = "entry";
+                        subStateDesc = "Entry";
+                        subState++;
+                        break;
+                    case 1:
+                        subStateDesc = "Driving to intermediate position";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(wallPosition, false);
                         } else if (STARTING_POSITION == DEPOT) {
@@ -326,8 +413,8 @@ public class WHSAuto extends OpMode{
                             subState++;
                         }
                         break;
-                    case 1:
-                        subStateDesc = "driving to depot";
+                    case 2:
+                        subStateDesc = "Driving to depot";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(depotPositionArray[CRATER], true);
                         } else if (STARTING_POSITION == DEPOT) {
@@ -335,76 +422,80 @@ public class WHSAuto extends OpMode{
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             if (STARTING_POSITION == DEPOT) {
-                                storedToDumpedTimer.set(MARKER_DROP_DELAY);
+                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                             }
-                            subState++;
-                        }
-                        break;
-                    case 2:
-                        subStateDesc = "[crater] rotating robot";
-                        if (STARTING_POSITION == CRATER) {
-                            robot.rotateToTarget(90, true);
-                            if (!robot.rotateToTargetInProgress()) {
-                                storedToDumpedTimer.set(MARKER_DROP_DELAY);
-                                subState++;
-                            }
-                        } else {
                             subState++;
                         }
                         break;
                     case 3:
-                        subStateDesc = "dumping marker";
-                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
-                        if (storedToDumpedTimer.isExpired()) {
-                            subState++;
-                        }
-                        dumpedToStoredTimer.set(MARKER_DROP_DELAY);
-                        break;
-                    case 4:
-                        subStateDesc = "storing marker drop";
-                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
-                        if (dumpedToStoredTimer.isExpired()) {
-                            subState++;
-                        }
-                        break;
-                    case 5:
-                        subStateDesc = "[depot] rotating robot";
-                        if (STARTING_POSITION == DEPOT){
-                            robot.rotateToTarget(270, false);
+                        subStateDesc = "Rotating robot";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.rotateToTarget(90, true);
                             if (!robot.rotateToTargetInProgress()) {
-                                storedToDumpedTimer.set(MARKER_DROP_DELAY);
+                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                                 subState++;
                             }
                         } else {
                             subState++;
                         }
                         break;
+                    case 4:
+                        subStateDesc = "Dumping MarkerDrop";
+                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
+                        if (dumpMarkerDropTimer.isExpired()) {
+                            storeMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
+                            subState++;
+                        }
+                        break;
+                    case 5:
+                        subStateDesc = "Storing MarkerDrop";
+                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
+                        if (storeMarkerDropTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
                     case 6:
-                        subStateDesc = "exit";
+                        subStateDesc = "Rotating robot";
+                        if (STARTING_POSITION == DEPOT){
+                            robot.rotateToTarget(270, false);
+                            if (!robot.rotateToTargetInProgress()) {
+                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
+                                subState++;
+                            }
+                        } else {
+                            subState++;
+                        }
+                        break;
+                    case 7:
+                        subStateDesc = "Exit";
                         advanceState();
                         break;
                 }
                 break;
             case DRIVE_TO_CRATER:
-                currentStateDesc = "drive to crater";
+                stateDesc = "Drive to crater";
                 switch (subState) {
 
                     case 0:
-                        subStateDesc = "driving to crater";
+                        subStateDesc = "Entry";
+                        subState++;
+                        break;
+                    case 1:
+                        subStateDesc = "Driving to crater";
                         robot.driveToTarget(craterPositonArray[STARTING_POSITION], STARTING_POSITION == CRATER);
 
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
-                    case 1:
-                        subStateDesc = "exit";
+                    case 2:
+                        subStateDesc = "Exit";
                         advanceState();
                         break;
                 }
                 break;
             case END:
-                currentStateDesc = "end";
+                stateDesc = "Ending Auto";
                 if (tfod != null) {
                     tfod.shutdown();
                 }
@@ -412,11 +503,10 @@ public class WHSAuto extends OpMode{
             default: break;
         }
 
-        telemetry.addData("State: ", currentStateDesc);
+        telemetry.addData("State: ", stateDesc);
         telemetry.addData("Substate: ", subStateDesc);
         telemetry.addData("Gold Position: ", goldPosition);
         telemetry.addData("Gold Particle Detected: ", goldParticleDetected);
-        telemetry.addData("TFRun: ", TFRun);
         telemetry.addData("Angle to Target: ", robot.angleToTargetDebug);
         telemetry.addData("DriveToTarget in progress: ", robot.driveToTargetInProgress());
         telemetry.addData("RotateToTarget in progress: ", robot.rotateToTargetInProgress());
@@ -431,44 +521,5 @@ public class WHSAuto extends OpMode{
         telemetry.addData("Drive Derivative", robot.driveController.getDerivative());
         telemetry.addData("Rotate Power", robot.rotateController.getOutput());
         telemetry.addData("Drive Power", robot.driveController.getOutput());
-    }
-
-    public void advanceState() {
-        if (stateEnabled[(currentState + 1)]) {
-            currentState = currentState + 1;
-            subState = 0;
-        } else {
-            currentState = currentState + 1;
-            advanceState();
-        }
-    }
-
-    /**
-     * Initialize the Vuforia localization engine.
-     */
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
-    }
-
-    /**
-     * Initialize the Tensor Flow Object Detection engine.
-     */
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 }
