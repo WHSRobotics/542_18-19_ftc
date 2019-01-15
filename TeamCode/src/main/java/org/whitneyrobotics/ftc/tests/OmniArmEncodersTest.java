@@ -15,7 +15,7 @@ public class OmniArmEncodersTest extends OpMode {
 
     @Override
     public void init() {
-        switchMotor = hardwareMap.dcMotor.get("switchMotor");
+        switchMotor = hardwareMap.dcMotor.get("pivotMotor");
         extendMotor = hardwareMap.dcMotor.get("extendMotor");
 
         switchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

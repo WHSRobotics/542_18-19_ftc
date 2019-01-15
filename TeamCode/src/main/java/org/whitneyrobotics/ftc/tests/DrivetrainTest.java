@@ -30,10 +30,10 @@ public class DrivetrainTest extends OpMode {
             drivetrain.operate(gamepad1.left_stick_y, gamepad1.right_stick_y);
         }
         drivetrain.switchOrientation(gamepad1.a);
-        telemetry.addData("FL Position", drivetrain.frontLeft.getCurrentPosition());
-        telemetry.addData("BL Position", drivetrain.backLeft.getCurrentPosition());
-        telemetry.addData("FR Position", drivetrain.frontRight.getCurrentPosition());
-        telemetry.addData("BR Position", drivetrain.backRight.getCurrentPosition());
+        telemetry.addData("FL LiftPosition", drivetrain.frontLeft.getCurrentPosition());
+        telemetry.addData("BL LiftPosition", drivetrain.backLeft.getCurrentPosition());
+        telemetry.addData("FR LiftPosition", drivetrain.frontRight.getCurrentPosition());
+        telemetry.addData("BR LiftPosition", drivetrain.backRight.getCurrentPosition());
         /*if(gamepad1.y){
             drivetrain.frontLeft.setPower(0.5);
         }

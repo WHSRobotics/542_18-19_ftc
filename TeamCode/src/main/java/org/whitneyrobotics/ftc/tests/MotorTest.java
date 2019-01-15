@@ -14,7 +14,7 @@ public class MotorTest extends OpMode {
 
     @Override
     public void init() {
-         motor = hardwareMap.dcMotor.get("switchMotor");
+         motor = hardwareMap.dcMotor.get("pivotMotor");
     }
 
     @Override

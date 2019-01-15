@@ -30,9 +30,7 @@
 package org.whitneyrobotics.ftc.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -75,13 +73,13 @@ public class TensorFlowTest extends LinearOpMode {
     private static final String VUFORIA_KEY = "AZpuDDL/////AAABmTx4NapZXku6l0aaFFDwgWsYaPViIxPYFdJ8R9R4gPesBY5Ublbla/sRrihytU6cN9eb5Z30d8FuDcbgxBpdrg7gwPgn8GDXm5EEVpuOZnXYEOlcMTAz1nQcnDTPHcyFz1OKJz17ZoHeYtW70mbD7gqAmu/pP4Zz1cCR44pCFw954WOg7SsmVvuiL6J5iEQFIq68QEdX2sjOK7TmaE3RPATv8pZiU/1pwS5iBxSd+8X7PpBII0Ncc88CsKzrNBhF710j9j6fyHl2BeZhcAcRZ/9Fp1W+Cz2kvMPgI5Ah+FmAvWCOJLverLIYm/lgWhEeQrzpCNhc1eAxjtIAUnq5vhBz++vugvyv8o9fuf8HAxWB";
 
     /**
-     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
+     * {@link #vuforia} is the variable we will use to makeRoomForLift our instance of the Vuforia
      * localization engine.
      */
     private VuforiaLocalizer vuforia;
 
     /**
-     * {@link #tfod} is the variable we will use to store our instance of the Tensor Flow Object
+     * {@link #tfod} is the variable we will use to makeRoomForLift our instance of the Tensor Flow Object
      * Detection engine.
      */
     private TFObjectDetector tfod;

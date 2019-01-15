@@ -312,7 +312,7 @@ public class WHSAuto extends OpMode{
                         break;
                     case 2:
                         subStateDesc = "Moving OmniArm out of Lift's way";
-                        robot.omniArm.storeOmniArm(true);
+                        robot.omniArm.makeRoomForLift(true);
                         if (moveOmniArmTimer.isExpired()) {
                             subState++;
                         }
@@ -320,7 +320,7 @@ public class WHSAuto extends OpMode{
                     case 3:
                         subStateDesc = "Bringing robot down";
                         robot.lift.bringDownRobot(true);
-                        if (robot.lift.getLiftState() == Lift.LiftState.WAITING_FOR_DRIVETRAIN) {
+                        if (robot.lift.getCurrentLiftPosition() == Lift.LiftPosition.ABOVE_LATCH) {
                             subState++;
                         }
                         break;
@@ -347,14 +347,14 @@ public class WHSAuto extends OpMode{
                     case 2:
                         subStateDesc = "Bringing hook down";
                         robot.lift.bringDownHook(true);
-                        if (robot.lift.getLiftState() == Lift.LiftState.STANDING_BY_FOR_END_GAME) {
+                        if (robot.lift.getCurrentLiftPosition() == Lift.LiftPosition.STORED) {
                             moveOmniArmTimer.set(MOVE_OMNI_ARM_DURATION);
                             subState++;
                         }
                         break;
                     case 3:
                         subStateDesc = "Resetting OmniArm";
-                        robot.omniArm.resetOmniArm(true);
+                        robot.omniArm.storePivot(true);
                         if (moveOmniArmTimer.isExpired()) {
                             subState++;
                         }
