@@ -17,6 +17,6 @@ public class LimitSwitchTest extends OpMode {
 
     @Override
     public void loop() {
-        telemetry.addData("LimitSwitch Position", limitSwitch.getState());
+        telemetry.addData("LimitSwitch LiftPosition", limitSwitch.getState());
     }
 }

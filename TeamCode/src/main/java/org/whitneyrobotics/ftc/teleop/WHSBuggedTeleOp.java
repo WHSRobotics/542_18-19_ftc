@@ -1,20 +1,12 @@
 package org.whitneyrobotics.ftc.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.robot.Robot;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.whitneyrobotics.ftc.lib.util.RobotConstants;
-import org.whitneyrobotics.ftc.lib.util.Toggler;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
-
-import java.util.ArrayList;
 
 @TeleOp(name="BuggedTeleOp", group="tele")
 public class WHSBuggedTeleOp extends OpMode{
@@ -52,8 +44,8 @@ public class WHSBuggedTeleOp extends OpMode{
         packet.fieldOverlay()
                 .setStroke("blue")
                 .strokeRect(robot.getCoordinate().getX()/100/2.54, robot.getCoordinate().getY()/100/2.54, 20, 20);
-        packet.put("Switch Current Pos ", robot.omniArm.switchMotor.getCurrentPosition());
-        packet.put("Switch Target Pos ", robot.omniArm.switchMotor.getTargetPosition());
+        packet.put("Switch Current Pos ", robot.omniArm.pivotMotor.getCurrentPosition());
+        packet.put("Switch Target Pos ", robot.omniArm.pivotMotor.getTargetPosition());
         //packet.put("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
         packet.put("Coordinates", robot.getCoordinate());
         packet.put("Sensor Lift", gamepad1.y);
@@ -75,17 +67,17 @@ public class WHSBuggedTeleOp extends OpMode{
             robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         }
         if (canExtend == 1) {
-            robot.omniArm.operateExtension(gamepad2.a);
+            robot.omniArm.operateExtend(gamepad2.a);
         }
         if (canLift == 1) {
           //  robot.lift.sensorLift(gamepad1.y);
         }
         if (canStoreArm == 1) {
             if (gamepad1.right_bumper) {
-                robot.omniArm.storeOmniArm(gamepad1.right_bumper);
+                robot.omniArm.makeRoomForLift(gamepad1.right_bumper);
 
             } else {
-                robot.omniArm.operateModeSwitch(gamepad2.x);
+                robot.omniArm.operatePivot(gamepad2.x);
             }
         }
 

@@ -33,10 +33,10 @@ public class EstimatePostitionTest extends OpMode {
         telemetry.addData("Y", robot.getCoordinate().getY());
         telemetry.addData("Z", robot.getCoordinate().getZ());
         telemetry.addData("Heading", robot.getCoordinate().getHeading());
-        telemetry.addData("FL Position", robot.drivetrain.frontLeft.getCurrentPosition());
-        telemetry.addData("BL Position", robot.drivetrain.backLeft.getCurrentPosition());
-        telemetry.addData("FR Position", robot.drivetrain.frontRight.getCurrentPosition());
-        telemetry.addData("BR Position", robot.drivetrain.backRight.getCurrentPosition());
+        telemetry.addData("FL LiftPosition", robot.drivetrain.frontLeft.getCurrentPosition());
+        telemetry.addData("BL LiftPosition", robot.drivetrain.backLeft.getCurrentPosition());
+        telemetry.addData("FR LiftPosition", robot.drivetrain.frontRight.getCurrentPosition());
+        telemetry.addData("BR LiftPosition", robot.drivetrain.backRight.getCurrentPosition());
         telemetry.addData("X heading: ", robot.imu.getThreeHeading()[0]);
         telemetry.addData("Y heading: ", robot.imu.getThreeHeading()[1]);
         telemetry.addData("Z heading: ", robot.imu.getThreeHeading()[2]);

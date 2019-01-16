@@ -3,7 +3,6 @@ package org.whitneyrobotics.ftc.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.whitneyrobotics.ftc.lib.util.Toggler;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
@@ -34,20 +33,20 @@ public class WHSTeleOp extends OpMode{
         robot.drivetrain.switchOrientation(gamepad1.a);
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
-        robot.omniArm.operateSweepServos(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
+        robot.omniArm.operateSweeps(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
 
         armTog.changeState(gamepad2.dpad_up);
         if (armTog.currentState() == 0) {
             robot.omniArm.limitSwitchReset(gamepad2.y);     //This doesn't work in non-override mode
             if(gamepad2.left_stick_button) {
-                robot.omniArm.setSwitchMotorPower(gamepad2.left_stick_y);
+                robot.omniArm.setPivotMotorPower(gamepad2.left_stick_y);
             }else {
                 robot.omniArm.setExtendMotorPower(0);
             }
             if (gamepad2.right_stick_button) {
                 robot.omniArm.setExtendMotorPower(gamepad2.right_stick_y);
             }else {
-                robot.omniArm.setSwitchMotorPower(0);
+                robot.omniArm.setPivotMotorPower(0);
             }
             robot.omniArm.limitSwitchReset(gamepad2.b);
 
@@ -55,8 +54,8 @@ public class WHSTeleOp extends OpMode{
             robot.omniArm.resetEncoders();
             armTog.setState(2);
         } else if (armTog.currentState() == 2) {
-            robot.omniArm.operateModeSwitch(gamepad2.x);
-            robot.omniArm.operateExtension(gamepad2.a);
+            robot.omniArm.operatePivot(gamepad2.x);
+            robot.omniArm.operateExtend(gamepad2.a);
 
         }
 
@@ -78,12 +77,12 @@ public class WHSTeleOp extends OpMode{
            // robot.lift.bringDownHook(gamepad1.dpad_left);
         }
 
-        telemetry.addData("Switch Current Pos", robot.omniArm.switchMotor.getCurrentPosition());
-        telemetry.addData("Switch Target Pos", robot.omniArm.switchMotor.getTargetPosition());
-        telemetry.addData("Current OmniArm Mode", armTog.currentState());
-        telemetry.addData("Current Lift Tog State", liftTog.currentState());
-        telemetry.addData("Current LimitSwitch reset state", robot.omniArm.omniArmLimitSwitchResetState);
-        telemetry.addData("Current operateModeSwitch Toggler State", robot.omniArm.getOmniArmModeSwitchTogglerState());
+        telemetry.addData("Pivot Current Pos", robot.omniArm.pivotMotor.getCurrentPosition());
+        telemetry.addData("Pivot Target Pos", robot.omniArm.pivotMotor.getTargetPosition());
+        telemetry.addData("OmniArm Mode", armTog.currentState());
+        telemetry.addData("Lift Tog State", liftTog.currentState());
+        telemetry.addData("LimitSwitch resetPivot state", robot.omniArm.limitSwitchResetState);
+        telemetry.addData("operatePivot Toggler State", robot.omniArm.getPivotTogglerState());
         //telemetry.addData("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
     }
 }
