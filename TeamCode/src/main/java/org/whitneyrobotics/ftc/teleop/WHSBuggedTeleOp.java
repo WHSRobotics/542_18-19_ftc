@@ -49,7 +49,6 @@ public class WHSBuggedTeleOp extends OpMode{
         //packet.put("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
         packet.put("Coordinates", robot.getCoordinate());
         packet.put("Sensor Lift", gamepad1.y);
-        packet.put("Lift State", robot.lift.getSensorLiftState());
         dashboard.sendTelemetryPacket(packet);
 
         /* DRIVETRAIN */

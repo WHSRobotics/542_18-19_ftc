@@ -45,7 +45,6 @@ public class LiftTest extends OpMode {
             lift.liftUpRobot(gamepad1.y);
         }
 
-        telemetry.addData("UNIVERSALLiftState", lift.getLiftState());
         telemetry.addData("Test State", testModeTog.currentState()==0 ? "manual" : "other");
         telemetry.addData("Motor Target Pos", lift.getTargetPos());
         telemetry.addData("Motor Current Pos", lift.getEncoderPos());
