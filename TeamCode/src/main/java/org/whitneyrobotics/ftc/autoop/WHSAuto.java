@@ -14,6 +14,7 @@ import org.whitneyrobotics.ftc.lib.util.Position;
 import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
 import org.whitneyrobotics.ftc.subsys.Lift;
 import org.whitneyrobotics.ftc.subsys.MarkerDrop;
+import org.whitneyrobotics.ftc.subsys.OmniArm;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 import java.util.List;
@@ -312,8 +313,9 @@ public class WHSAuto extends OpMode{
                         break;
                     case 2:
                         subStateDesc = "Moving OmniArm out of Lift's way";
-                        robot.omniArm.makeRoomForLift(true);
-                        if (moveOmniArmTimer.isExpired()) {
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
+                        //if (moveOmniArmTimer.isExpired()) {
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.ROOM_FOR_LIFT) {
                             subState++;
                         }
                         break;
@@ -354,8 +356,9 @@ public class WHSAuto extends OpMode{
                         break;
                     case 3:
                         subStateDesc = "Resetting OmniArm";
-                        robot.omniArm.storePivot(true);
-                        if (moveOmniArmTimer.isExpired()) {
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.STORED);
+                        //if (moveOmniArmTimer.isExpired()) {
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.STORED) {
                             subState++;
                         }
                         break;

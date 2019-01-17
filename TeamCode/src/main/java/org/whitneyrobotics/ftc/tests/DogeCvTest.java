@@ -41,11 +41,11 @@ public class DogeCvTest extends OpMode {
         YPos = detector.getGoldYpos();
         if(Xpos >200) {
             if (YPos < 200) {
-                telemetry.addData("LiftPosition", "left");
+                telemetry.addData("Position", "left");
             } else if (YPos > 200 && Xpos < 400) {
-                telemetry.addData("LiftPosition", "Center");
+                telemetry.addData("Position", "Center");
             } else if (YPos > 400) {
-                telemetry.addData("LiftPosition", "Right");
+                telemetry.addData("Position", "Right");
             }
         }
         telemetry.addData("Xposition : ", Xpos);

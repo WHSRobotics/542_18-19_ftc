@@ -11,7 +11,6 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 public class WHSTeleOp extends OpMode{
 
     WHSRobotImpl robot;
-    long i = 0;
     Toggler liftTog = new Toggler(2);
     Toggler armTog = new Toggler(3);
 
@@ -32,43 +31,30 @@ public class WHSTeleOp extends OpMode{
         }
         robot.drivetrain.switchOrientation(gamepad1.a);
 
+        /* OMNIARM */
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         robot.omniArm.operateSweeps(gamepad2.right_trigger > 0.01, gamepad2.left_trigger > 0.01);
 
         armTog.changeState(gamepad2.dpad_up);
         if (armTog.currentState() == 0) {
-            robot.omniArm.limitSwitchReset(gamepad2.y);     //This doesn't work in non-override mode
-            if(gamepad2.left_stick_button) {
-                robot.omniArm.setPivotMotorPower(gamepad2.left_stick_y);
-            }else {
-                robot.omniArm.setExtendMotorPower(0);
-            }
-            if (gamepad2.right_stick_button) {
-                robot.omniArm.setExtendMotorPower(gamepad2.right_stick_y);
-            }else {
-                robot.omniArm.setPivotMotorPower(0);
-            }
+            robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
+            robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
             robot.omniArm.limitSwitchReset(gamepad2.b);
-
         } else if (armTog.currentState() == 1) {
             robot.omniArm.resetEncoders();
             armTog.setState(2);
         } else if (armTog.currentState() == 2) {
             robot.omniArm.operatePivot(gamepad2.x);
             robot.omniArm.operateExtend(gamepad2.a);
-
         }
 
-        //robot.lift.sensorLift(gamepad1.y);b
-        //telemetry.addData("Sensor Lift", gamepad1.y);
-        //telemetry.addData("Lift State", robot.lift.getSensorLiftState());
-
+        /* LIFT */
         liftTog.changeState(gamepad2.dpad_right);
         if (liftTog.currentState() == 0) {
             if (gamepad1.dpad_up) {
-                robot.lift.setLiftMotorPower(0.8);
+                robot.lift.setLiftMotorPower(0.9);
             } else if (gamepad1.dpad_down) {
-                robot.lift.setLiftMotorPower(-0.66);
+                robot.lift.setLiftMotorPower(-0.9);
             } else {
                 robot.lift.setLiftMotorPower(0.0);
             }
@@ -82,7 +68,7 @@ public class WHSTeleOp extends OpMode{
         telemetry.addData("OmniArm Mode", armTog.currentState());
         telemetry.addData("Lift Tog State", liftTog.currentState());
         telemetry.addData("LimitSwitch resetPivot state", robot.omniArm.limitSwitchResetState);
-        telemetry.addData("operatePivot Toggler State", robot.omniArm.getPivotTogglerState());
+        //telemetry.addData("operatePivot Toggler State", robot.omniArm.getPivotTogglerState());
         //telemetry.addData("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
     }
 }
