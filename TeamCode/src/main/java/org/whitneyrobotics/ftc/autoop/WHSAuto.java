@@ -19,7 +19,7 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 import java.util.List;
 
-@Autonomous(name="WHSAuto", group="auto")
+@Autonomous(name = "WHSAuto", group = "auto")
 public class WHSAuto extends OpMode{
 
     WHSRobotImpl robot;
@@ -69,7 +69,7 @@ public class WHSAuto extends OpMode{
         /**
          * Substates:
          * - Entry
-         * - Driving to particle
+         * - Driving to mineral
          * - Driving back to lander clearance [CRATER]
          * - Exit
          */
@@ -126,7 +126,7 @@ public class WHSAuto extends OpMode{
 
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
-    private boolean goldParticleDetected = false;
+    private boolean goldMineralDetected = false;
 
     /**
      * Determines which states will be run.
@@ -180,7 +180,7 @@ public class WHSAuto extends OpMode{
     }
 
     /**
-     * Returns position of the gold particle.
+     * Returns position of the gold mineral.
      */
     private int detectGoldPosition() {
         if (tfod != null) {
@@ -230,12 +230,12 @@ public class WHSAuto extends OpMode{
         landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
         landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
-        // setting the three different particle positions for the crater side
+        // setting the three different mineral positions for the crater side
         goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);
         goldPositionArray[CRATER][CENTER] = new Position(930, 930, 150);
         goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);
 
-        // setting the three different particle positions for the depot side
+        // setting the three different mineral positions for the depot side
         goldPositionArray[DEPOT][LEFT] = new Position(-1220,590,150);
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1320, 150);
@@ -375,7 +375,7 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Entry";
                         subState++;
                     case 1:
-                        subStateDesc = "Driving to particle";
+                        subStateDesc = "Driving to mineral";
                         robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition], true);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
@@ -509,7 +509,7 @@ public class WHSAuto extends OpMode{
         telemetry.addData("State: ", stateDesc);
         telemetry.addData("Substate: ", subStateDesc);
         telemetry.addData("Gold Position: ", goldPosition);
-        telemetry.addData("Gold Particle Detected: ", goldParticleDetected);
+        telemetry.addData("Gold Mineral Detected: ", goldMineralDetected);
         telemetry.addData("Angle to Target: ", robot.angleToTargetDebug);
         telemetry.addData("DriveToTarget in progress: ", robot.driveToTargetInProgress());
         telemetry.addData("RotateToTarget in progress: ", robot.rotateToTargetInProgress());

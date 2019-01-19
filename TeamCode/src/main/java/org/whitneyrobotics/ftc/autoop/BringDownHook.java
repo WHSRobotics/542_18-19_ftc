@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.whitneyrobotics.ftc.subsys.Lift;
 
-@Autonomous(name = "Bring Down Hook", group = "yeet")
+@Autonomous(name = "Bring Down Hook", group = "auto")
 public class BringDownHook extends OpMode {
     Lift lift;
     boolean initBringDownHook = true;
