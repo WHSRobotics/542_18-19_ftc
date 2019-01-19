@@ -1,13 +1,11 @@
 package org.whitneyrobotics.ftc.subsys;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import org.whitneyrobotics.ftc.lib.subsys.robot.WHSRobot;
 import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Functions;
 import org.whitneyrobotics.ftc.lib.util.PIDController;
 import org.whitneyrobotics.ftc.lib.util.Position;
-import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 
 /**
  * Created by Jason on 10/20/2017.
@@ -20,40 +18,41 @@ public class WHSRobotImpl implements WHSRobot {
     public OmniArm omniArm;
     public MarkerDrop markerDrop;
     public Lift lift;
+
     Coordinate currentCoord;
     private double targetHeading; //field frame
     public double angleToTargetDebug;
+    public double distanceToTargetDebug = 0;
     private double lastKnownHeading = 0.1;
+
     private static final double DEADBAND_DRIVE_TO_TARGET = 24.5; //in mm
     private static final double DEADBAND_ROTATE_TO_TARGET = 2; //in degrees
-    private static final double[] DRIVE_TO_TARGET_POWER_LEVEL = {0.22, 0.28, 0.4, 0.45}; //{0.33, 0.6, 0.7, 0.9};
-    private static final double[] DRIVE_TO_TARGET_THRESHOLD = {DEADBAND_DRIVE_TO_TARGET, 300, 600, 1200};
-    private static final double[] ROTATE_TO_TARGET_POWER_LEVEL = {0.2, 0.3, 0.4};
-    private static final double[] ROTATE_TO_TARGET_THRESHOLD = {DEADBAND_ROTATE_TO_TARGET, 30, 60};
-    private boolean driveBackwards;
 
-    //TODO: TUNE PID
-    private static final double ROTATE_KP = 0;
-    private static final double ROTATE_KI = 0;
-    private static final double ROTATE_KD = 0;
+    public static final double DRIVE_MIN = .2;
+    public static final double DRIVE_MAX = .8;
+    public static final double ROTATE_MIN = 0.2;
+    public static final double ROTATE_MAX = 1;
 
-    private static final double DRIVE_KP = 0;
-    private static final double DRIVE_KI = 0;
-    private static final double DRIVE_KD = 0;
+    private static final double ROTATE_KP = 1.3;
+    private static final double ROTATE_KI = 0.82;
+    private static final double ROTATE_KD = 0.49;
 
-    public PIDController rotateController = new PIDController(RobotConstants.R_KP, RobotConstants.R_KI, RobotConstants.R_KD);
-    public PIDController driveController = new PIDController(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
+    private static final double DRIVE_KP = 1.7;
+    private static final double DRIVE_KI = 0.7;
+    private static final double DRIVE_KD = 0.8;
+
+    public PIDController rotateController = new PIDController(ROTATE_KP, ROTATE_KI, ROTATE_KD);
+    public PIDController driveController = new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
 
     private boolean firstRotateLoop = true;
     private boolean firstDriveLoop = true;
+    private boolean driveBackwards;
 
     private int driveSwitch = 0;
 
     private boolean driveToTargetInProgress = false;
     private boolean rotateToTargetInProgress = false;
 
-
-    public double distanceToTargetDebug = 0;
     public WHSRobotImpl(HardwareMap hardwareMap){
         drivetrain = new TileRunner(hardwareMap);
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
@@ -90,10 +89,10 @@ public class WHSRobotImpl implements WHSRobot {
                     firstDriveLoop = false;
                 }
 
-                driveController.setConstants(RobotConstants.D_KP, RobotConstants.D_KI, RobotConstants.D_KD);
+                driveController.setConstants(DRIVE_KP, DRIVE_KI, DRIVE_KD);
                 driveController.calculate(distanceToTarget);
 
-                double power = Functions.map(Math.abs(driveController.getOutput()), RobotConstants.DEADBAND_DRIVE_TO_TARGET, 1500, RobotConstants.drive_min, RobotConstants.drive_max);
+                double power = Functions.map(Math.abs(driveController.getOutput()), DEADBAND_DRIVE_TO_TARGET, 1500, DRIVE_MIN, DRIVE_MAX);
 
                 // this stuff may be causing the robot to oscillate around the target position
                 if (distanceToTarget < 0) {
@@ -101,7 +100,7 @@ public class WHSRobotImpl implements WHSRobot {
                 } else if (distanceToTarget > 0){
                     power = Math.abs(power);
                 }
-                if (Math.abs(distanceToTarget) > RobotConstants.DEADBAND_DRIVE_TO_TARGET) {
+                if (Math.abs(distanceToTarget) > DEADBAND_DRIVE_TO_TARGET) {
                     driveToTargetInProgress = true;
                     drivetrain.operateLeft(power);
                     drivetrain.operateRight(power);
@@ -143,12 +142,12 @@ public class WHSRobotImpl implements WHSRobot {
             firstRotateLoop = false;
         }
 
-        rotateController.setConstants(RobotConstants.R_KP, RobotConstants.R_KI, RobotConstants.R_KD);
+        rotateController.setConstants(ROTATE_KP, ROTATE_KI, ROTATE_KD);
         rotateController.calculate(angleToTarget);
 
-        double power = (rotateController.getOutput() >= 0 ? 1 : -1) * (Functions.map(Math.abs(rotateController.getOutput()),  0, 180, RobotConstants.rotate_min, RobotConstants.rotate_max));
+        double power = (rotateController.getOutput() >= 0 ? 1 : -1) * (Functions.map(Math.abs(rotateController.getOutput()),  0, 180, ROTATE_MIN, ROTATE_MAX));
 
-        if (Math.abs(angleToTarget) > RobotConstants.DEADBAND_ROTATE_TO_TARGET) {
+        if (Math.abs(angleToTarget) > DEADBAND_ROTATE_TO_TARGET) {
             drivetrain.operateLeft(-power);
             drivetrain.operateRight(power);
             rotateToTargetInProgress = true;
@@ -170,7 +169,6 @@ public class WHSRobotImpl implements WHSRobot {
     public boolean rotateToTargetInProgress() {
         return rotateToTargetInProgress;
     }
-
 
     @Override
     public void estimatePosition() {
@@ -207,8 +205,6 @@ public class WHSRobotImpl implements WHSRobot {
                 estimatedPos = currentCoord.getPos();
             }
         }
-
-
     }
 
     @Override
@@ -237,7 +233,6 @@ public class WHSRobotImpl implements WHSRobot {
     public Coordinate getCoordinate() {
         return currentCoord;
     }
-
 
     public Position body2field(Position bodyVector)
     {
