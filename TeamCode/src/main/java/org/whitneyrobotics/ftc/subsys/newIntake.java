@@ -8,34 +8,26 @@ import org.whitneyrobotics.ftc.lib.util.Toggler;
 
 public class newIntake {
 
-    CRServo intakeServo1;
-    CRServo intakeServo2;
+    CRServo intakeServo;
     Servo clearenceServo;
 
-    Toggler intakeSpeedToggler;
     Toggler clearanceToggler;
 
     final double INTAKE_SPEED = 0.7;
 
     public newIntake(HardwareMap newIntakeMap){
-        intakeServo1 = newIntakeMap.crservo.get("intakeServo2");
         clearenceServo = newIntakeMap.servo.get("clearenceServo");
-        intakeServo2 = newIntakeMap.crservo.get("intakeServo1");
-        intakeSpeedToggler = new Toggler(2);
+        intakeServo = newIntakeMap.crservo.get("intakeServo");
         clearanceToggler = new Toggler(2);
     }
 
-    public void operateIntake (boolean gamepadInput, boolean gamepadInput2){
-        intakeSpeedToggler.changeState(gamepadInput);
-        if (gamepadInput2){
-            intakeServo2.setPower(0);
-            intakeServo1.setPower(0);
-        }else if (intakeSpeedToggler.currentState() == 0){
-            intakeServo1.setPower(INTAKE_SPEED);
-            intakeServo2.setPower(-INTAKE_SPEED);
-        }else if (intakeSpeedToggler.currentState() == 1){
-            intakeServo1.setPower(-INTAKE_SPEED);
-            intakeServo2.setPower(INTAKE_SPEED);
+    public void operateIntake (boolean gamepadInput1, boolean gamepadInput2){
+        if (gamepadInput1){
+            intakeServo.setPower(INTAKE_SPEED);
+        }else if (gamepadInput2){
+            intakeServo.setPower(-INTAKE_SPEED);
+        }else{
+            intakeServo.setPower(0);
         }
 
     }
@@ -43,17 +35,15 @@ public class newIntake {
     public void operateIntakeClearence(boolean gamepadInput){
         clearanceToggler.changeState(gamepadInput);
         if (clearanceToggler.currentState() == 0){
-            clearenceServo.setPosition(.25);
+            clearenceServo.setPosition(.542);
         }else if (clearanceToggler.currentState() == 1){
-            clearenceServo.setPosition(.8);
+            clearenceServo.setPosition(.865);
         }
     }
 
-    public void setIntakeServo1Power(double power){
-        intakeServo1.setPower(power);
+    public void setIntakeServoPower(double power){
+        intakeServo.setPower(power);
     }
 
-    public void setIntakeServo2Power(double power){
-        intakeServo2.setPower(power);
-    }
+
 }

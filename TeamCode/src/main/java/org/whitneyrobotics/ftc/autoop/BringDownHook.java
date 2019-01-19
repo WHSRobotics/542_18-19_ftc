@@ -8,6 +8,7 @@ import org.whitneyrobotics.ftc.subsys.Lift;
 @Autonomous(name = "Bring Down Hook", group = "yeet")
 public class BringDownHook extends OpMode {
     Lift lift;
+    boolean initBringDownHook = true;
     @Override
     public void init() {
         lift = new Lift(hardwareMap);
@@ -15,6 +16,9 @@ public class BringDownHook extends OpMode {
 
     @Override
     public void loop() {
-        lift.bringDownHook(true);
+        if (initBringDownHook) {
+            lift.bringDownHook(true);
+            initBringDownHook = false;
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.whitneyrobotics.ftc.lib.util.RobotConstants;
+import org.whitneyrobotics.ftc.subsys.OmniArm;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 @TeleOp(name="BuggedTeleOp", group="tele")
@@ -73,7 +74,7 @@ public class WHSBuggedTeleOp extends OpMode{
         }
         if (canStoreArm == 1) {
             if (gamepad1.right_bumper) {
-                robot.omniArm.makeRoomForLift(gamepad1.right_bumper);
+                robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
 
             } else {
                 robot.omniArm.operatePivot(gamepad2.x);
