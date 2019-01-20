@@ -41,7 +41,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = CRATER;
+    static final int STARTING_POSITION = DEPOT;
 
     /**
      * State Definitions
@@ -203,7 +203,7 @@ public class WHSAuto extends OpMode{
                         }
                     }
                     if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                        goldParticleDetected = true;
+                        goldMineralDetected = true;
                         if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
                             return LEFT;
                         } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
@@ -215,7 +215,7 @@ public class WHSAuto extends OpMode{
                 }
             }
         }
-        return CENTER;
+        return 3;
     }
 
     @Override
@@ -240,15 +240,15 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1320, 150);
 
-        wallPosition = new Position(-20,1490,150);
-        depotCornerPosition = new Position(-1280,1300,150);
-        depotSidePosition = new Position(-1400, 1275, 150);
+        wallPosition = new Position(-20,1505,150);
+        depotCornerPosition = new Position(-1280,1320,150);
+        depotSidePosition = new Position(-1555, 1320, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440,1420,150);
-        depotPositionArray[CRATER] = new Position(-1250,1505,150);
+        depotPositionArray[CRATER] = new Position(-1350,1505,150);
 
-        craterPositonArray[CRATER] = new Position(750,1490,150);
-        craterPositonArray[DEPOT] = new Position(-1575,-640,150);
+        craterPositonArray[CRATER] = new Position(750,1505,150);
+        craterPositonArray[DEPOT] = new Position(-1505,-640,150);
 
         defineStateEnabledStatus();
 
@@ -298,18 +298,24 @@ public class WHSAuto extends OpMode{
                 switch (subState) {
                     case 0:
                         subStateDesc = "Entry";
+                        goldPosition = CENTER;
                         scanMineralsTimer.set(SCAN_MINERALS_DURATION);
                         subState++;
                         break;
                     case 1:
                         subStateDesc = "Scanning minerals";
-                        goldPosition = detectGoldPosition();
+                        int goldDetection = detectGoldPosition();
+                        if (goldDetection != 3) {
+                            goldPosition = goldDetection;
+                        }
 
                         if (scanMineralsTimer.isExpired()) {
+                            if (goldPosition == 3) {
+                                goldPosition = CENTER;
+                            }
                             moveOmniArmTimer.set(MOVE_OMNI_ARM_DURATION);
                             subState++;
                         }
-
                         break;
                     case 2:
                         subStateDesc = "Moving OmniArm out of Lift's way";
@@ -410,7 +416,7 @@ public class WHSAuto extends OpMode{
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(wallPosition, false);
                         } else if (STARTING_POSITION == DEPOT) {
-                            robot.driveToTarget(depotCornerPosition, true);
+                            robot.driveToTarget(depotCornerPosition, false);
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
@@ -433,7 +439,7 @@ public class WHSAuto extends OpMode{
                     case 3:
                         subStateDesc = "Rotating robot";
                         if (STARTING_POSITION == CRATER) {
-                            robot.rotateToTarget(90, true);
+                            robot.rotateToTarget(270, false);
                             if (!robot.rotateToTargetInProgress()) {
                                 dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                                 subState++;

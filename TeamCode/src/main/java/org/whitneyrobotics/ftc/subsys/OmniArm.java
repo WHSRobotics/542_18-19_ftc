@@ -5,17 +5,19 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.whitneyrobotics.ftc.lib.util.Toggler;
 
+import java.util.Map;
+
 public class OmniArm {
 
-    public DcMotor intakeMotor;
+
     public DcMotor extendMotor;
     public DcMotor pivotMotor;
-
-    private CRServo leftSweep;
-    private CRServo rightSweep;
+    CRServo intakeServo;
+    Servo clearenceServo;
 
     private DigitalChannel omniLimitSwitch;
 
@@ -29,14 +31,14 @@ public class OmniArm {
 
     private final double INTAKE_POWER = 1.0;
     private final double OUTTAKE_POWER = -1.0;
-
+    final double INTAKE_SPEED = 0.7;
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {0, 2100};
+    private  final int[] EXTEND_POSITIONS = {0, -638};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
-    private final int[] PIVOT_POSITIONS = {0, 320, 290, 2020};
+    private final int[] PIVOT_POSITIONS = {0, 320, 290, 2200};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
@@ -49,20 +51,18 @@ public class OmniArm {
 
     Toggler extensionToggler = new Toggler(2);
     Toggler pivotToggler = new Toggler(2);
+    Toggler clearanceToggler= new Toggler(2);;
+
 
     public int limitSwitchResetState = 0;
     public int operateModeSwitch = 0;
     public boolean isLimitSwitchResetInProgress = false;
 
     public OmniArm(HardwareMap armMap) {
-        intakeMotor = armMap.dcMotor.get("intakeMotor");
+
         extendMotor = armMap.dcMotor.get("extendMotor");
         pivotMotor = armMap.dcMotor.get("pivotMotor");
-        leftSweep = armMap.crservo.get("lSweepServo");
-        rightSweep = armMap.crservo.get("rSweepServo");
         omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
-
-        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pivotMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -73,30 +73,22 @@ public class OmniArm {
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pivotMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        clearenceServo = armMap.servo.get("clearenceServo");
+        intakeServo = armMap.crservo.get("intakeServo");
+
     }
 
-    public void operateIntake(boolean intakeGamepadInput, boolean outtakeGamepadInput) {
-        if (intakeGamepadInput) {
-            intakeMotor.setPower(INTAKE_POWER);
-        } else if (outtakeGamepadInput) {
-            intakeMotor.setPower(OUTTAKE_POWER);
-        } else {
-            intakeMotor.setPower(0.0);
+    public void operateIntake (boolean gamepadInput1, boolean gamepadInput2){
+        if (gamepadInput1){
+            intakeServo.setPower(INTAKE_SPEED);
+        }else if (gamepadInput2){
+            intakeServo.setPower(-INTAKE_SPEED);
+        }else{
+            intakeServo.setPower(0);
         }
+
     }
 
-    public void operateSweeps(boolean intakeGamepadInput, boolean outtakeGamepadInput) {
-        if (intakeGamepadInput) {
-            leftSweep.setPower(-1);
-            rightSweep.setPower(1);
-        } else if (outtakeGamepadInput) {
-            leftSweep.setPower(1);
-            rightSweep.setPower(-1);
-        } else {
-            leftSweep.setPower(0);
-            rightSweep.setPower(0);
-        }
-    }
 
     public void operateExtend(boolean gamepadInput) {
         extensionToggler.changeState(gamepadInput);
@@ -204,6 +196,17 @@ public class OmniArm {
     public boolean getDigitalTouch() {
         return !omniLimitSwitch.getState();
     }
+
+    public void operateIntakeClearence(boolean gamepadInput){
+        clearanceToggler.changeState(gamepadInput);
+        if (clearanceToggler.currentState() == 0){
+            clearenceServo.setPosition(.542);
+        }else if (clearanceToggler.currentState() == 1){
+            clearenceServo.setPosition(.865);
+        }
+    }
+
+
 
     /*public void makeRoomForLift (boolean gamepadInput) {
         if (gamepadInput) {
