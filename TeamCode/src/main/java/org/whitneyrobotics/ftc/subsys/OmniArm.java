@@ -16,9 +16,10 @@ public class OmniArm {
     //Motors
     public DcMotor extendMotor;
     public DcMotor pivotMotor;
-    //Servos
+    public DcMotor intakeMotor;
+    /*//Servos
     CRServo intakeServo;
-    Servo clearenceServo;
+    Servo clearenceServo;*/
     //LimitSwitch
     private DigitalChannel omniLimitSwitch;
 
@@ -34,7 +35,7 @@ public class OmniArm {
     }
 
     //Powers and Thresholds
-    private final double INTAKE_POWER = 0.8;
+    private final double INTAKE_POWER = 1.0;
     private final double EXTEND_POWER = 0.50;
     private final double PIVOT_POWER = 0.35;
     private final double PIVOT_THRESHOLD = 50;
@@ -70,6 +71,8 @@ public class OmniArm {
 
         extendMotor = armMap.dcMotor.get("extendMotor");
         pivotMotor = armMap.dcMotor.get("pivotMotor");
+        intakeMotor = armMap.dcMotor.get("intakeMotor");
+
         omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
 
         extendMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -83,18 +86,18 @@ public class OmniArm {
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pivotMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        clearenceServo = armMap.servo.get("clearenceServo");
-        intakeServo = armMap.crservo.get("intakeServo");
+        /*clearenceServo = armMap.servo.get("clearenceServo");
+        intakeServo = armMap.crservo.get("intakeServo");*/
 
     }
 
     public void operateIntake (boolean gamepadInput1, boolean gamepadInput2){
         if (gamepadInput1){
-            intakeServo.setPower(INTAKE_POWER);
+            intakeMotor.setPower(INTAKE_POWER);
         }else if (gamepadInput2){
-            intakeServo.setPower(-INTAKE_POWER);
+            intakeMotor.setPower(-INTAKE_POWER);
         }else{
-            intakeServo.setPower(0);
+            intakeMotor.setPower(0);
         }
 
     }
@@ -205,13 +208,13 @@ public class OmniArm {
         return !omniLimitSwitch.getState();
     }
 
-    public void operateIntakeClearence(boolean gamepadInputIntake,boolean gamepadInputOuttake){
+    /*public void operateIntakeClearence(boolean gamepadInputIntake,boolean gamepadInputOuttake){
         if (gamepadInputIntake){
             clearenceServo.setPosition(INTAKE_CLEARANCE);
         }else if (gamepadInputOuttake){
             clearenceServo.setPosition(OUTTAKE_CLEARANCE);
         }
-    }
+    }*/
 
 
 
