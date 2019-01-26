@@ -13,50 +13,58 @@ import java.util.Map;
 
 public class OmniArm {
 
-
+    //Motors
     public DcMotor extendMotor;
     public DcMotor pivotMotor;
+    //Servos
     CRServo intakeServo;
     Servo clearenceServo;
-
+    //LimitSwitch
     private DigitalChannel omniLimitSwitch;
 
+    //Encoder Position Enums
     public enum ExtendPosition {
         RETRACTED, EXTENDED
     }
-
     public enum PivotPosition {
         STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
     }
+    public enum ClearancePosition{
+        INTAKE, OUTTAKE
+    }
+    //Powers and Thresholds
+    private final double INTAKE_POWER = 0.8;
+    private final double EXTEND_POWER = 0.50;
+    private final double PIVOT_POWER = 0.35;
+    private final double PIVOT_THRESHOLD = 50;
 
-    private final double INTAKE_POWER = 1.0;
-    private final double OUTTAKE_POWER = -1.0;
-    final double INTAKE_SPEED = 0.7;
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {0, -638};
+    private  final int[] EXTEND_POSITIONS = {0, 638};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
-    private final int[] PIVOT_POSITIONS = {0, 320, 290, 2200};
+    private final int[] PIVOT_POSITIONS = {0, 320, 290, 2021};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
     private final int INTAKE_MODE = PIVOT_POSITIONS[PivotPosition.INTAKE.ordinal()];
 
-    private final double EXTEND_POWER = 0.50;
-    private final double PIVOT_POWER = 0.35;
-    private final double PIVOT_THRESHOLD = 50;
+    //Intake, Outtake Clearance positions
+    private final double[] CLEARANCE_POSITIONS = {.55, .99};
+    private final double INTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.INTAKE.ordinal()];
+    private final double OUTTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.OUTTAKE.ordinal()];
+
+
     private PivotPosition currentPivotPosition = PivotPosition.STORED;
 
     Toggler extensionToggler = new Toggler(2);
     Toggler pivotToggler = new Toggler(2);
-    Toggler clearanceToggler= new Toggler(2);;
 
 
     public int limitSwitchResetState = 0;
     public int operateModeSwitch = 0;
-    public boolean isLimitSwitchResetInProgress = false;
+
 
     public OmniArm(HardwareMap armMap) {
 
@@ -80,9 +88,9 @@ public class OmniArm {
 
     public void operateIntake (boolean gamepadInput1, boolean gamepadInput2){
         if (gamepadInput1){
-            intakeServo.setPower(INTAKE_SPEED);
+            intakeServo.setPower(INTAKE_POWER);
         }else if (gamepadInput2){
-            intakeServo.setPower(-INTAKE_SPEED);
+            intakeServo.setPower(-INTAKE_POWER);
         }else{
             intakeServo.setPower(0);
         }
@@ -119,7 +127,6 @@ public class OmniArm {
             case 0:
                 if (gamepadInput) {
                     limitSwitchResetState = 1;
-                    isLimitSwitchResetInProgress = true;
                     pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 } else {
                     pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -136,7 +143,6 @@ public class OmniArm {
                 break;
             case 3:
                 pivotMotor.setPower(0.0);
-                isLimitSwitchResetInProgress = false;
                 currentPivotPosition = PivotPosition.STORED;
                 pivotMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 limitSwitchResetState = 0;
@@ -197,12 +203,11 @@ public class OmniArm {
         return !omniLimitSwitch.getState();
     }
 
-    public void operateIntakeClearence(boolean gamepadInput){
-        clearanceToggler.changeState(gamepadInput);
-        if (clearanceToggler.currentState() == 0){
-            clearenceServo.setPosition(.542);
-        }else if (clearanceToggler.currentState() == 1){
-            clearenceServo.setPosition(.865);
+    public void operateIntakeClearence(boolean gamepadInputIntake,boolean gamepadInputOuttake){
+        if (gamepadInputIntake){
+            clearenceServo.setPosition(INTAKE_CLEARANCE);
+        }else if (gamepadInputOuttake){
+            clearenceServo.setPosition(OUTTAKE_CLEARANCE);
         }
     }
 
