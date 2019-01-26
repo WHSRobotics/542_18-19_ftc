@@ -32,6 +32,7 @@ public class OmniArm {
     public enum ClearancePosition{
         INTAKE, OUTTAKE
     }
+
     //Powers and Thresholds
     private final double INTAKE_POWER = 0.8;
     private final double EXTEND_POWER = 0.50;
@@ -61,7 +62,6 @@ public class OmniArm {
     Toggler extensionToggler = new Toggler(2);
     Toggler pivotToggler = new Toggler(2);
 
-
     public int limitSwitchResetState = 0;
     public int operateModeSwitch = 0;
 
@@ -71,6 +71,8 @@ public class OmniArm {
         extendMotor = armMap.dcMotor.get("extendMotor");
         pivotMotor = armMap.dcMotor.get("pivotMotor");
         omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
+
+        extendMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pivotMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
