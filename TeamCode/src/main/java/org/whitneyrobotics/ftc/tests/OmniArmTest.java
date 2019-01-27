@@ -11,6 +11,7 @@ public class OmniArmTest extends OpMode {
 
     WHSRobotImpl robot;
     Toggler armTog = new Toggler(3);
+    int i = 0;
 
     @Override
     public void init() {
@@ -21,12 +22,12 @@ public class OmniArmTest extends OpMode {
     public void loop() {
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
-        //robot.omniArm.operateIntakeClearence(gamepad2.left_trigger>0.01, gamepad2.left_trigger>0.01);
+        robot.omniArm.operateIntakeClearence(gamepad2.left_trigger>0.01);
         armTog.changeState(gamepad2.dpad_up);
         if (armTog.currentState() == 0) {
             robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
             robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
-            robot.omniArm.limitSwitchReset(gamepad2.b);
+            //robot.omniArm.limitSwitchReset(gamepad2.y);
         } else if (armTog.currentState() == 1) {
             robot.omniArm.resetEncoders();
             armTog.setState(2);
@@ -36,6 +37,9 @@ public class OmniArmTest extends OpMode {
         }
         telemetry.addData("OmniLimit State", robot.omniArm.getDigitalTouch());
         telemetry.addData("OmniSwitchSwitchState", robot.omniArm.operateModeSwitch);
+
+        i++;
+        telemetry.addData("i", i);
 
 
     }

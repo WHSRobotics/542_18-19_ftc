@@ -14,6 +14,8 @@ public class WHSTeleOp extends OpMode{
     Toggler liftTog = new Toggler(2);
     Toggler armTog = new Toggler(3);
 
+    int i = 0;
+
     @Override
     public void init() {
         robot = new WHSRobotImpl(hardwareMap);
@@ -33,13 +35,13 @@ public class WHSTeleOp extends OpMode{
 
         /* OMNIARM */
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
-        //robot.omniArm.operateIntakeClearence( gamepad2.left_trigger > 0.01, gamepad2.right_trigger>0.01);
+        robot.omniArm.operateIntakeClearence(gamepad2.left_trigger > 0.01);
 
         armTog.changeState(gamepad2.dpad_up);
         if (armTog.currentState() == 0) {
             robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
-            //robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
-            robot.omniArm.limitSwitchReset(gamepad2.b);
+            robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
+            //robot.omniArm.limitSwitchReset(gamepad2.y);
         } else if (armTog.currentState() == 1) {
             robot.omniArm.resetEncoders();
             armTog.setState(2);
@@ -68,6 +70,8 @@ public class WHSTeleOp extends OpMode{
         telemetry.addData("OmniArm Mode", armTog.currentState());
         telemetry.addData("Lift Tog State", liftTog.currentState());
         telemetry.addData("LimitSwitch resetPivot state", robot.omniArm.limitSwitchResetState);
+        i++;
+        telemetry.addData("i", i);
         //telemetry.addData("operatePivot Toggler State", robot.omniArm.getPivotTogglerState());
         //telemetry.addData("Distance Sensor Distance ", robot.lift.distancer.getDistance(DistanceUnit.MM));
     }
