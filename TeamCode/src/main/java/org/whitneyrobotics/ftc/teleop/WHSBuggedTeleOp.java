@@ -74,7 +74,7 @@ public class WHSBuggedTeleOp extends OpMode{
         }
         if (canStoreArm == 1) {
             if (gamepad1.right_bumper) {
-                robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
+                //robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
 
             } else {
                 robot.omniArm.operatePivot(gamepad2.x);

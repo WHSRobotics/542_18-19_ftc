@@ -10,7 +10,7 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 public class OmniArmTest extends OpMode {
 
     WHSRobotImpl robot;
-    Toggler armTog = new Toggler(3);
+    Toggler armTog = new Toggler(2);
     int i = 0;
 
     @Override
@@ -23,15 +23,16 @@ public class OmniArmTest extends OpMode {
 
         robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
         robot.omniArm.operateIntakeClearence(gamepad2.left_trigger>0.01);
+
         armTog.changeState(gamepad2.dpad_up);
         if (armTog.currentState() == 0) {
+            if (gamepad2.back) {
+                robot.omniArm.resetEncoders();
+            }
             robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
             robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
-            //robot.omniArm.limitSwitchReset(gamepad2.y);
+            robot.omniArm.limitSwitchReset(gamepad2.y);
         } else if (armTog.currentState() == 1) {
-            robot.omniArm.resetEncoders();
-            armTog.setState(2);
-        } else if (armTog.currentState() == 2) {
             robot.omniArm.operatePivot(gamepad2.x);
             robot.omniArm.operateExtend(gamepad2.a);
         }
