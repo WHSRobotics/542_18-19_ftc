@@ -44,7 +44,7 @@ public class WHSTeleOp extends OpMode{
             }
             robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
             robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
-            robot.omniArm.limitSwitchReset(gamepad2.y);
+            //robot.omniArm.limitSwitchReset(gamepad2.y);
         } else if (armTog.currentState() == 1) {
             robot.omniArm.operatePivot(gamepad2.x);
             robot.omniArm.operateExtend(gamepad2.a);
