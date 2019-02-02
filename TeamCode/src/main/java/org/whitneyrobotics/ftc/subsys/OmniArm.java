@@ -136,6 +136,7 @@ public class OmniArm {
 
     // for use in Auto
     public void setPivotPosition(PivotPosition pivotPosition) {
+        pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         pivotMotor.setTargetPosition(PIVOT_POSITIONS[pivotPosition.ordinal()]);
         pivotMotor.setPower(PIVOT_POWER);
         if (Math.abs(pivotMotor.getCurrentPosition() - PIVOT_POSITIONS[pivotPosition.ordinal()]) < PIVOT_THRESHOLD) {
