@@ -224,9 +224,11 @@ public class WHSAuto extends OpMode{
         robot.lift.liftMotor.setPower(0);
 
         // from the perspective of blue alliance
+        // starting coordinates DO NOT CHANGE
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 137.5);
 
+        // Position in which we move the robot to allow for the lift to go down
         landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
         landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
@@ -240,14 +242,15 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1320, 150);
 
-        wallPosition = new Position(-20,1505,150);
+        // rAndOm cRaTer and dEpOt pOsiTiOns
+        wallPosition = new Position(-20,1605,150);
         depotCornerPosition = new Position(-1280,1320,150);
         depotSidePosition = new Position(-1555, 1320, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440,1420,150);
-        depotPositionArray[CRATER] = new Position(-1350,1505,150);
+        depotPositionArray[CRATER] = new Position(-1350,1605,150);
 
-        craterPositonArray[CRATER] = new Position(750,1505,150);
+        craterPositonArray[CRATER] = new Position(750,1605,150);
         craterPositonArray[DEPOT] = new Position(-1505,-640,150);
 
         defineStateEnabledStatus();
@@ -490,13 +493,18 @@ public class WHSAuto extends OpMode{
                         break;
                     case 1:
                         subStateDesc = "Driving to crater";
-                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], STARTING_POSITION == CRATER);
+                        robot.driveToTarget(wallPosition, STARTING_POSITION==CRATER);
 
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 2:
+                        robot.driveToTarget(craterPositonArray[CRATER], false);
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                            subState++;
+                        }
+                    case 3:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -508,7 +516,8 @@ public class WHSAuto extends OpMode{
                     tfod.shutdown();
                 }
                 break;
-            default: break;
+            default:
+            break;
         }
 
         telemetry.addData("State: ", stateDesc);

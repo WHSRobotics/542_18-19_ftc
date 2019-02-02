@@ -20,7 +20,7 @@ public class OmniArm {
     private CRServo intakeServo;
     private Servo clearenceServo;
     //LimitSwitch
-    private DigitalChannel omniLimitSwitch;
+   // private DigitalChannel omniLimitSwitch;
 
     //Encoder Position Enums
     public enum ExtendPosition {
@@ -40,12 +40,12 @@ public class OmniArm {
     private final double PIVOT_THRESHOLD = 50;
 
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {0, 638};
+    private  final int[] EXTEND_POSITIONS = {0, 3050};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
-    private final int[] PIVOT_POSITIONS = {0, 320, 150, 1945};
+    private final int[] PIVOT_POSITIONS = {0, 320, 150, 1950};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
@@ -70,8 +70,8 @@ public class OmniArm {
 
         extendMotor = armMap.dcMotor.get("extendMotor");
         pivotMotor = armMap.dcMotor.get("pivotMotor");
-        omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
-        omniLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
+        //omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
+        //z   omniLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         extendMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -214,7 +214,7 @@ public class OmniArm {
     }
 
     public boolean getDigitalTouch() {
-        return !omniLimitSwitch.getState();
+        return false;
     }
 
     public void operateIntakeClearence(boolean gamepadInputIntake){
