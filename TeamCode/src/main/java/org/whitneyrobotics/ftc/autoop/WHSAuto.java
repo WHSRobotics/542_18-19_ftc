@@ -137,7 +137,7 @@ public class WHSAuto extends OpMode{
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_MINERAL] = true;
-        stateEnabled[CLAIM_DEPOT] = true;
+        stateEnabled[CLAIM_DEPOT] = false;
         stateEnabled[DRIVE_TO_CRATER] = true;
         stateEnabled[END] = true;
     }
