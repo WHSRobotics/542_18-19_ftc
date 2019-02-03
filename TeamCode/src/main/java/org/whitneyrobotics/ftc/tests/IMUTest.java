@@ -12,6 +12,8 @@ import org.whitneyrobotics.ftc.subsys.IMU;
 public class IMUTest extends OpMode {
 
     IMU imu;
+    double zAccel;
+    double maxZAccel = 0;
 
     @Override
     public void init() {
@@ -20,22 +22,22 @@ public class IMUTest extends OpMode {
 
     @Override
     public void loop() {
+        zAccel = imu.getZAcceleration();
+        if (Math.abs(zAccel) > Math.abs(maxZAccel)) {
+            maxZAccel = zAccel;
+        }
 
+        telemetry.addData("Current Z accel:", zAccel);
+        telemetry.addData("Max Z accel:", maxZAccel);
+
+        /*
         double heading = imu.getHeading();
-
         double[] threeHeading = imu.getThreeHeading();
 
-
-
         telemetry.addData("Heading: ", heading);
-
-       /* if(gamepad1.x){
-            imu.();
-        }*/
-
         telemetry.addData("x", threeHeading[0]);
         telemetry.addData("y", threeHeading[1]);
         telemetry.addData("z", threeHeading[2]);
-
+        */
     }
 }

@@ -89,6 +89,7 @@ public class WHSAuto extends OpMode{
         /**
          * Substates:
          * - Entry
+         * - Driving to wall position [CRATER]
          * - Driving to crater
          * - Exit
          */
@@ -104,16 +105,16 @@ public class WHSAuto extends OpMode{
     String stateDesc;
     String subStateDesc;
 
+    boolean zThresholdExceeded = false;
+
     /**
      * Timers
      */
     SimpleTimer scanMineralsTimer = new SimpleTimer();
-    SimpleTimer moveOmniArmTimer = new SimpleTimer();
     SimpleTimer dumpMarkerDropTimer = new SimpleTimer();
     SimpleTimer storeMarkerDropTimer = new SimpleTimer();
 
-    static final double SCAN_MINERALS_DURATION = 3.0;
-    static final double MOVE_OMNI_ARM_DURATION = 0.38;
+    static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
 
     /**
@@ -224,7 +225,6 @@ public class WHSAuto extends OpMode{
         robot.lift.liftMotor.setPower(0);
 
         // from the perspective of blue alliance
-        // starting coordinates DO NOT CHANGE
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 137.5);
 
@@ -233,30 +233,27 @@ public class WHSAuto extends OpMode{
         landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
         // setting the three different mineral positions for the crater side
-        goldPositionArray[CRATER][LEFT] = new Position(590, 1190, 150);
+        goldPositionArray[CRATER][LEFT] = new Position(500, 1250, 150);
         goldPositionArray[CRATER][CENTER] = new Position(930, 930, 150);
-        goldPositionArray[CRATER][RIGHT] = new Position(1190, 590, 150);
+        goldPositionArray[CRATER][RIGHT] = new Position(1250, 500, 150);
 
         // setting the three different mineral positions for the depot side
-        goldPositionArray[DEPOT][LEFT] = new Position(-1220,590,150);
-        goldPositionArray[DEPOT][CENTER] = new Position(-900,900,150);
-        goldPositionArray[DEPOT][RIGHT]=  new Position(-600,1320, 150);
+        goldPositionArray[DEPOT][LEFT] = new Position(-1220, 590, 150);
+        goldPositionArray[DEPOT][CENTER] = new Position(-900, 900, 150);
+        goldPositionArray[DEPOT][RIGHT]=  new Position(-600, 1220, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
-        wallPosition = new Position(-20,1605,150);
-        depotCornerPosition = new Position(-1280,1320,150);
+        wallPosition = new Position(-20, 1605, 150);
+        depotCornerPosition = new Position(-1280, 1320, 150);
         depotSidePosition = new Position(-1555, 1320, 150);
 
-        depotPositionArray[DEPOT] = new Position(-1440,1420,150);
-        depotPositionArray[CRATER] = new Position(-1350,1605,150);
+        depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
+        depotPositionArray[CRATER] = new Position(-1350, 1605, 150);
 
-        craterPositonArray[CRATER] = new Position(750,1605,150);
-        craterPositonArray[DEPOT] = new Position(-1505,-640,150);
+        craterPositonArray[CRATER] = new Position(750, 1425, 150);
+        craterPositonArray[DEPOT] = new Position(-1505, -640, 150);
 
         defineStateEnabledStatus();
-
-        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-        // first.
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
@@ -274,7 +271,6 @@ public class WHSAuto extends OpMode{
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
-
     }
 
     @Override
@@ -316,7 +312,6 @@ public class WHSAuto extends OpMode{
                             if (goldPosition == 3) {
                                 goldPosition = CENTER;
                             }
-                            moveOmniArmTimer.set(MOVE_OMNI_ARM_DURATION);
                             subState++;
                         }
                         break;
@@ -358,14 +353,12 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Bringing hook down";
                         robot.lift.bringDownHook(true);
                         if (robot.lift.getCurrentLiftPosition() == Lift.LiftPosition.STORED) {
-                            moveOmniArmTimer.set(MOVE_OMNI_ARM_DURATION);
                             subState++;
                         }
                         break;
                     case 3:
                         subStateDesc = "Resetting OmniArm";
                         robot.omniArm.setPivotPosition(OmniArm.PivotPosition.STORED);
-                        //if (moveOmniArmTimer.isExpired()) {
                         if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.STORED) {
                             subState++;
                         }
@@ -492,18 +485,24 @@ public class WHSAuto extends OpMode{
                         subState++;
                         break;
                     case 1:
-                        subStateDesc = "Driving to crater";
-                        robot.driveToTarget(wallPosition, STARTING_POSITION==CRATER);
-
+                        subState++;
+                        /*
+                        subStateDesc = "Driving to wall position";
+                        if (STARTING_POSITION == CRATER) {
+                            robot.driveToTarget(wallPosition, true);
+                        }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                            subState++;
+                        }*/
+                        break;
+                    case 2:
+                        subStateDesc = "Driving to crater";
+                        robot.driveToTarget(craterPositonArray[STARTING_POSITION], false);
+                        zThresholdExceeded = robot.imu.exceedZAccelThreshold();
+                        if (robot.imu.exceedZAccelThreshold() || (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress())) {
                             subState++;
                         }
                         break;
-                    case 2:
-                        robot.driveToTarget(craterPositonArray[CRATER], false);
-                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
-                            subState++;
-                        }
                     case 3:
                         subStateDesc = "Exit";
                         advanceState();
@@ -538,5 +537,6 @@ public class WHSAuto extends OpMode{
         telemetry.addData("Drive Derivative", robot.driveController.getDerivative());
         telemetry.addData("Rotate Power", robot.rotateController.getOutput());
         telemetry.addData("Drive Power", robot.driveController.getOutput());
+        telemetry.addData("Z Exceeded Threshold", zThresholdExceeded);
     }
 }

@@ -13,6 +13,8 @@ public class WHSTeleOp extends OpMode{
     WHSRobotImpl robot;
     Toggler liftTog = new Toggler(2);
     Toggler armTog = new Toggler(2);
+    double zAccel;
+    double maxZAccel = 0;
 
     int i = 0;
 
@@ -65,11 +67,21 @@ public class WHSTeleOp extends OpMode{
            // robot.lift.bringDownHook(gamepad1.dpad_left);
         }
 
+        zAccel = robot.imu.getZAcceleration();
+        if (Math.abs(zAccel) > Math.abs(maxZAccel)) {
+            maxZAccel = zAccel;
+        }
+
+        telemetry.addData("Current Z accel:", zAccel);
+        telemetry.addData("Max Z accel:", maxZAccel);
+
+        /*
         telemetry.addData("Pivot Current Pos", robot.omniArm.pivotMotor.getCurrentPosition());
         telemetry.addData("Pivot Target Pos", robot.omniArm.pivotMotor.getTargetPosition());
         telemetry.addData("OmniArm Mode", armTog.currentState());
         telemetry.addData("Lift Tog State", liftTog.currentState());
         telemetry.addData("LimitSwitch resetPivot state", robot.omniArm.limitSwitchResetState);
+        */
         i++;
         telemetry.addData("i", i);
         //telemetry.addData("operatePivot Toggler State", robot.omniArm.getPivotTogglerState());
