@@ -1,5 +1,4 @@
 package org.whitneyrobotics.ftc.autoop;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -41,7 +40,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = CRATER;
+    static final int STARTING_POSITION = DEPOT;
 
     /**
      * State Definitions
@@ -137,7 +136,7 @@ public class WHSAuto extends OpMode{
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_MINERAL] = true;
-        stateEnabled[CLAIM_DEPOT] = false;
+        stateEnabled[CLAIM_DEPOT] = true;
         stateEnabled[DRIVE_TO_CRATER] = true;
         stateEnabled[END] = true;
     }
@@ -251,7 +250,7 @@ public class WHSAuto extends OpMode{
         depotPositionArray[CRATER] = new Position(-1350, 1605, 150);
 
         craterPositonArray[CRATER] = new Position(750, 1425, 150);
-        craterPositonArray[DEPOT] = new Position(-1505, -640, 150);
+        craterPositonArray[DEPOT] = new Position(-1530, -640, 150);
 
         defineStateEnabledStatus();
         initVuforia();
@@ -500,6 +499,7 @@ public class WHSAuto extends OpMode{
                         robot.driveToTarget(craterPositonArray[STARTING_POSITION], false);
                         zThresholdExceeded = robot.imu.exceedZAccelThreshold();
                         if (robot.imu.exceedZAccelThreshold() || (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress())) {
+                            robot.drivetrain.operate(0.0, 0.0);
                             subState++;
                         }
                         break;
