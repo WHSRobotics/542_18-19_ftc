@@ -40,7 +40,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = DEPOT;
+    static final int STARTING_POSITION = CRATER;
 
     /**
      * State Definitions
@@ -242,14 +242,14 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600, 1220, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
-        wallPosition = new Position(-20, 1605, 150);
+        wallPosition = new Position(-20, 1580, 150);
         depotCornerPosition = new Position(-1280, 1320, 150);
         depotSidePosition = new Position(-1555, 1320, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
         depotPositionArray[CRATER] = new Position(-1350, 1605, 150);
 
-        craterPositonArray[CRATER] = new Position(750, 1425, 150);
+        craterPositonArray[CRATER] = new Position(750, 1210, 150);
         craterPositonArray[DEPOT] = new Position(-1530, -640, 150);
 
         defineStateEnabledStatus();
