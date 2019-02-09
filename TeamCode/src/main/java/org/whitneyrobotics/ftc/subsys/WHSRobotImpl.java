@@ -6,6 +6,7 @@ import org.whitneyrobotics.ftc.lib.util.Coordinate;
 import org.whitneyrobotics.ftc.lib.util.Functions;
 import org.whitneyrobotics.ftc.lib.util.PIDController;
 import org.whitneyrobotics.ftc.lib.util.Position;
+import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 
 /**
  * Created by Jason on 10/20/2017.
@@ -18,6 +19,7 @@ public class WHSRobotImpl implements WHSRobot {
     public OmniArm omniArm;
     public MarkerDrop markerDrop;
     public Lift lift;
+    public Lighting led;
 
     Coordinate currentCoord;
     private double targetHeading; //field frame
@@ -25,21 +27,21 @@ public class WHSRobotImpl implements WHSRobot {
     public double distanceToTargetDebug = 0;
     private double lastKnownHeading = 0.1;
 
-    private static final double DEADBAND_DRIVE_TO_TARGET = 24.5; //in mm
-    private static final double DEADBAND_ROTATE_TO_TARGET = 2; //in degrees
+    private static double DEADBAND_DRIVE_TO_TARGET = RobotConstants.DEADBAND_DRIVE_TO_TARGET; //in mm
+    private static double DEADBAND_ROTATE_TO_TARGET = RobotConstants.DEADBAND_ROTATE_TO_TARGET; //in degrees
 
-    public static final double DRIVE_MIN = .2;
-    public static final double DRIVE_MAX = .8;
-    public static final double ROTATE_MIN = 0.2;
-    public static final double ROTATE_MAX = 1;
+    public static double DRIVE_MIN = RobotConstants.drive_min;
+    public static double DRIVE_MAX = RobotConstants.drive_max;
+    public static double ROTATE_MIN = RobotConstants.rotate_min;
+    public static double ROTATE_MAX = RobotConstants.rotate_max;
 
-    private static final double ROTATE_KP = 1.3;
-    private static final double ROTATE_KI = 0.82;
-    private static final double ROTATE_KD = 0.49;
+    private static double ROTATE_KP = RobotConstants.R_KP;
+    private static double ROTATE_KI = RobotConstants.R_KI;
+    private static double ROTATE_KD = RobotConstants.R_KD;
 
-    private static final double DRIVE_KP = 1.7;
-    private static final double DRIVE_KI = 0.7;
-    private static final double DRIVE_KD = 0.8;
+    private static double DRIVE_KP = RobotConstants.D_KP;
+    private static double DRIVE_KI = RobotConstants.D_KI;
+    private static double DRIVE_KD = RobotConstants.D_KD;
 
     public PIDController rotateController = new PIDController(ROTATE_KP, ROTATE_KI, ROTATE_KD);
     public PIDController driveController = new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
