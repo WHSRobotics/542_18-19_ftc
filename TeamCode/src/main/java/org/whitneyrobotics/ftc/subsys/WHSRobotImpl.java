@@ -19,7 +19,6 @@ public class WHSRobotImpl implements WHSRobot {
     public OmniArm omniArm;
     public MarkerDrop markerDrop;
     public Lift lift;
-    public Lighting led;
 
     Coordinate currentCoord;
     private double targetHeading; //field frame
