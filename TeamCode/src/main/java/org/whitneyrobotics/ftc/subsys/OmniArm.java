@@ -27,7 +27,7 @@ public class OmniArm {
         RETRACTED, EXTENDED
     }
     public enum PivotPosition {
-        STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
+        STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, INTERMEDIATE
     }
     public enum ClearancePosition{
         INTAKE, OUTTAKE
@@ -45,11 +45,12 @@ public class OmniArm {
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
-    private final int[] PIVOT_POSITIONS = {0, 320, 245, 2000};
+    private final int[] PIVOT_POSITIONS = {0, 320, 245, 2000, 1700};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
     private final int INTAKE_MODE = PIVOT_POSITIONS[PivotPosition.INTAKE.ordinal()];
+    private final int INTERMEDIATE_MODE = PIVOT_POSITIONS[PivotPosition.INTERMEDIATE.ordinal()];
 
     //Intake, Outtake Clearance positions
     private final double[] CLEARANCE_POSITIONS = {.95, .6};
@@ -88,6 +89,8 @@ public class OmniArm {
 
     }
 
+
+
     public void operateIntake (boolean gamepadInput1, boolean gamepadInput2){
         if (gamepadInput1){
             intakeMotor.setPower(INTAKE_POWER);
@@ -113,24 +116,23 @@ public class OmniArm {
         }
     }
 
-    public void operatePivot(boolean gamepadInput) {
+    public void operatePivot(boolean gamepadInput, boolean gamepadInputExtendClearance) {
+
         pivotToggler.changeState(gamepadInput);
-        if (gamepadInput) {
+        if (gamepadInput || gamepadInputExtendClearance) {
             pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             pivotMotor.setPower(PIVOT_POWER);
         }
-        if (pivotToggler.currentState() == 0) {
+        if (gamepadInputExtendClearance){
+            pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
+            currentPivotPosition = PivotPosition.INTERMEDIATE;
+        }
+        else if (pivotToggler.currentState() == 0) {
             pivotMotor.setTargetPosition(OUTTAKE_MODE);
             currentPivotPosition = PivotPosition.OUTTAKE;
-
-            /*if (Math.abs(pivotMotor.getCurrentPosition() - OUTTAKE_MODE) < PIVOT_THRESHOLD) {
-            }   */
         } else if (pivotToggler.currentState() == 1) {
             pivotMotor.setTargetPosition(INTAKE_MODE);
             currentPivotPosition = PivotPosition.INTAKE;
-            /*if (Math.abs(pivotMotor.getCurrentPosition() - INTAKE_MODE) < PIVOT_THRESHOLD) {
-
-            } */
         }
     }
 
