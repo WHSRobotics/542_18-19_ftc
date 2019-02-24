@@ -18,7 +18,7 @@ public class OmniArm {
     public DcMotor pivotMotor;
     private DcMotor intakeMotor;
     //Servos
-    private Servo clearenceServo;
+    private Servo clearanceServo;
     //LimitSwitch
    // private DigitalChannel omniLimitSwitch;
 
@@ -40,7 +40,7 @@ public class OmniArm {
     private final double PIVOT_THRESHOLD = 50;
 
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {300, 3460};
+    private  final int[] EXTEND_POSITIONS = {300, 3510};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
@@ -53,7 +53,7 @@ public class OmniArm {
     private final int INTERMEDIATE_MODE = PIVOT_POSITIONS[PivotPosition.INTERMEDIATE.ordinal()];
 
     //Intake, Outtake Clearance positions
-    private final double[] CLEARANCE_POSITIONS = {.95, .6};
+    private final double[] CLEARANCE_POSITIONS = {.975, .6};
     private final double INTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.INTAKE.ordinal()];
     private final double OUTTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.OUTTAKE.ordinal()];
 
@@ -85,18 +85,21 @@ public class OmniArm {
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pivotMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        clearenceServo = armMap.servo.get("clearenceServo");
+        clearanceServo = armMap.servo.get("clearenceServo");
 
     }
 
 
 
-    public void operateIntake (boolean gamepadInput1, boolean gamepadInput2){
+    public void operateIntake (boolean gamepadInput1, boolean gamepadInput2, boolean gamepadInputSlow){
         if (gamepadInput1){
             intakeMotor.setPower(INTAKE_POWER);
         }else if (gamepadInput2){
             intakeMotor.setPower(-INTAKE_POWER);
-        }else{
+        }else if (gamepadInputSlow){
+            intakeMotor.setPower(-INTAKE_POWER/3);
+        }
+        else{
             intakeMotor.setPower(0);
         }
 
@@ -127,10 +130,10 @@ public class OmniArm {
             pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
             currentPivotPosition = PivotPosition.INTERMEDIATE;
         }
-        else if (pivotToggler.currentState() == 0) {
+        else if (pivotToggler.currentState() == 0 && gamepadInput) {
             pivotMotor.setTargetPosition(OUTTAKE_MODE);
             currentPivotPosition = PivotPosition.OUTTAKE;
-        } else if (pivotToggler.currentState() == 1) {
+        } else if (pivotToggler.currentState() == 1 && gamepadInput) {
             pivotMotor.setTargetPosition(INTAKE_MODE);
             currentPivotPosition = PivotPosition.INTAKE;
         }
@@ -221,9 +224,9 @@ public class OmniArm {
 
     public void operateIntakeClearence(boolean gamepadInputIntake){
         if (gamepadInputIntake){
-            clearenceServo.setPosition(OUTTAKE_CLEARANCE);
+            clearanceServo.setPosition(OUTTAKE_CLEARANCE);
         }else {
-            clearenceServo.setPosition(INTAKE_CLEARANCE);
+            clearanceServo.setPosition(INTAKE_CLEARANCE);
         }
     }
 

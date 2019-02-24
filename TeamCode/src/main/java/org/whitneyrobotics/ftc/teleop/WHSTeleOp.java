@@ -36,7 +36,7 @@ public class WHSTeleOp extends OpMode{
         robot.drivetrain.switchOrientation(gamepad1.a);
 
         /* OMNIARM */
-        robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
+        robot.omniArm.operateIntake(gamepad2.left_bumper, gamepad2.right_bumper, gamepad2.left_trigger>0.01);
         robot.omniArm.operateIntakeClearence(gamepad2.right_trigger > 0.01);
 
         armTog.changeState(gamepad2.dpad_up);
@@ -48,7 +48,7 @@ public class WHSTeleOp extends OpMode{
             robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
             //robot.omniArm.limitSwitchReset(gamepad2.y);
         } else if (armTog.currentState() == 1) {
-            robot.omniArm.operatePivot(gamepad2.x);
+            robot.omniArm.operatePivot(gamepad2.x, gamepad2.y);
             robot.omniArm.operateExtend(gamepad2.a);
         }
 

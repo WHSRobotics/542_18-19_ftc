@@ -64,7 +64,7 @@ public class WHSBuggedTeleOp extends OpMode{
         }
 
         if (canIntake == 1) {
-            robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
+            robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper, gamepad2.left_trigger>0.01);
         }
         if (canExtend == 1) {
             robot.omniArm.operateExtend(gamepad2.a);
@@ -77,7 +77,7 @@ public class WHSBuggedTeleOp extends OpMode{
                 //robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
 
             } else {
-                robot.omniArm.operatePivot(gamepad2.x);
+                robot.omniArm.operatePivot(gamepad2.x, gamepad2.y);
             }
         }
 

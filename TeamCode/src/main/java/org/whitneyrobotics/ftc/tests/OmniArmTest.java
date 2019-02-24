@@ -21,7 +21,7 @@ public class OmniArmTest extends OpMode {
     @Override
     public void loop() {
 
-        robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper);
+        robot.omniArm.operateIntake(gamepad2.right_bumper, gamepad2.left_bumper, gamepad2.right_trigger>0.01);
         robot.omniArm.operateIntakeClearence(gamepad2.left_trigger>0.01);
 
         armTog.changeState(gamepad2.dpad_up);
