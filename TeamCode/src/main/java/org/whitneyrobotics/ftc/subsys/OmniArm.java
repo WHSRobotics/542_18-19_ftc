@@ -40,7 +40,7 @@ public class OmniArm {
     private final double PIVOT_THRESHOLD = 50;
 
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {300, 3510};
+    private  final int[] EXTEND_POSITIONS = {300, 3710};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
@@ -53,7 +53,7 @@ public class OmniArm {
     private final int INTERMEDIATE_MODE = PIVOT_POSITIONS[PivotPosition.INTERMEDIATE.ordinal()];
 
     //Intake, Outtake Clearance positions
-    private final double[] CLEARANCE_POSITIONS = {.975, .6};
+    private final double[] CLEARANCE_POSITIONS = {1, .6};
     private final double INTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.INTAKE.ordinal()];
     private final double OUTTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.OUTTAKE.ordinal()];
 

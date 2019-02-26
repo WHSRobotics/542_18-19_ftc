@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.whitneyrobotics.ftc.lib.util.Toggler;
+import org.whitneyrobotics.ftc.subsys.MarkerDrop;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 
@@ -34,6 +35,10 @@ public class WHSTeleOp extends OpMode{
             robot.drivetrain.operateWithOrientation(gamepad1.left_stick_y, gamepad1.right_stick_y);
         }
         robot.drivetrain.switchOrientation(gamepad1.a);
+
+        /* MARKER DROP */
+        //So it's doesn't get in Doc Hudson's way
+        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
 
         /* OMNIARM */
         robot.omniArm.operateIntake(gamepad2.left_bumper, gamepad2.right_bumper, gamepad2.left_trigger>0.01);
