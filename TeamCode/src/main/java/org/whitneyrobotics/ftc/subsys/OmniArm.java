@@ -57,6 +57,11 @@ public class OmniArm {
     private final double INTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.INTAKE.ordinal()];
     private final double OUTTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.OUTTAKE.ordinal()];
 
+    //biases
+    private int armPivotBias = 0;
+    private int armPivotBiasAmount = 50;
+    private int armExtendBiasAmount = 50;
+    private int armExtendBias = 0;
 
     private PivotPosition currentPivotPosition = PivotPosition.STORED;
 
@@ -65,6 +70,7 @@ public class OmniArm {
 
     public int limitSwitchResetState = 0;
     public int operateModeSwitch = 0;
+
 
 
     public OmniArm(HardwareMap armMap) {
@@ -113,9 +119,9 @@ public class OmniArm {
             extendMotor.setPower(EXTEND_POWER);
         }
         if (extensionToggler.currentState() == 0) {
-            extendMotor.setTargetPosition(RETRACTED_LENGTH);
+            extendMotor.setTargetPosition(RETRACTED_LENGTH + armExtendBias);
         } else if (extensionToggler.currentState() == 1) {
-            extendMotor.setTargetPosition(EXTENDED_LENGTH);
+            extendMotor.setTargetPosition(EXTENDED_LENGTH + armExtendBias);
         }
     }
 
@@ -127,14 +133,14 @@ public class OmniArm {
             pivotMotor.setPower(PIVOT_POWER);
         }
         if (gamepadInputExtendClearance){
-            pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
+            pivotMotor.setTargetPosition(INTERMEDIATE_MODE + armPivotBias);
             currentPivotPosition = PivotPosition.INTERMEDIATE;
         }
         else if (pivotToggler.currentState() == 0 && gamepadInput) {
-            pivotMotor.setTargetPosition(OUTTAKE_MODE);
+            pivotMotor.setTargetPosition(OUTTAKE_MODE + armPivotBias);
             currentPivotPosition = PivotPosition.OUTTAKE;
         } else if (pivotToggler.currentState() == 1 && gamepadInput) {
-            pivotMotor.setTargetPosition(INTAKE_MODE);
+            pivotMotor.setTargetPosition(INTAKE_MODE + armPivotBias);
             currentPivotPosition = PivotPosition.INTAKE;
         }
     }
@@ -180,8 +186,9 @@ public class OmniArm {
     }
 
     public void operateExtendManual(boolean gamepadInput1, double gamepadInput2) {
-        extendMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         if (gamepadInput1) {
+            extendMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             extendMotor.setPower(gamepadInput2);
         } else {
             extendMotor.setPower(0.0);
@@ -227,6 +234,27 @@ public class OmniArm {
             clearanceServo.setPosition(OUTTAKE_CLEARANCE);
         }else {
             clearanceServo.setPosition(INTAKE_CLEARANCE);
+        }
+    }
+
+    public void operateArmPivotBias(boolean gamepadInputUp, boolean gamepadInputDown){
+        if (gamepadInputUp){
+            armPivotBias = armPivotBiasAmount;
+        }else if (gamepadInputDown){
+            armPivotBias = -armPivotBiasAmount;
+        }
+        else{
+            armPivotBias = 0;
+        }
+    }
+
+    public void operateArmExtendBias(boolean gamepadInputUp, boolean gamepadinputdown){
+        if (gamepadInputUp){
+            armExtendBias= armExtendBiasAmount;
+        }else if (gamepadinputdown){
+            armExtendBias = -armExtendBiasAmount;
+        }else{
+            armExtendBias =0;
         }
     }
 
