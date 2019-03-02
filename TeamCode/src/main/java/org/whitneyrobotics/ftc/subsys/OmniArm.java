@@ -40,12 +40,12 @@ public class OmniArm {
     private final double PIVOT_THRESHOLD = 50;
 
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {300, 3710};
+    private  final int[] EXTEND_POSITIONS = {300, 3395};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE
-    private final int[] PIVOT_POSITIONS = {0, 320, 245, 2000, 1700};
+    private final int[] PIVOT_POSITIONS = {0, 320, 215, 2000, 1700};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
@@ -103,7 +103,7 @@ public class OmniArm {
         }else if (gamepadInput2){
             intakeMotor.setPower(-INTAKE_POWER);
         }else if (gamepadInputSlow){
-            intakeMotor.setPower(-INTAKE_POWER/3);
+            intakeMotor.setPower(-INTAKE_POWER/1.75);
         }
         else{
             intakeMotor.setPower(0);
