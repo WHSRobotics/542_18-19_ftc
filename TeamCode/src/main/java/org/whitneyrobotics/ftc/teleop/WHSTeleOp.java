@@ -63,9 +63,9 @@ public class WHSTeleOp extends OpMode{
         liftTog.changeState(gamepad2.dpad_right);
         if (liftTog.currentState() == 0) {
             if (gamepad1.dpad_up) {
-                robot.lift.setLiftMotorPower(0.9);
-            } else if (gamepad1.dpad_down) {
                 robot.lift.setLiftMotorPower(-0.9);
+            } else if (gamepad1.dpad_down) {
+                robot.lift.setLiftMotorPower(0.9);
             } else {
                 robot.lift.setLiftMotorPower(0.0);
             }

@@ -40,7 +40,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = DEPOT;
+    static final int STARTING_POSITION = CRATER;
 
     /**
      * State Definitions
@@ -242,7 +242,7 @@ public class WHSAuto extends OpMode{
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600, 1220, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
-        wallPosition = new Position(0, 1520, 150);
+        wallPosition = new Position(0, 1500, 150);
         depotCornerPosition = new Position(-1280, 1320, 150);
         depotSidePosition = new Position(-1485, 1320, 150);
 
@@ -445,6 +445,7 @@ public class WHSAuto extends OpMode{
                     case 4:
                         subStateDesc = "Dumping MarkerDrop";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
                         if (dumpMarkerDropTimer.isExpired()) {
                             storeMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                             subState++;
@@ -453,6 +454,7 @@ public class WHSAuto extends OpMode{
                     case 5:
                         subStateDesc = "Storing MarkerDrop";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.STORED);
                         if (storeMarkerDropTimer.isExpired()) {
                             subState++;
                         }

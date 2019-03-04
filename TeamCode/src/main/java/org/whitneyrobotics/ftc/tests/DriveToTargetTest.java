@@ -20,7 +20,7 @@ public class DriveToTargetTest extends OpMode {
     WHSRobotImpl robot;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
-    Position p1 = new Position(-600, 600, 150);
+    Position p1 = new Position(600, 600, 150);
     Position p2 = new Position(600,1200,150);
     boolean backwards = true;
     boolean b = true;
