@@ -53,7 +53,7 @@ public class OmniArm {
     private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, Intermediate
-    private final int[] PIVOT_POSITIONS = {0, 320, 205, 2121, 1700};
+    private final int[] PIVOT_POSITIONS = {0, 320, 245, 2121, 1700};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];

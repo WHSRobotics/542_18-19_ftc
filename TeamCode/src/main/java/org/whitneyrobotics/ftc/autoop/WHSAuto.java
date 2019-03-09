@@ -30,7 +30,7 @@ public class WHSAuto extends OpMode{
     Position[] landerClearancePositionArray = new Position[2];
     Position[][] goldPositionArray = new Position[2][3];
     Position wallPosition;
-    Position depotCornerPosition;
+    Position[] depotCornerPositionArray = new Position[3];
     Position depotSidePosition;
     Position[] craterPositonArray = new Position[2];
     Position[] depotPositionArray = new Position[2];
@@ -40,7 +40,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = CRATER;
+    static final int STARTING_POSITION = DEPOT;
 
     /**
      * State Definitions
@@ -243,14 +243,16 @@ public class WHSAuto extends OpMode{
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
         wallPosition = new Position(0, 1500, 150);
-        depotCornerPosition = new Position(-1280, 1320, 150);
-        depotSidePosition = new Position(-1485, 1320, 150);
+        depotCornerPositionArray[LEFT] = new Position(-1280, 1150, 150);
+        depotCornerPositionArray[CENTER] = new Position(-1280, 1320, 150);
+        depotCornerPositionArray[RIGHT] = new Position(-1280, 1510, 150);
+        depotSidePosition = new Position(-1450, 1320, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
         depotPositionArray[CRATER] = new Position(-1290, 1490, 150);
 
         craterPositonArray[CRATER] = new Position(640, 1370, 150);//(750, 1365, 150);
-        craterPositonArray[DEPOT] = new Position(-1530, -640, 150);
+        craterPositonArray[DEPOT] = new Position(-1450, -640, 150);
 
         defineStateEnabledStatus();
         initVuforia();
@@ -410,7 +412,7 @@ public class WHSAuto extends OpMode{
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(wallPosition, false);
                         } else if (STARTING_POSITION == DEPOT) {
-                            robot.driveToTarget(depotCornerPosition, false);
+                            robot.driveToTarget(depotCornerPositionArray[goldPosition], false);
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
