@@ -269,6 +269,7 @@ public class WHSAuto extends OpMode{
         // If you are using Motorola E4 phones,
         // you should send telemetry data while waiting for start.
         telemetry.addData("Status", "Waiting for start...");
+        telemetry.addData("Starting Coordinate", robot.getCoordinate());
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
@@ -384,6 +385,16 @@ public class WHSAuto extends OpMode{
                         }
                         break;
                     case 2:
+                        subStateDesc = "Kicking mineral out of the way";
+                        if (goldPosition == RIGHT) {
+                            robot.rotateToTarget(-60, true);
+                        } else if (goldPosition == LEFT) {
+                            robot.rotateToTarget(60, true);
+                        }
+                        if (!robot.rotateToTargetInProgress()) {
+                            subState++;
+                        }
+                    case 3:
                         subStateDesc = "Driving back to lander clearance";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(landerClearancePositionArray[CRATER], true);
@@ -394,7 +405,7 @@ public class WHSAuto extends OpMode{
                             subState++;
                         }
                         break;
-                    case 3:
+                    case 4:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -411,7 +422,7 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Driving to intermediate position";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(wallPosition, false);
-                        } else if (STARTING_POSITION == DEPOT) {
+                        } else if (STARTING_POSITION == DEPOT && goldPosition != CENTER) {
                             robot.driveToTarget(depotCornerPositionArray[goldPosition], false);
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
