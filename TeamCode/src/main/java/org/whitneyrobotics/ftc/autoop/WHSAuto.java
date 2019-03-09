@@ -243,16 +243,16 @@ public class WHSAuto extends OpMode{
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
         wallPosition = new Position(0, 1500, 150);
-        depotCornerPositionArray[LEFT] = new Position(-1280, 1150, 150);
-        depotCornerPositionArray[CENTER] = new Position(-1280, 1320, 150);
-        depotCornerPositionArray[RIGHT] = new Position(-1280, 1510, 150);
-        depotSidePosition = new Position(-1450, 1320, 150);
+        depotCornerPositionArray[LEFT] = new Position(-1280, 1420, 150);
+        depotCornerPositionArray[CENTER] = new Position(-1280, 1420, 150);
+        depotCornerPositionArray[RIGHT] = new Position(-1280, 1420, 150);
+        depotSidePosition = new Position(-1450, 1420, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
         depotPositionArray[CRATER] = new Position(-1290, 1490, 150);
 
         craterPositonArray[CRATER] = new Position(640, 1370, 150);//(750, 1365, 150);
-        craterPositonArray[DEPOT] = new Position(-1450, -640, 150);
+        craterPositonArray[DEPOT] = new Position(-1490, -640, 150);
 
         defineStateEnabledStatus();
         initVuforia();
