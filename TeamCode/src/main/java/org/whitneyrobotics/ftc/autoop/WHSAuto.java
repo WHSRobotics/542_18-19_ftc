@@ -269,7 +269,7 @@ public class WHSAuto extends OpMode{
         // If you are using Motorola E4 phones,
         // you should send telemetry data while waiting for start.
         telemetry.addData("Status", "Waiting for start...");
-        telemetry.addData("Starting Coordinate", robot.getCoordinate());
+        telemetry.addData("Starting Position", robot.getCoordinate().getPos());
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
@@ -387,9 +387,9 @@ public class WHSAuto extends OpMode{
                     case 2:
                         subStateDesc = "Kicking mineral out of the way";
                         if (goldPosition == RIGHT) {
-                            robot.rotateToTarget(-60, true);
+                            robot.rotateToTarget(robot.getCoordinate().getHeading() -60, true);
                         } else if (goldPosition == LEFT) {
-                            robot.rotateToTarget(60, true);
+                            robot.rotateToTarget(robot.getCoordinate().getHeading() + 60, true);
                         }
                         if (!robot.rotateToTargetInProgress()) {
                             subState++;
@@ -422,7 +422,7 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Driving to intermediate position";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(wallPosition, false);
-                        } else if (STARTING_POSITION == DEPOT && goldPosition != CENTER) {
+                        } else if (STARTING_POSITION == DEPOT ) {
                             robot.driveToTarget(depotCornerPositionArray[goldPosition], false);
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
