@@ -22,6 +22,8 @@ public class TileRunner implements TankDrivetrain, MotorSubsystem {
 
     private Toggler orientationSwitch = new Toggler(2);
 
+    public Lighting led;
+
     private static final double RADIUS_OF_WHEEL = 50;               //in mm
     private static final double CIRC_OF_WHEEL = RADIUS_OF_WHEEL * 2 * Math.PI;
     private static final double ENCODER_TICKS_PER_REV = 537.6;      //Neverest Orbital 20
@@ -48,6 +50,8 @@ public class TileRunner implements TankDrivetrain, MotorSubsystem {
 
         orientationSwitch.setState(1);
 
+        led = new Lighting(driveMap);
+
     }
 
     @Override
@@ -56,10 +60,12 @@ public class TileRunner implements TankDrivetrain, MotorSubsystem {
             case 0:
                 operateLeft(-leftPower);
                 operateRight(-rightPower);
+                led.operateLED(1.0);
                 break;
             case 1:
                 operateLeft(rightPower);
                 operateRight(leftPower);
+                led.operateLED(0.0);
                 break;
         }
     }
