@@ -243,10 +243,10 @@ public class WHSAuto extends OpMode{
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
         wallPosition = new Position(0, 1500, 150);
-        depotCornerPositionArray[LEFT] = new Position(-1280, 1420, 150);
-        depotCornerPositionArray[CENTER] = new Position(-1280, 1420, 150);
-        depotCornerPositionArray[RIGHT] = new Position(-1280, 1420, 150);
-        depotSidePosition = new Position(-1450, 1420, 150);
+        depotCornerPositionArray[LEFT] = new Position(-1280, 1120, 150);
+        depotCornerPositionArray[CENTER] = new Position(-1280, 1320, 150);
+        depotCornerPositionArray[RIGHT] = new Position(-1280, 1520, 150);
+        depotSidePosition = new Position(-1450, 1320, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
         depotPositionArray[CRATER] = new Position(-1290, 1490, 150);
@@ -269,7 +269,6 @@ public class WHSAuto extends OpMode{
         // If you are using Motorola E4 phones,
         // you should send telemetry data while waiting for start.
         telemetry.addData("Status", "Waiting for start...");
-        telemetry.addData("Starting Position", robot.getCoordinate().getPos());
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
@@ -346,7 +345,6 @@ public class WHSAuto extends OpMode{
                     case 1:
                         subStateDesc = "Driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
-
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -385,16 +383,6 @@ public class WHSAuto extends OpMode{
                         }
                         break;
                     case 2:
-                        subStateDesc = "Kicking mineral out of the way";
-                        if (goldPosition == RIGHT) {
-                            robot.rotateToTarget(robot.getCoordinate().getHeading() -60, true);
-                        } else if (goldPosition == LEFT) {
-                            robot.rotateToTarget(robot.getCoordinate().getHeading() + 60, true);
-                        }
-                        if (!robot.rotateToTargetInProgress()) {
-                            subState++;
-                        }
-                    case 3:
                         subStateDesc = "Driving back to lander clearance";
                         if (STARTING_POSITION == CRATER) {
                             robot.driveToTarget(landerClearancePositionArray[CRATER], true);
@@ -405,7 +393,7 @@ public class WHSAuto extends OpMode{
                             subState++;
                         }
                         break;
-                    case 4:
+                    case 3:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -437,9 +425,6 @@ public class WHSAuto extends OpMode{
                             robot.driveToTarget(depotSidePosition, false);
                         }
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
-                            if (STARTING_POSITION == DEPOT) {
-                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
-                            }
                             subState++;
                         }
                         break;
@@ -447,11 +432,11 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Rotating robot";
                         if (STARTING_POSITION == CRATER) {
                             robot.rotateToTarget(270, false);
-                            if (!robot.rotateToTargetInProgress()) {
-                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
-                                subState++;
-                            }
                         } else {
+                            robot.rotateToTarget(270, false);
+                        }
+                        if (!robot.rotateToTargetInProgress()) {
+                            dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                             subState++;
                         }
                         break;
