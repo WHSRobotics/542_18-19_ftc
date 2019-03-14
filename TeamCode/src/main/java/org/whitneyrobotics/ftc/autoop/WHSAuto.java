@@ -41,7 +41,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = DEPOT;
+    static final int STARTING_POSITION = CRATER;
 
     /**
      * State Definitions
@@ -138,9 +138,9 @@ public class WHSAuto extends OpMode{
         stateEnabled[INIT] = true;
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
-        stateEnabled[SAMPLE_MINERAL] = true;
-        stateEnabled[CLAIM_DEPOT] = true;
-        stateEnabled[EXTEND_INTO_CRATER] = true;
+        stateEnabled[SAMPLE_MINERAL] = false;
+        stateEnabled[CLAIM_DEPOT] = false;
+        stateEnabled[EXTEND_INTO_CRATER] = false;
         stateEnabled[END] = true;
     }
 
@@ -231,7 +231,7 @@ public class WHSAuto extends OpMode{
         startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 137.5);
 
         // Position in which we move the robot to allow for the lift to go down
-        landerClearancePositionArray[CRATER] = new Position(300, 300, 150);
+        landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
         landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
 
         // setting the three different mineral positions for the crater side
@@ -287,7 +287,9 @@ public class WHSAuto extends OpMode{
 
     @Override
     public void loop() {
-        robot.lift.bringDownHook(shouldHookBeDown);
+        if (robot.lift.getCurrentLiftPosition() != Lift.LiftPosition.STORED) {
+            robot.lift.bringDownHook(shouldHookBeDown);
+        }
         robot.estimateHeading();
         robot.estimatePosition();
 
@@ -428,7 +430,7 @@ public class WHSAuto extends OpMode{
                     case 3:
                         robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
                         robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        robot.omniArm.extendMotor.setTargetPosition(OmniArm.NewExtendPosition.NEW_EXTENDED.ordinal());
+                        robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.EXTENDED.ordinal());
                         robot.omniArm.operateIntake(true,false,false);
 
                     case 6:
