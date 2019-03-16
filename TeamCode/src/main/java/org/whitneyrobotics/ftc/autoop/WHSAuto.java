@@ -27,21 +27,16 @@ public class WHSAuto extends OpMode{
     /**
      * Positioning
      */
-    Coordinate[] startingCoordinateArray = new Coordinate[2];
-    Position[] landerClearancePositionArray = new Position[2];
-    Position[][] goldPositionArray = new Position[2][3];
+    Coordinate startingCoordinate;
+    Position landerClearancePositionArray;
+    Position[] goldPositionArray = new Position[3];
     Position wallPosition;
-    Position[] depotCornerPositionArray = new Position[3];
-    Position depotSidePosition;
-    Position[] craterPositonArray = new Position[2];
-    Position[] depotPositionArray = new Position[2];
+    Position depotPosition;
+    Position outtakePosition;
 
-    static final int CRATER = 0;
-    static final int DEPOT = 1;
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = CRATER;
 
     /**
      * State Definitions
@@ -115,9 +110,11 @@ public class WHSAuto extends OpMode{
     SimpleTimer scanMineralsTimer = new SimpleTimer();
     SimpleTimer dumpMarkerDropTimer = new SimpleTimer();
     SimpleTimer storeMarkerDropTimer = new SimpleTimer();
+    SimpleTimer outtakeMineralsTimer = new SimpleTimer();
 
     static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
+    static final double OUTTAKE_MINERALS_DURATION = 1.245;
 
     /**
      * Tensorflow Variables
@@ -227,35 +224,22 @@ public class WHSAuto extends OpMode{
         robot.lift.liftMotor.setPower(0);
 
         // from the perspective of blue alliance
-        startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
-        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 137.5);
+        startingCoordinate = new Coordinate(350, 350, 150, 47.5);
 
         // Position in which we move the robot to allow for the lift to go down
-        landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
-        landerClearancePositionArray[DEPOT] = new Position(-590, 590, 150);
+        landerClearancePositionArray = new Position(590, 590, 150);
 
         // setting the three different mineral positions for the crater side
-        goldPositionArray[CRATER][LEFT] = new Position(500, 1250, 150);
-        goldPositionArray[CRATER][CENTER] = new Position(930, 930, 150);
-        goldPositionArray[CRATER][RIGHT] = new Position(1250, 500, 150);
-
-        // setting the three different mineral positions for the depot side
-        goldPositionArray[DEPOT][LEFT] = new Position(-1220, 590, 150);
-        goldPositionArray[DEPOT][CENTER] = new Position(-900, 900, 150);
-        goldPositionArray[DEPOT][RIGHT]=  new Position(-600, 1220, 150);
+        goldPositionArray[LEFT] = new Position(500, 1250, 150);
+        goldPositionArray[CENTER] = new Position(930, 930, 150);
+        goldPositionArray[RIGHT] = new Position(1250, 500, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
         wallPosition = new Position(0, 1500, 150);
-        depotCornerPositionArray[LEFT] = new Position(-1280, 1120, 150);
-        depotCornerPositionArray[CENTER] = new Position(-1280, 1320, 150);
-        depotCornerPositionArray[RIGHT] = new Position(-1280, 1520, 150);
-        depotSidePosition = new Position(-1450, 1320, 150);
 
-        depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
-        depotPositionArray[CRATER] = new Position(-1290, 1490, 150);
+        depotPosition = new Position(-1290, 1490, 150);
 
-        craterPositonArray[CRATER] = new Position(640, 1370, 150);//(750, 1365, 150);
-        craterPositonArray[DEPOT] = new Position(-1490, -640, 150);
+        outtakePosition = new Position(100, 400, 150);
 
         defineStateEnabledStatus();
         initVuforia();
@@ -296,7 +280,7 @@ public class WHSAuto extends OpMode{
         switch (state) {
             case INIT:
                 stateDesc = "Starting Auto";
-                robot.setInitialCoordinate(startingCoordinateArray[STARTING_POSITION]);
+                robot.setInitialCoordinate(startingCoordinate);
                 advanceState();
                 break;
             case DROP_FROM_LANDER:
@@ -343,7 +327,7 @@ public class WHSAuto extends OpMode{
                         subState++;
                     case 1:
                         subStateDesc = "Driving to lander clearance";
-                        robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
+                        robot.driveToTarget(landerClearancePositionArray, false);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -366,24 +350,26 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Entry";
                         subState++;
                     case 1:
-                        subStateDesc = "Driving to depot";
-                        robot.driveToTarget(depotPositionArray[STARTING_POSITION], true);
-                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                        robot.driveToTarget(wallPosition, true);
+                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 2:
-                        subStateDesc = "Rotating Robot";
-                        if (STARTING_POSITION == CRATER) {
-                            robot.rotateToTarget(270, true);
-                            if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
-                                subState++;
-                            }
-                        } else {
+                        subStateDesc = "Driving to depot";
+                        robot.driveToTarget(depotPosition, true);
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 3:
+                        subStateDesc = "Rotating Robot";
+                            robot.rotateToTarget(270, true);
+                            if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                                subState++;
+                            }
+                        break;
+                    case 4:
                         subStateDesc = "Dumping Marker";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
                         if (dumpMarkerDropTimer.isExpired()) {
@@ -391,14 +377,14 @@ public class WHSAuto extends OpMode{
                             subState++;
                         }
                         break;
-                    case 4:
+                    case 5:
                         subStateDesc = "Storing MarkerDrop";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
                         if (storeMarkerDropTimer.isExpired()) {
                             subState++;
                         }
                         break;
-                    case 5:
+                    case 6:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -413,9 +399,7 @@ public class WHSAuto extends OpMode{
                         break;
                     case 1:
                         subStateDesc = "Driving to intermediate position";
-                        if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(wallPosition, false);
-                        }
+                        robot.driveToTarget(wallPosition, false);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -432,20 +416,55 @@ public class WHSAuto extends OpMode{
                         robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.EXTENDED.ordinal());
                         robot.omniArm.operateIntake(true,false,false);
-
-                    case 6:
-                        robot.driveToTarget(goldPositionArray[CRATER][goldPosition], false);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTAKE) {
+                            substate++;
+                        }
+                        break;
+                    case 4:
+                        robot.driveToTarget(goldPositionArray[goldPosition], false);
+                        robot.omniArm.operateIntake(true,false,false);
                         if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
                             subState++;
                         }
+                        break;
+                    case 5:
+                        robot.driveToTarget(outtakePosition, true);
+                        robot.omniArm.operateIntake(true,false,false);
+                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                            subState++;
+                        }
+                        break;
+                    case 6:
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.OUTTAKE);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
+                            outtakeMineralsTimer.set(OUTTAKE_MINERALS_DURATION);
+                            subState++;
+                        }
+                        break;
                     case 7:
+                        robot.omniArm.operateIntakeClearence(true);
+                        if (outtakeMineralsTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
+                    case 8:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
                 }
                 break;
             case INTAKE_PARTICLES:
-                
+                switch (subState) {
+                    case 0:
+                        robot.driveToTarget(goldPositionArray[goldPosition], false);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
+                            subState++;
+                        }
+                        break;
+                    case 1:
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
+                }
+                break;
             case EXTEND_INTO_CRATER:
                 switch (subState){
 
