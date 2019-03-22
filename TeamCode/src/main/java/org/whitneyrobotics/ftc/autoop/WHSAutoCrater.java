@@ -19,8 +19,8 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 import java.util.List;
 
-@Autonomous(name = "WHSAuto", group = "auto")
-public class WHSAuto extends OpMode{
+@Autonomous(name = "WHSAutoCrater", group = "auto")
+public class WHSAutoCrater extends OpMode{
 
     WHSRobotImpl robot;
 
@@ -28,7 +28,7 @@ public class WHSAuto extends OpMode{
      * Positioning
      */
     Coordinate startingCoordinate;
-    Position landerClearancePositionArray;
+    Position landerClearancePosition;
     Position[] goldPositionArray = new Position[3];
     Position wallPosition;
     Position depotPosition;
@@ -43,55 +43,12 @@ public class WHSAuto extends OpMode{
      */
     static final int INIT = 0;
     static final int DROP_FROM_LANDER = 1;
-        /**
-         * Substates:
-         * - Entry
-         * - Scanning Minerals
-         * - Moving OmniArm out of Lift's way
-         * - Bringing robot down
-         * - Exit
-         */
     static final int DRIVE_FROM_LANDER = 2;
-        /**
-         * Substates:
-         * - Entry
-         * - Driving to lander clearance
-         * - Bringing hook down
-         * - Resetting OmniArm
-         * - Exit
-         */
     static final int CLAIM_DEPOT = 3;
-        /**
-         * Substates:
-         * - Entry
-         * - Driving to mineral
-         * - Driving back to lander clearance [CRATER]
-         * - Exit
-         */
     static final int SAMPLE_MINERAL = 4;
-        /**
-         * Substates:
-         * - Entry
-         * - Driving to intermediate position
-         * - Driving to depot
-         * - Rotating robot [CRATER]
-         * - Dumping MarkerDrop
-         * - Storing MarkerDrop
-         * - Rotating robot [DEPOT]
-         * - Exit
-         */
-    static final int INTAKE_PARTICLES = 5;
-        /**
-         * Substates:
-         * - Entry
-         * - Driving to wall position [CRATER]
-         * - Driving to crater
-         * - Exit
-         */
-    static final int EXTEND_INTO_CRATER = 6;
-    static final int END = 7;
+    static final int END = 5;
 
-    static final int NUM_OF_STATES = 8;
+    static final int NUM_OF_STATES = 6;
 
     boolean[] stateEnabled = new boolean[NUM_OF_STATES];
 
@@ -101,7 +58,6 @@ public class WHSAuto extends OpMode{
     String stateDesc;
     String subStateDesc;
     boolean shouldHookBeDown= false;
-
     boolean zThresholdExceeded = false;
 
     /**
@@ -137,7 +93,6 @@ public class WHSAuto extends OpMode{
         stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_MINERAL] = false;
         stateEnabled[CLAIM_DEPOT] = false;
-        stateEnabled[EXTEND_INTO_CRATER] = false;
         stateEnabled[END] = true;
     }
 
@@ -227,7 +182,7 @@ public class WHSAuto extends OpMode{
         startingCoordinate = new Coordinate(350, 350, 150, 47.5);
 
         // Position in which we move the robot to allow for the lift to go down
-        landerClearancePositionArray = new Position(590, 590, 150);
+        landerClearancePosition = new Position(590, 590, 150);
 
         // setting the three different mineral positions for the crater side
         goldPositionArray[LEFT] = new Position(500, 1250, 150);
@@ -327,7 +282,7 @@ public class WHSAuto extends OpMode{
                         subState++;
                     case 1:
                         subStateDesc = "Driving to lander clearance";
-                        robot.driveToTarget(landerClearancePositionArray, false);
+                        robot.driveToTarget(landerClearancePosition, false);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -366,6 +321,7 @@ public class WHSAuto extends OpMode{
                         subStateDesc = "Rotating Robot";
                             robot.rotateToTarget(270, true);
                             if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                                 subState++;
                             }
                         break;
@@ -406,42 +362,51 @@ public class WHSAuto extends OpMode{
                         break;
                     case 2:
                         subStateDesc = "Driving to Lander Clearance";
-                        robot.driveToTarget(landerClearancePositionArray[CRATER], true);
+                        robot.driveToTarget(landerClearancePosition, true);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 3:
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
-                        robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.EXTENDED.ordinal());
-                        robot.omniArm.operateIntake(true,false,false);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTAKE) {
-                            substate++;
+                        subStateDesc = "Rotating robot";
+                        if (goldPosition == LEFT) {
+                            robot.rotateToTarget(45, true);
+                        }
+                        if (goldPosition == RIGHT) {
+                            robot.rotateToTarget(135, true);
+                        }
+                        if (!robot.rotateToTargetInProgress()) {
+                            subState++;
                         }
                         break;
                     case 4:
-                        robot.driveToTarget(goldPositionArray[goldPosition], false);
-                        robot.omniArm.operateIntake(true,false,false);
-                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                        subStateDesc = "Intaking gold mineral";
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
+                        robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.EXTENDED.ordinal());
+                        robot.omniArm.operateIntake(true, false, false);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTAKE) {
                             subState++;
                         }
                         break;
                     case 5:
-                        robot.driveToTarget(outtakePosition, true);
-                        robot.omniArm.operateIntake(true,false,false);
-                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
-                            subState++;
-                        }
-                        break;
-                    case 6:
+                        subStateDesc = "Bringing up OmniArm";
                         robot.omniArm.setPivotPosition(OmniArm.PivotPosition.OUTTAKE);
                         if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
                             outtakeMineralsTimer.set(OUTTAKE_MINERALS_DURATION);
                             subState++;
                         }
                         break;
+                    case 6:
+                        subStateDesc = "Driving to outtake position";
+                        robot.driveToTarget(outtakePosition, true);
+                        robot.omniArm.operateIntake(true, false, false);
+                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                            subState++;
+                        }
+                        break;
                     case 7:
+                        subStateDesc = "Outtaking gold mineral";
                         robot.omniArm.operateIntakeClearence(true);
                         if (outtakeMineralsTimer.isExpired()) {
                             subState++;
@@ -453,30 +418,57 @@ public class WHSAuto extends OpMode{
                         break;
                 }
                 break;
-            case INTAKE_PARTICLES:
+            case END:
+                if (tfod != null) {
+                    tfod.shutdown();
+                }
+
                 switch (subState) {
                     case 0:
+                        subStateDesc = "Driving to gold position";
                         robot.driveToTarget(goldPositionArray[goldPosition], false);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
+                        if (!robot.driveToTargetInProgress() || !robot.rotateToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 1:
+                        subStateDesc = "Lowering OmniArm";
                         robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
-                }
-                break;
-            case EXTEND_INTO_CRATER:
-                switch (subState){
-
-                }
-            case END:
-                stateDesc = "Ending Auto";
-                if (tfod != null) {
-                    tfod.shutdown();
+                        robot.omniArm.operateIntake(true, false, false);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTAKE) {
+                            subState++;
+                        }
+                        break;
+                    case 2:
+                        subStateDesc = "Bringing up OmniArm";
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.OUTTAKE);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
+                            outtakeMineralsTimer.set(OUTTAKE_MINERALS_DURATION);
+                            subState++;
+                        }
+                        break;
+                    case 3:
+                        subStateDesc = "Driving to outtake position";
+                        robot.driveToTarget(outtakePosition, true);
+                        robot.omniArm.operateIntake(true, false, false);
+                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                            subState++;
+                        }
+                        break;
+                    case 4:
+                        subStateDesc = "Outtaking gold mineral";
+                        robot.omniArm.operateIntakeClearence(true);
+                        if (outtakeMineralsTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
+                    case 5:
+                        subStateDesc = "Repeat";
+                        subState = 0;
                 }
                 break;
             default:
-            break;
+                break;
         }
 
         telemetry.addData("State: ", stateDesc);
