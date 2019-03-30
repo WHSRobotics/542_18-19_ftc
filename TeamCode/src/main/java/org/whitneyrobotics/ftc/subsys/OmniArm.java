@@ -252,11 +252,9 @@ public class OmniArm {
     public void operatePivotManual(boolean gamepadInput1, double gamepadInput2) {
         if(gamepadInput1) {
             pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-        if (gamepadInput1) {
             pivotMotor.setPower(gamepadInput2);
         } else {
-            extendMotor.setPower(0.0);
+            pivotMotor.setPower(0.0);
         }
     }
 
