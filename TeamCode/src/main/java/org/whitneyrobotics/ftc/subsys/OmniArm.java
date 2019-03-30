@@ -18,28 +18,18 @@ public class OmniArm {
     public DcMotor pivotMotor;
     private DcMotor intakeMotor;
     //Servos
-    private Servo clearanceServo;
     //LimitSwitch
    // private DigitalChannel omniLimitSwitch;
 
     //Encoder Position Enums
     public enum ExtendPosition {
-        RETRACTED, EXTENDED
+        RETRACTED,OUTTAKE, INTAKE
     }
     public enum PivotPosition {
         STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, INTERMEDIATE
     }
-    public enum ClearancePosition{
-        INTAKE, OUTTAKE
-    }
 
-    public enum NewExtendPosition{
-        NEW_RETRACTED, NEW_EXTENDED
-    }
 
-    public enum NewPivotPosition{
-        NEW_INTERMEDIATE, NEW_INTAKE, NEW_OUTTAKE
-    }
 
     //Powers and Thresholds
     private final double INTAKE_POWER = 0.95;
@@ -48,33 +38,18 @@ public class OmniArm {
     private final double PIVOT_THRESHOLD = 50;
 
     //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {300, 3660};
+    private  final int[] EXTEND_POSITIONS = {300,3000, 4000};
+    private final int OUTTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.OUTTAKE.ordinal()];
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
-    private final int EXTENDED_LENGTH = EXTEND_POSITIONS[ExtendPosition.EXTENDED.ordinal()];
+    private final int INTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTAKE.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, Intermediate
-    private final int[] PIVOT_POSITIONS = {0, 320, 245, 2000, 1700};
+    private final int[] PIVOT_POSITIONS = {0, 320, 1700, 0, 500};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
     private final int INTAKE_MODE = PIVOT_POSITIONS[PivotPosition.INTAKE.ordinal()];
     private final int INTERMEDIATE_MODE = PIVOT_POSITIONS[PivotPosition.INTERMEDIATE.ordinal()];
-
-    //Intake, Outtake Clearance positions
-    private final double[] CLEARANCE_POSITIONS = {.804, .43};
-    private final double INTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.INTAKE.ordinal()];
-    private final double OUTTAKE_CLEARANCE = CLEARANCE_POSITIONS[ClearancePosition.OUTTAKE.ordinal()];
-
-    //New Intake Extend Values
-    private final int [] NEW_EXTEND_POSITIONS = {0,1};
-    private final int NEW_EXTEND_RETRACTED = NEW_EXTEND_POSITIONS[NewExtendPosition.NEW_RETRACTED.ordinal()];
-    private final int NEW_EXTEND_EXTENDED = NEW_EXTEND_POSITIONS[NewExtendPosition.NEW_EXTENDED.ordinal()];
-
-    // New Intake Pivot Positions
-    private final int[] NEW_PIVOT_POSITIONS = {0,1,2};
-    private final int NEW_PIVOT_INTAKE = NEW_PIVOT_POSITIONS[NewPivotPosition.NEW_INTAKE.ordinal()];
-    private final int NEW_PIVOT_OUTTAKE = NEW_PIVOT_POSITIONS[NewPivotPosition.NEW_OUTTAKE.ordinal()];
-    private final int NEW_PIVOT_INTERMEDIATE = NEW_PIVOT_POSITIONS[NewPivotPosition.NEW_INTERMEDIATE.ordinal()];
 
     //biases
     private int armPivotBias = 0;
@@ -100,7 +75,6 @@ public class OmniArm {
         //omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
         //z   omniLimitSwitch.setMode(DigitalChannel.Mode.INPUT);
         extendMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        pivotMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         extendMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pivotMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -111,7 +85,6 @@ public class OmniArm {
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pivotMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        clearanceServo = armMap.servo.get("clearenceServo");
 
     }
 
@@ -141,19 +114,7 @@ public class OmniArm {
         if (extensionToggler.currentState() == 0) {
             extendMotor.setTargetPosition(RETRACTED_LENGTH + armExtendBias);
         } else if (extensionToggler.currentState() == 1) {
-            extendMotor.setTargetPosition(EXTENDED_LENGTH + armExtendBias);
-        }
-    }
-    public void operateNewExtend(boolean gamepadInput) {
-        extensionToggler.changeState(gamepadInput);
-        if (gamepadInput) {
-            extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            extendMotor.setPower(EXTEND_POWER);
-        }
-        if (extensionToggler.currentState() == 0) {
-            extendMotor.setTargetPosition(NEW_EXTEND_RETRACTED + armExtendBias);
-        } else if (extensionToggler.currentState() == 1) {
-            extendMotor.setTargetPosition(NEW_EXTEND_EXTENDED + armExtendBias);
+            extendMotor.setTargetPosition(INTAKE_LENGTH + armExtendBias);
         }
     }
 
@@ -179,25 +140,6 @@ public class OmniArm {
         }
     }
 
-    public void operateNewPivot(boolean gamepadInput, boolean gamepadInputExtendClearance) {
-
-        pivotToggler.changeState(gamepadInput);
-        if (gamepadInput || gamepadInputExtendClearance) {
-            pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            pivotMotor.setPower(PIVOT_POWER);
-        }
-        if (gamepadInputExtendClearance){
-            pivotMotor.setTargetPosition(NEW_PIVOT_INTERMEDIATE + armPivotBias);
-            currentPivotPosition = PivotPosition.INTERMEDIATE;
-        }
-        else if (pivotToggler.currentState() == 0 && gamepadInput) {
-            pivotMotor.setTargetPosition(NEW_PIVOT_OUTTAKE + armPivotBias);
-            currentPivotPosition = PivotPosition.OUTTAKE;
-        } else if (pivotToggler.currentState() == 1 && gamepadInput) {
-            pivotMotor.setTargetPosition(NEW_PIVOT_INTAKE + armPivotBias);
-            currentPivotPosition = PivotPosition.INTAKE;
-        }
-    }
 
     // for use in Auto
     public void setPivotPosition(PivotPosition pivotPosition) {
@@ -279,14 +221,6 @@ public class OmniArm {
 
     public boolean getDigitalTouch() {
         return false;
-    }
-
-    public void operateIntakeClearence(boolean gamepadInputIntake){
-        if (gamepadInputIntake){
-            clearanceServo.setPosition(OUTTAKE_CLEARANCE);
-        }else {
-            clearanceServo.setPosition(INTAKE_CLEARANCE);
-        }
     }
 
     public void operateArmPivotBias(boolean gamepadInputUp, boolean gamepadInputDown){

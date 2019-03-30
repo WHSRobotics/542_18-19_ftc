@@ -32,8 +32,6 @@ public class NewLiftandOmniArmTest extends OpMode{
             robot.lift.setLiftMotorPower(0.0);
         }
 
-        robot.omniArm.operateNewExtend(gamepad2.a);
-        robot.omniArm.operateNewPivot(gamepad2.x, gamepad2.y);
         robot.omniArm.operateIntake(gamepad2.right_bumper,gamepad2.left_bumper, gamepad2.left_trigger>0.01);
 
     }
