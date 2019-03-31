@@ -33,7 +33,6 @@ public class Lift implements MotorSubsystem {
     public Lift(HardwareMap liftMap) {
         liftMotor = liftMap.dcMotor.get("liftMotor");
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         limitSwitch = liftMap.digitalChannel.get("limitSwitch");
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
