@@ -19,6 +19,7 @@ public class WHSRobotImpl implements WHSRobot {
     public OmniArm omniArm;
     public MarkerDrop markerDrop;
     public Lift lift;
+    public ParticleFlipper particleFlipper;
 
     Coordinate currentCoord;
     private double targetHeading; //field frame
@@ -61,6 +62,7 @@ public class WHSRobotImpl implements WHSRobot {
         omniArm = new OmniArm(hardwareMap);
         markerDrop = new MarkerDrop(hardwareMap);
         lift = new Lift(hardwareMap);
+        particleFlipper = new ParticleFlipper(hardwareMap);
     }
 
     @Override

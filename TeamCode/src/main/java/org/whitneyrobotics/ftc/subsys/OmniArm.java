@@ -269,6 +269,12 @@ public class OmniArm {
         armExtendBias = (int) (-(INTAKE_LENGTH - OUTTAKE_LENGTH) * gamepadInput);
     }
 
+    public boolean clearedParticleFlipper() {
+        if (pivotMotor.getCurrentPosition() > PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()]) {
+            return true;
+        }
+        return false;
+    }
 
 
     /*public void makeRoomForLift (boolean gamepadInput) {

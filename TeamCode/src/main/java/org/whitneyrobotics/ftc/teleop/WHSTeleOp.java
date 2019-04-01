@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.whitneyrobotics.ftc.lib.util.Toggler;
 import org.whitneyrobotics.ftc.subsys.MarkerDrop;
+import org.whitneyrobotics.ftc.subsys.OmniArm;
+import org.whitneyrobotics.ftc.subsys.ParticleFlipper;
 import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 
@@ -39,6 +41,16 @@ public class WHSTeleOp extends OpMode{
         /* MARKER DROP */
         //So it's doesn't get in Doc Hudson's way
         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
+
+        /* PARTICLE FLIPPER */
+        // Gets rid of particles lodged in the robot
+        if (robot.omniArm.clearedParticleFlipper()) {
+            if (gamepad1.b) {
+                robot.particleFlipper.operateParticleFlipper(ParticleFlipper.ParticleFlipperPosition.EXTENDED);
+            } else {
+                robot.particleFlipper.operateParticleFlipper(ParticleFlipper.ParticleFlipperPosition.STORED);
+            }
+        }
 
         /* OMNIARM */
         robot.omniArm.operateIntake(gamepad2.left_bumper, gamepad2.right_bumper, gamepad2.left_trigger>0.01);
