@@ -40,7 +40,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = DEPOT;
+    static final int STARTING_POSITION = CRATER;
 
     /**
      * State Definitions
@@ -317,20 +317,13 @@ public class WHSAuto extends OpMode{
                         }
                         break;
                     case 2:
-                        subStateDesc = "Moving OmniArm out of Lift's way";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.ROOM_FOR_LIFT) {
-                            subState++;
-                        }
-                        break;
-                    case 3:
                         subStateDesc = "Bringing robot down";
                         robot.lift.bringDownRobot(true);
                         if (robot.lift.getCurrentLiftPosition() == Lift.LiftPosition.ABOVE_LATCH) {
                             subState++;
                         }
                         break;
-                    case 4:
+                    case 3:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -357,13 +350,6 @@ public class WHSAuto extends OpMode{
                         }
                         break;
                     case 3:
-                        subStateDesc = "Resetting OmniArm";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.STORED);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.STORED) {
-                            subState++;
-                        }
-                        break;
-                    case 4:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -443,7 +429,6 @@ public class WHSAuto extends OpMode{
                     case 4:
                         subStateDesc = "Dumping MarkerDrop";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.ROOM_FOR_LIFT);
                         if (dumpMarkerDropTimer.isExpired()) {
                             storeMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                             subState++;
@@ -452,7 +437,6 @@ public class WHSAuto extends OpMode{
                     case 5:
                         subStateDesc = "Storing MarkerDrop";
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.STORED);
                         if (storeMarkerDropTimer.isExpired()) {
                             subState++;
                         }

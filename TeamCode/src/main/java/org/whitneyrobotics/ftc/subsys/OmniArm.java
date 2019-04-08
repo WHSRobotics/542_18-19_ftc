@@ -1,17 +1,12 @@
 package org.whitneyrobotics.ftc.subsys;
 
-import android.app.VoiceInteractor;
-
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
 import org.whitneyrobotics.ftc.lib.util.Toggler;
-
-import java.util.Map;
 
 public class OmniArm {
 
@@ -26,7 +21,7 @@ public class OmniArm {
 
     //Encoder Position Enums
     public enum ExtendPosition {
-        RETRACTED,OUTTAKE, INTAKE
+        RETRACTED, OUTTAKE, INTAKE
     }
     public enum PivotPosition {
         STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, INTERMEDIATE
@@ -41,18 +36,19 @@ public class OmniArm {
     //Powers and Thresholds
     private final double INTAKE_POWER = 0.95;
     private final double EXTEND_POWER = 1.0;
-    private final double PIVOT_POWER = 0.425;
-    private final double PIVOT_DOWN_POWER = .3;
-    private final double PIVOT_THRESHOLD = 50;
+    private final double PIVOT_POWER = .4;
+    private final double PIVOT_SLOW_POWER = .125426969420;
+    private final double EXTEND_THRESHOLD = 42;
+    private final double PIVOT_THRESHOLD = 0;
 
-    //RETRACTED, EXTENDED
-    private  final int[] EXTEND_POSITIONS = {600, 5030, 8300};
-    private final int OUTTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.OUTTAKE.ordinal()];
+    //RETRACTED, OUTTAKE, INTAKE
+    private  final int[] EXTEND_POSITIONS = {600, 5230, 7600};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
+    private final int OUTTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.OUTTAKE.ordinal()];
     private final int INTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTAKE.ordinal()];
 
     //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, Intermediate
-    private final int[] PIVOT_POSITIONS = {0, 320, 1302, -305,300};
+    private final int[] PIVOT_POSITIONS = {0, 320, 1602, -425, 600};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
@@ -71,14 +67,17 @@ public class OmniArm {
     private int armExtendBias = 0;
 
     private PivotPosition currentPivotPosition = PivotPosition.STORED;
+    private ExtendPosition currentExtendPosition = ExtendPosition.RETRACTED;
 
     Toggler extensionToggler = new Toggler(2);
     Toggler pivotToggler = new Toggler(2);
 
     public int limitSwitchResetState = 0;
     public int operateModeSwitch = 0;
+    public int operatePivotState = 0;
 
-
+    SimpleTimer pivotWaitTimer;
+    public static final double PIVOT_WAIT_DELAY = 3.0;
 
     public OmniArm(HardwareMap armMap) {
 
@@ -100,7 +99,7 @@ public class OmniArm {
         extendMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pivotMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
+        pivotWaitTimer = new SimpleTimer();
     }
 
 
@@ -131,8 +130,8 @@ public class OmniArm {
         } else if (extensionToggler.currentState() == 1) {
             if (currentPivotPosition == PivotPosition.INTAKE || currentPivotPosition == PivotPosition.INTERMEDIATE){
                 extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
-            } else if (currentPivotPosition == PivotPosition.OUTTAKE){
-                extendMotor.setTargetPosition(OUTTAKE_LENGTH);
+            } else if (currentPivotPosition == PivotPosition.OUTTAKE && pivotMotor.getCurrentPosition() > 500){
+                extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
             }
         }
     }
@@ -165,12 +164,69 @@ public class OmniArm {
             pivotMotor.setTargetPosition(INTAKE_MODE + armPivotBias);
             extendMotor.setTargetPosition(OUTTAKE_LENGTH);
             currentPivotPosition = PivotPosition.INTAKE;
-            if(pivotMotor.getCurrentPosition() <2000){
-                pivotMotor.setPower(PIVOT_DOWN_POWER);
+            if(pivotMotor.getCurrentPosition() <200){
+                pivotMotor.setPower(PIVOT_SLOW_POWER);
             }
+            else if (pivotMotor.getCurrentPosition()>800 && pivotMotor.getCurrentPosition() <1000 && currentPivotPosition == PivotPosition.OUTTAKE)
+                pivotMotor.setPower(PIVOT_SLOW_POWER);
+        }   else if (currentPivotPosition == PivotPosition.OUTTAKE && pivotMotor.getCurrentPosition()>1000 ){
+            pivotMotor.setPower(-PIVOT_SLOW_POWER);
         }
     }
 
+    //WIP: new operatePivot with retract, then pivot, then extend
+
+    public void newOperatePivot(boolean gamepadInput) {
+        pivotToggler.changeState(gamepadInput);
+
+        if (pivotToggler.currentState() == 1) {
+            switch (operatePivotState) {
+                case 0:
+                    if (gamepadInput) {
+                        pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        operatePivotState = 1;
+                    }
+                case 1:
+                    pivotMotor.setTargetPosition(INTERMEDIATE_MODE);;
+                    pivotMotor.setPower(PIVOT_POWER);
+                    if (Math.abs(pivotMotor.getCurrentPosition() - INTERMEDIATE_MODE) < PIVOT_THRESHOLD) {
+                        operatePivotState = 2;
+                    }
+                case 2:
+                    extendMotor.setTargetPosition(RETRACTED_LENGTH);
+                    extendMotor.setPower(EXTEND_POWER);
+                    if (Math.abs(extendMotor.getCurrentPosition() - RETRACTED_LENGTH) < EXTEND_THRESHOLD) {
+                        pivotWaitTimer.set(PIVOT_WAIT_DELAY);
+                        operatePivotState = 3;
+                    }
+                case 3:
+                    if(pivotWaitTimer.isExpired()) {
+                        operatePivotState = 4;
+                    }
+                case 4:
+                    pivotMotor.setTargetPosition(OUTTAKE_MODE);
+                    pivotMotor.setPower(PIVOT_POWER);
+                    if (Math.abs(pivotMotor.getCurrentPosition() - OUTTAKE_MODE) < PIVOT_THRESHOLD) {
+                        operatePivotState = 5;
+                    }
+                case 5:
+                    extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
+                    extendMotor.setPower(EXTEND_POWER);
+            }
+        }
+        else if (pivotToggler.currentState() == 0 ) {
+            operatePivotState = 0;
+            if (gamepadInput) {
+                pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                pivotMotor.setPower(PIVOT_POWER);
+                extendMotor.setPower(EXTEND_POWER);
+            }
+            extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
+            pivotMotor.setTargetPosition(INTAKE_MODE+ armPivotBias);
+        }
+    }
 
     // for use in Auto
     public void setPivotPosition(PivotPosition pivotPosition) {
@@ -179,6 +235,15 @@ public class OmniArm {
         pivotMotor.setPower(PIVOT_POWER);
         if (Math.abs(pivotMotor.getCurrentPosition() - PIVOT_POSITIONS[pivotPosition.ordinal()]) < PIVOT_THRESHOLD) {
             currentPivotPosition = pivotPosition;
+        }
+    }
+
+    public void setExtendPosition(ExtendPosition extendPosition) {
+        extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extendMotor.setTargetPosition(EXTEND_POSITIONS[extendPosition.ordinal()]);
+        extendMotor.setPower(EXTEND_POWER);
+        if (Math.abs(extendMotor.getCurrentPosition() - EXTEND_POSITIONS[extendPosition.ordinal()]) < EXTEND_THRESHOLD) {
+            currentExtendPosition = extendPosition;
         }
     }
 
