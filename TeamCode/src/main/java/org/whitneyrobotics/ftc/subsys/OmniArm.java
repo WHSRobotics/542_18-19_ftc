@@ -37,7 +37,7 @@ public class OmniArm {
     private final double INTAKE_POWER = 0.95;
     private final double EXTEND_POWER = 1.0;
     private final double PIVOT_POWER = .4;
-    private final double PIVOT_SLOW_POWER = .125426969420;
+    private final double PIVOT_SLOW_POWER = .12;
     private final double EXTEND_THRESHOLD = 42;
     private final double PIVOT_THRESHOLD = 0;
 
@@ -77,7 +77,7 @@ public class OmniArm {
     public int operatePivotState = 0;
 
     SimpleTimer pivotWaitTimer;
-    public static final double PIVOT_WAIT_DELAY = 3.0;
+    public static final double PIVOT_WAIT_DELAY = 10.542;
 
     public OmniArm(HardwareMap armMap) {
 
@@ -176,7 +176,7 @@ public class OmniArm {
 
     //WIP: new operatePivot with retract, then pivot, then extend
 
-    public void newOperatePivot(boolean gamepadInput) {
+    public void newOperatePivot(boolean gamepadInput, boolean gamepadInputRetractExtend) {
         pivotToggler.changeState(gamepadInput);
 
         if (pivotToggler.currentState() == 1) {
@@ -211,7 +211,13 @@ public class OmniArm {
                         operatePivotState = 5;
                     }
                 case 5:
-                    extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
+                    if(gamepadInputRetractExtend){
+                        extendMotor.setTargetPosition(RETRACTED_LENGTH);
+                        pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
+                        pivotMotor.setPower(PIVOT_POWER);
+                    } else {
+                        extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
+                    }
                     extendMotor.setPower(EXTEND_POWER);
             }
         }
