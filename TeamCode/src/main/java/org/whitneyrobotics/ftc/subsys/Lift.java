@@ -96,6 +96,8 @@ public class Lift implements MotorSubsystem {
                 currentLiftPosition = LiftPosition.STORED;
                 liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 bringDownHookState = 0;
+                break;
+            default: break;
         }
     }
 
