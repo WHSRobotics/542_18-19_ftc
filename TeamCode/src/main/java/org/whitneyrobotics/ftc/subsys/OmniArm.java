@@ -118,6 +118,13 @@ public class OmniArm {
 
     }
 
+    public void operateIntakeClearence(boolean gamepadInputIntake){
+        if (gamepadInputIntake){
+            clearanceServo.setPosition(OUTTAKE_CLEARANCE);
+        }else {
+            clearanceServo.setPosition(INTAKE_CLEARANCE);
+        }
+    }
 
     public void operateExtend(boolean gamepadInput) {
         extensionToggler.changeState(gamepadInput);
@@ -230,7 +237,7 @@ public class OmniArm {
                 extendMotor.setPower(EXTEND_POWER);
             }
             extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
-            pivotMotor.setTargetPosition(INTAKE_MODE+ armPivotBias);
+            pivotMotor.setTargetPosition(INTAKE_MODE + armExtendBias);
         }
     }
 

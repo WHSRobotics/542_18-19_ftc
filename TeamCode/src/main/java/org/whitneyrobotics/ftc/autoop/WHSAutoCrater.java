@@ -91,8 +91,8 @@ public class WHSAutoCrater extends OpMode{
         stateEnabled[INIT] = true;
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
-        stateEnabled[SAMPLE_MINERAL] = false;
-        stateEnabled[CLAIM_DEPOT] = false;
+        stateEnabled[SAMPLE_MINERAL] = true;
+        stateEnabled[CLAIM_DEPOT] = true;
         stateEnabled[END] = true;
     }
 
@@ -292,7 +292,7 @@ public class WHSAutoCrater extends OpMode{
                         shouldHookBeDown = true;
                         subState++;
                         break;
-                     case 4:
+                     case 3:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -370,22 +370,22 @@ public class WHSAutoCrater extends OpMode{
                     case 3:
                         subStateDesc = "Rotating robot";
                         if (goldPosition == LEFT) {
-                            robot.rotateToTarget(45, true);
+                            robot.rotateToTarget(45, false);
                         }
                         if (goldPosition == RIGHT) {
-                            robot.rotateToTarget(135, true);
+                            robot.rotateToTarget(135, false);
                         }
                         if (!robot.rotateToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 4:
-                        subStateDesc = "Intaking gold mineral";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
-                        robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.EXTENDED.ordinal());
-                        robot.omniArm.operateIntake(true, false, false);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTAKE) {
+                        subStateDesc = "Intaking particles";
+                        robot.omniArm.pivotMotor.setTargetPosition(OmniArm.PivotPosition.INTERMEDIATE.ordinal());
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTERMEDIATE) {
+                            robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.INTAKE.ordinal());
+                            robot.omniArm.operateIntake(true, false, false);
                             subState++;
                         }
                         break;
@@ -400,7 +400,6 @@ public class WHSAutoCrater extends OpMode{
                     case 6:
                         subStateDesc = "Driving to outtake position";
                         robot.driveToTarget(outtakePosition, true);
-                        robot.omniArm.operateIntake(true, false, false);
                         if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
                             subState++;
                         }
@@ -408,6 +407,7 @@ public class WHSAutoCrater extends OpMode{
                     case 7:
                         subStateDesc = "Outtaking gold mineral";
                         robot.omniArm.operateIntakeClearence(true);
+                        robot.omniArm.operateIntake(true, false, false);
                         if (outtakeMineralsTimer.isExpired()) {
                             subState++;
                         }
@@ -423,6 +423,7 @@ public class WHSAutoCrater extends OpMode{
                     tfod.shutdown();
                 }
 
+                /*
                 switch (subState) {
                     case 0:
                         subStateDesc = "Driving to gold position";
@@ -465,7 +466,9 @@ public class WHSAutoCrater extends OpMode{
                     case 5:
                         subStateDesc = "Repeat";
                         subState = 0;
+                        break;
                 }
+                */
                 break;
             default:
                 break;

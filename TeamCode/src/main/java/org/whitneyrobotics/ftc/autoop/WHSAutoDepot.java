@@ -18,8 +18,8 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 import java.util.List;
 
-@Autonomous(name = "WHSAuto", group = "auto")
-public class WHSAuto extends OpMode{
+@Autonomous(name = "WHSAutoDepot", group = "auto")
+public class WHSAutoDepot extends OpMode{
 
     WHSRobotImpl robot;
 
