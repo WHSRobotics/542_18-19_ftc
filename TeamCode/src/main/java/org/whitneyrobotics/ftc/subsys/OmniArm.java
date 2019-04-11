@@ -21,10 +21,10 @@ public class OmniArm {
 
     //Encoder Position Enums
     public enum ExtendPosition {
-        RETRACTED, OUTTAKE, INTAKE
+        RETRACTED, INTERMEDIATE, OUTTAKE, INTAKE
     }
     public enum PivotPosition {
-        STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, INTERMEDIATE
+        STORED, AUTO_INTERMEDIATE, AUTO_INTAKE, OUTTAKE, INTAKE, INTERMEDIATE
     }
 
     public enum ClearancePosition{
@@ -38,19 +38,21 @@ public class OmniArm {
     private final double EXTEND_POWER = 1.0;
     private final double PIVOT_POWER = .4;
     private final double PIVOT_SLOW_POWER = .12;
-    private final double EXTEND_THRESHOLD = 42;
-    private final double PIVOT_THRESHOLD = 0;
+    private final double EXTEND_THRESHOLD = 50;
+    private final double PIVOT_THRESHOLD = 50;
 
-    //RETRACTED, OUTTAKE, INTAKE
-    private  final int[] EXTEND_POSITIONS = {600, 5230, 7600};
+    //RETRACTED, INTERMEDIATE, OUTTAKE, INTAKE
+    private  final int[] EXTEND_POSITIONS = {600, 3500, 5230, 7600};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
+    private final int INTERMEDIATE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTERMEDIATE.ordinal()];
     private final int OUTTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.OUTTAKE.ordinal()];
     private final int INTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTAKE.ordinal()];
 
-    //STORED, ROOM_FOR_LIFT, OUTTAKE, INTAKE, Intermediate
-    private final int[] PIVOT_POSITIONS = {0, 320, 1602, -425, 600};
+    //STORED, AUTO_INTERMEDIATE, AUTO_INTAKE, OUTTAKE, INTAKE, INTERMEDIATE
+    private final int[] PIVOT_POSITIONS = {0, 150, -500, 1602, -425, 600};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
-    private final int ROOM_FOR_LIFT_MODE = PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()];
+    private final int AUTO_INTERMEDIATE = PIVOT_POSITIONS[PivotPosition.AUTO_INTERMEDIATE.ordinal()];
+    private final int AUTO_INTAKE = PIVOT_POSITIONS[PivotPosition.AUTO_INTAKE.ordinal()];
     private final int OUTTAKE_MODE = PIVOT_POSITIONS[PivotPosition.OUTTAKE.ordinal()];
     private final int INTAKE_MODE = PIVOT_POSITIONS[PivotPosition.INTAKE.ordinal()];
     private final int INTERMEDIATE_MODE = PIVOT_POSITIONS[PivotPosition.INTERMEDIATE.ordinal()];
@@ -77,7 +79,7 @@ public class OmniArm {
     public int operatePivotState = 0;
 
     SimpleTimer pivotWaitTimer;
-    public static final double PIVOT_WAIT_DELAY = 10.542;
+    public static final double PIVOT_WAIT_DELAY = 1.0;
 
     public OmniArm(HardwareMap armMap) {
 
@@ -194,29 +196,32 @@ public class OmniArm {
                         extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         operatePivotState = 1;
                     }
+                    break;
                 case 1:
-                    pivotMotor.setTargetPosition(INTERMEDIATE_MODE);;
-                    pivotMotor.setPower(PIVOT_POWER);
-                    if (Math.abs(pivotMotor.getCurrentPosition() - INTERMEDIATE_MODE) < PIVOT_THRESHOLD) {
+                    setPivotPosition(PivotPosition.INTERMEDIATE);
+                    if (currentPivotPosition == PivotPosition.INTERMEDIATE) {
                         operatePivotState = 2;
                     }
+                    break;
                 case 2:
-                    extendMotor.setTargetPosition(RETRACTED_LENGTH);
-                    extendMotor.setPower(EXTEND_POWER);
-                    if (Math.abs(extendMotor.getCurrentPosition() - RETRACTED_LENGTH) < EXTEND_THRESHOLD) {
+                    setExtendPosition(ExtendPosition.OUTTAKE);
+                    if (currentExtendPosition == ExtendPosition.RETRACTED) {
                         pivotWaitTimer.set(PIVOT_WAIT_DELAY);
                         operatePivotState = 3;
                     }
+                    break;
                 case 3:
                     if(pivotWaitTimer.isExpired()) {
                         operatePivotState = 4;
                     }
+                    break;
                 case 4:
                     pivotMotor.setTargetPosition(OUTTAKE_MODE);
                     pivotMotor.setPower(PIVOT_POWER);
                     if (Math.abs(pivotMotor.getCurrentPosition() - OUTTAKE_MODE) < PIVOT_THRESHOLD) {
                         operatePivotState = 5;
                     }
+                    break;
                 case 5:
                     if(gamepadInputRetractExtend){
                         extendMotor.setTargetPosition(RETRACTED_LENGTH);
@@ -237,7 +242,7 @@ public class OmniArm {
                 extendMotor.setPower(EXTEND_POWER);
             }
             extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
-            pivotMotor.setTargetPosition(INTAKE_MODE + armExtendBias);
+            pivotMotor.setTargetPosition(INTAKE_MODE + armPivotBias);
         }
     }
 
@@ -288,6 +293,10 @@ public class OmniArm {
 
     public PivotPosition getCurrentPivotPosition() {
         return currentPivotPosition;
+    }
+
+    public ExtendPosition getCurrentExtendPosition() {
+        return currentExtendPosition;
     }
 
     public void operateExtendManual(boolean gamepadInput1, double gamepadInput2) {
@@ -348,7 +357,7 @@ public class OmniArm {
     }
 
     public boolean clearedParticleFlipper() {
-        if (pivotMotor.getCurrentPosition() > PIVOT_POSITIONS[PivotPosition.ROOM_FOR_LIFT.ordinal()]) {
+        if (pivotMotor.getCurrentPosition() > 320) {
             return true;
         }
         return false;

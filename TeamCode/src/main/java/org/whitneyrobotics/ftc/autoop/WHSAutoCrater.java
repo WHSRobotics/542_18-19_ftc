@@ -66,11 +66,15 @@ public class WHSAutoCrater extends OpMode{
     SimpleTimer scanMineralsTimer = new SimpleTimer();
     SimpleTimer dumpMarkerDropTimer = new SimpleTimer();
     SimpleTimer storeMarkerDropTimer = new SimpleTimer();
+    SimpleTimer halfExtendArmTimer = new SimpleTimer();
+    SimpleTimer intakeMineralsTimer = new SimpleTimer();
     SimpleTimer outtakeMineralsTimer = new SimpleTimer();
 
     static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
-    static final double OUTTAKE_MINERALS_DURATION = 1.245;
+    static final double HALF_EXTEND_ARM_DURATION = 0.542;
+    static final double INTAKE_MINERALS_DURATION = 2.0;
+    static final double OUTTAKE_MINERALS_DURATION =2.0;
 
     /**
      * Tensorflow Variables
@@ -190,11 +194,11 @@ public class WHSAutoCrater extends OpMode{
         goldPositionArray[RIGHT] = new Position(1250, 500, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
-        wallPosition = new Position(0, 1500, 150);
+        wallPosition = new Position(-15, 1450, 150);
 
         depotPosition = new Position(-1290, 1490, 150);
 
-        outtakePosition = new Position(100, 400, 150);
+        outtakePosition = new Position(300, 650, 150);
 
         defineStateEnabledStatus();
         initVuforia();
@@ -319,7 +323,7 @@ public class WHSAutoCrater extends OpMode{
                         break;
                     case 3:
                         subStateDesc = "Rotating Robot";
-                            robot.rotateToTarget(270, true);
+                            robot.rotateToTarget(225, false);
                             if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                                 dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                                 subState++;
@@ -355,7 +359,7 @@ public class WHSAutoCrater extends OpMode{
                         break;
                     case 1:
                         subStateDesc = "Driving to intermediate position";
-                        robot.driveToTarget(wallPosition, false);
+                        robot.driveToTarget(wallPosition, true);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -370,50 +374,136 @@ public class WHSAutoCrater extends OpMode{
                     case 3:
                         subStateDesc = "Rotating robot";
                         if (goldPosition == LEFT) {
-                            robot.rotateToTarget(45, false);
+                            robot.rotateToTarget(90, false);
                         }
                         if (goldPosition == RIGHT) {
-                            robot.rotateToTarget(135, false);
+                            robot.rotateToTarget(-8, false);
+                        }
+                        if (goldPosition == CENTER) {
+                            robot.rotateToTarget(45, false);
                         }
                         if (!robot.rotateToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 4:
-                        subStateDesc = "Intaking particles";
-                        robot.omniArm.pivotMotor.setTargetPosition(OmniArm.PivotPosition.INTERMEDIATE.ordinal());
+                        subStateDesc = "Intermediate-ing pivot motor";
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTERMEDIATE);
                         if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTERMEDIATE) {
-                            robot.omniArm.extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            robot.omniArm.extendMotor.setTargetPosition(OmniArm.ExtendPosition.INTAKE.ordinal());
-                            robot.omniArm.operateIntake(true, false, false);
+                            halfExtendArmTimer.set(HALF_EXTEND_ARM_DURATION);
                             subState++;
                         }
                         break;
                     case 5:
-                        subStateDesc = "Bringing up OmniArm";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.OUTTAKE);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
-                            outtakeMineralsTimer.set(OUTTAKE_MINERALS_DURATION);
+                        subStateDesc = "Half-extending arm";
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.INTERMEDIATE);
+                        if (halfExtendArmTimer.isExpired()) {
                             subState++;
                         }
                         break;
                     case 6:
-                        subStateDesc = "Driving to outtake position";
-                        robot.driveToTarget(outtakePosition, true);
-                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                        subStateDesc = "Intaking mineral";
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.INTERMEDIATE);
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.AUTO_INTAKE);
+                        robot.omniArm.operateIntake(false, true, false);
+                        robot.omniArm.operateIntakeClearence(false);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.AUTO_INTAKE) {
+                            intakeMineralsTimer.set(INTAKE_MINERALS_DURATION);
                             subState++;
                         }
                         break;
+                        /*
                     case 7:
-                        subStateDesc = "Outtaking gold mineral";
-                        robot.omniArm.operateIntakeClearence(true);
-                        robot.omniArm.operateIntake(true, false, false);
-                        if (outtakeMineralsTimer.isExpired()) {
+                        subStateDesc = "bringing up omni arm to intermediate";
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTERMEDIATE);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTERMEDIATE){
+                            robot.omniArm.operateIntake(false,false,false);
                             subState++;
                         }
                         break;
                     case 8:
+                        subStateDesc = "Bringing OmniArm back in a Little";
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.OUTTAKE);
+                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.OUTTAKE) {
+                            subState++;
+                        }
+                        break;
+                        */
+                    case 7:
+                        subStateDesc = "Intaking mineral";
+                        if (intakeMineralsTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
+                    case 8:
+                        subStateDesc = "Bringing OmniArm Up";
+                        robot.omniArm.operateIntake(false, false, false);
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.OUTTAKE);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE){
+                            subState++;
+                        }
+                        break;
+                    case 9:
+                        subStateDesc = "extending arm to outtake";
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.INTAKE);
+                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.INTAKE) {
+                            subState++;
+                        }
+                        break;
+                    case 10:
+                        subStateDesc = "Driving to outtake position";
+                        robot.driveToTarget(outtakePosition, true);
+                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
+                            outtakeMineralsTimer.set(OUTTAKE_MINERALS_DURATION);
+                            subState++;
+                        }
+                        break;
+                    case 11:
+                        subStateDesc = "Rotating to face lander";
+                        robot.rotateToTarget(45, false);
+                        if (!robot.rotateToTargetInProgress()) {
+                            subState++;
+                        }
+                        break;
+                    case 12:
+                        subStateDesc = "Outtaking gold mineral";
+                        robot.omniArm.operateIntakeClearence(true);
+                        robot.omniArm.operateIntake(false, true, false);
+                        if (outtakeMineralsTimer.isExpired()) {
+                            subState++;
+                        }
+                        break;
+                    case 13:
+                        subStateDesc = "Driving to lander clearance";
+                        robot.driveToTarget(landerClearancePosition, false);
+                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()) {
+                            subState++;
+                        }
+                        break;
+                    case 14:
+                        subStateDesc = "Retracting Arm";
+                        robot.omniArm.operateIntake(false, false, false);
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.RETRACTED);
+                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.RETRACTED) {
+                            subState++;
+                        }
+                        break;
+                    case 15:
+                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.AUTO_INTERMEDIATE);
+                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.AUTO_INTERMEDIATE){
+                            subState++;
+                        }
+                        break;
+                    case 16:
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.INTAKE);
+                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.INTAKE){
+                            subState++;
+                        }
+                        break;
+                    case 17:
                         subStateDesc = "Exit";
+                        robot.omniArm.pivotMotor.setPower(0.0);
+                        robot.omniArm.extendMotor.setPower(0.0);
                         advanceState();
                         break;
                 }
