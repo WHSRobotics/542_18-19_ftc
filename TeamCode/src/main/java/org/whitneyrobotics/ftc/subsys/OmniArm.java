@@ -42,14 +42,14 @@ public class OmniArm {
     private final double PIVOT_THRESHOLD = 50;
 
     //RETRACTED, INTERMEDIATE, OUTTAKE, INTAKE
-    private  final int[] EXTEND_POSITIONS = {600, 3500, 5230, 7600};
+    private  final int[] EXTEND_POSITIONS = {600, 5700, 5230, 7600};
     private final int RETRACTED_LENGTH = EXTEND_POSITIONS[ExtendPosition.RETRACTED.ordinal()];
     private final int INTERMEDIATE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTERMEDIATE.ordinal()];
     private final int OUTTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.OUTTAKE.ordinal()];
     private final int INTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTAKE.ordinal()];
 
     //STORED, AUTO_INTERMEDIATE, AUTO_INTAKE, OUTTAKE, INTAKE, INTERMEDIATE
-    private final int[] PIVOT_POSITIONS = {0, 150, -500, 1602, -425, 600};
+    private final int[] PIVOT_POSITIONS = {0, 150, -295, 1602, -425, 600};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int AUTO_INTERMEDIATE = PIVOT_POSITIONS[PivotPosition.AUTO_INTERMEDIATE.ordinal()];
     private final int AUTO_INTAKE = PIVOT_POSITIONS[PivotPosition.AUTO_INTAKE.ordinal()];
@@ -64,7 +64,7 @@ public class OmniArm {
 
     //biases
     private int armPivotBias = 0;
-    private int armPivotBiasAmount = 100;
+    private int armPivotBiasAmount = 300;
     private int armExtendBiasAmount = 254;
     private int armExtendBias = 0;
 
@@ -79,7 +79,7 @@ public class OmniArm {
     public int operatePivotState = 0;
 
     SimpleTimer pivotWaitTimer;
-    public static final double PIVOT_WAIT_DELAY = 1.0;
+    public static final double PIVOT_WAIT_DELAY = 1.245;
 
     public OmniArm(HardwareMap armMap) {
 
@@ -205,7 +205,7 @@ public class OmniArm {
                     break;
                 case 2:
                     setExtendPosition(ExtendPosition.OUTTAKE);
-                    if (currentExtendPosition == ExtendPosition.RETRACTED) {
+                    if (currentExtendPosition == ExtendPosition.OUTTAKE) {
                         pivotWaitTimer.set(PIVOT_WAIT_DELAY);
                         operatePivotState = 3;
                     }

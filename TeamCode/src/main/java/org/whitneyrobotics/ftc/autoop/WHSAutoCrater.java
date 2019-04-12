@@ -69,12 +69,14 @@ public class WHSAutoCrater extends OpMode{
     SimpleTimer halfExtendArmTimer = new SimpleTimer();
     SimpleTimer intakeMineralsTimer = new SimpleTimer();
     SimpleTimer outtakeMineralsTimer = new SimpleTimer();
+    SimpleTimer driveToParkTimer = new SimpleTimer();
 
     static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
     static final double HALF_EXTEND_ARM_DURATION = 0.542;
-    static final double INTAKE_MINERALS_DURATION = 2.0;
-    static final double OUTTAKE_MINERALS_DURATION =2.0;
+    static final double INTAKE_MINERALS_DURATION = 3.5;
+    static final double OUTTAKE_MINERALS_DURATION = 2.0;
+    static final double DRIVE_TO_PARK_DURATION = 0.25;
 
     /**
      * Tensorflow Variables
@@ -194,7 +196,7 @@ public class WHSAutoCrater extends OpMode{
         goldPositionArray[RIGHT] = new Position(1250, 500, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
-        wallPosition = new Position(-15, 1450, 150);
+        wallPosition = new Position(-15, 1500, 150);
 
         depotPosition = new Position(-1290, 1490, 150);
 
@@ -323,28 +325,21 @@ public class WHSAutoCrater extends OpMode{
                         break;
                     case 3:
                         subStateDesc = "Rotating Robot";
-                            robot.rotateToTarget(225, false);
-                            if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
-                                dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
-                                subState++;
-                            }
+                        robot.rotateToTarget(225, false);
+                        if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
+                            dumpMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
+                            subState++;
+                        }
                         break;
                     case 4:
                         subStateDesc = "Dumping Marker";
+                        robot.driveToTarget(wallPosition, true);
                         robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.DUMPED);
                         if (dumpMarkerDropTimer.isExpired()) {
-                            storeMarkerDropTimer.set(MOVE_MARKER_DROP_DURATION);
                             subState++;
                         }
                         break;
                     case 5:
-                        subStateDesc = "Storing MarkerDrop";
-                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
-                        if (storeMarkerDropTimer.isExpired()) {
-                            subState++;
-                        }
-                        break;
-                    case 6:
                         subStateDesc = "Exit";
                         advanceState();
                         break;
@@ -360,6 +355,7 @@ public class WHSAutoCrater extends OpMode{
                     case 1:
                         subStateDesc = "Driving to intermediate position";
                         robot.driveToTarget(wallPosition, true);
+                        robot.markerDrop.operateMarkerDrop(MarkerDrop.MarkerDropPosition.STORED);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -412,23 +408,6 @@ public class WHSAutoCrater extends OpMode{
                             subState++;
                         }
                         break;
-                        /*
-                    case 7:
-                        subStateDesc = "bringing up omni arm to intermediate";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTERMEDIATE);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTERMEDIATE){
-                            robot.omniArm.operateIntake(false,false,false);
-                            subState++;
-                        }
-                        break;
-                    case 8:
-                        subStateDesc = "Bringing OmniArm back in a Little";
-                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.OUTTAKE);
-                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.OUTTAKE) {
-                            subState++;
-                        }
-                        break;
-                        */
                     case 7:
                         subStateDesc = "Intaking mineral";
                         if (intakeMineralsTimer.isExpired()) {
@@ -470,21 +449,23 @@ public class WHSAutoCrater extends OpMode{
                         robot.omniArm.operateIntakeClearence(true);
                         robot.omniArm.operateIntake(false, true, false);
                         if (outtakeMineralsTimer.isExpired()) {
+                            driveToParkTimer.set(DRIVE_TO_PARK_DURATION);
                             subState++;
                         }
                         break;
                     case 13:
                         subStateDesc = "Driving to lander clearance";
-                        robot.driveToTarget(landerClearancePosition, false);
-                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()) {
+                        robot.drivetrain.operate(0.6, 0.6);
+                        if (driveToParkTimer.isExpired()) {
+                            robot.drivetrain.operate(0.0, 0.0);
                             subState++;
                         }
                         break;
                     case 14:
                         subStateDesc = "Retracting Arm";
                         robot.omniArm.operateIntake(false, false, false);
-                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.RETRACTED);
-                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.RETRACTED) {
+                        robot.omniArm.setExtendPosition(OmniArm.ExtendPosition.OUTTAKE);
+                        if (robot.omniArm.getCurrentExtendPosition() == OmniArm.ExtendPosition.OUTTAKE) {
                             subState++;
                         }
                         break;
