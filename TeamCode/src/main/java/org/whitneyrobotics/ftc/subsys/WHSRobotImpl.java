@@ -56,6 +56,22 @@ public class WHSRobotImpl implements WHSRobot {
     private boolean rotateToTargetInProgress = false;
 
     public WHSRobotImpl(HardwareMap hardwareMap){
+        DEADBAND_DRIVE_TO_TARGET = RobotConstants.DEADBAND_DRIVE_TO_TARGET; //in mm
+        DEADBAND_ROTATE_TO_TARGET = RobotConstants.DEADBAND_ROTATE_TO_TARGET; //in degrees
+
+        DRIVE_MIN = RobotConstants.drive_min;
+        DRIVE_MAX = RobotConstants.drive_max;
+        ROTATE_MIN = RobotConstants.rotate_min;
+        ROTATE_MAX = RobotConstants.rotate_max;
+
+        ROTATE_KP = RobotConstants.R_KP;
+        ROTATE_KI = RobotConstants.R_KI;
+        ROTATE_KD = RobotConstants.R_KD;
+
+        DRIVE_KP = RobotConstants.D_KP;
+        DRIVE_KI = RobotConstants.D_KI;
+        DRIVE_KD = RobotConstants.D_KD;
+
         drivetrain = new TileRunner(hardwareMap);
         currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
@@ -124,16 +140,20 @@ public class WHSRobotImpl implements WHSRobot {
     public void rotateToTarget(double targetHeading, boolean backwards) {
 
         double angleToTarget = targetHeading - currentCoord.getHeading();
-        angleToTarget = Functions.normalizeAngle(angleToTarget); //-180 to 180 deg
-        if (backwards && angleToTarget > 90) {
+        /*if (backwards && angleToTarget > 90) {
             angleToTarget = angleToTarget - 180;
             driveBackwards = true;
         }
         else if (backwards && angleToTarget < -90) {
             angleToTarget = angleToTarget + 180;
             driveBackwards = true;
+        }*/
+        if (backwards) {
+            angleToTarget = Functions.normalizeAngle(angleToTarget + 180); //-180 to 180 deg
+            driveBackwards = true;
         }
         else {
+            angleToTarget = Functions.normalizeAngle(angleToTarget);
             driveBackwards = false;
         }
 
@@ -150,7 +170,7 @@ public class WHSRobotImpl implements WHSRobot {
 
         double power = (rotateController.getOutput() >= 0 ? 1 : -1) * (Functions.map(Math.abs(rotateController.getOutput()),  0, 180, ROTATE_MIN, ROTATE_MAX));
 
-        if (Math.abs(angleToTarget) > DEADBAND_ROTATE_TO_TARGET) {
+        if (Math.abs(angleToTarget) > DEADBAND_ROTATE_TO_TARGET && rotateController.getDerivative() < 40) {
             drivetrain.operateLeft(-power);
             drivetrain.operateRight(power);
             rotateToTargetInProgress = true;

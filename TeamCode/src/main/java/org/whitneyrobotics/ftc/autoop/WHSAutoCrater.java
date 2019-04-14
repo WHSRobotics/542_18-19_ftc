@@ -311,14 +311,14 @@ public class WHSAutoCrater extends OpMode{
                         subStateDesc = "Entry";
                         subState++;
                     case 1:
-                        robot.driveToTarget(wallPosition, true);
+                        robot.driveToTarget(wallPosition, false);
                         if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()) {
                             subState++;
                         }
                         break;
                     case 2:
                         subStateDesc = "Driving to depot";
-                        robot.driveToTarget(depotPosition, true);
+                        robot.driveToTarget(depotPosition, false);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
                         }
@@ -493,53 +493,6 @@ public class WHSAutoCrater extends OpMode{
                 if (tfod != null) {
                     tfod.shutdown();
                 }
-
-                /*
-                switch (subState) {
-                    case 0:
-                        subStateDesc = "Driving to gold position";
-                        robot.driveToTarget(goldPositionArray[goldPosition], false);
-                        if (!robot.driveToTargetInProgress() || !robot.rotateToTargetInProgress()) {
-                            subState++;
-                        }
-                        break;
-                    case 1:
-                        subStateDesc = "Lowering OmniArm";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.INTAKE);
-                        robot.omniArm.operateIntake(true, false, false);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.INTAKE) {
-                            subState++;
-                        }
-                        break;
-                    case 2:
-                        subStateDesc = "Bringing up OmniArm";
-                        robot.omniArm.setPivotPosition(OmniArm.PivotPosition.OUTTAKE);
-                        if (robot.omniArm.getCurrentPivotPosition() == OmniArm.PivotPosition.OUTTAKE) {
-                            outtakeMineralsTimer.set(OUTTAKE_MINERALS_DURATION);
-                            subState++;
-                        }
-                        break;
-                    case 3:
-                        subStateDesc = "Driving to outtake position";
-                        robot.driveToTarget(outtakePosition, true);
-                        robot.omniArm.operateIntake(true, false, false);
-                        if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
-                            subState++;
-                        }
-                        break;
-                    case 4:
-                        subStateDesc = "Outtaking gold mineral";
-                        robot.omniArm.operateIntakeClearence(true);
-                        if (outtakeMineralsTimer.isExpired()) {
-                            subState++;
-                        }
-                        break;
-                    case 5:
-                        subStateDesc = "Repeat";
-                        subState = 0;
-                        break;
-                }
-                */
                 break;
             default:
                 break;

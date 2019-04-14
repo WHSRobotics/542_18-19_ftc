@@ -60,14 +60,14 @@ public class WHSTeleOp extends OpMode{
             if (gamepad2.back) {
                 robot.omniArm.resetEncoders();
             }
-            robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
-            robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
+            robot.omniArm.operateExtendManual(gamepad2.left_stick_y);
+            robot.omniArm.operatePivotManual(gamepad2.right_stick_y);
             //robot.omniArm.limitSwitchReset(gamepad2.y);
         } else if (armTog.currentState() == 1) {
             robot.omniArm.operateClearance(gamepad2.right_trigger>0.01);
             robot.omniArm.newOperatePivot(gamepad2.x, gamepad2.a);
             //robot.omniArm.operateExtend(gamepad2.a);
-            robot.omniArm.operateArmExtendBias(gamepad2.left_stick_y);
+            robot.omniArm.operateArmExtendBias(gamepad2.left_stick_y, gamepad2.y);
             robot.omniArm.operateArmPivotBias(gamepad2.right_stick_y >0.01, gamepad2.right_stick_y < -0.01);
         }
 
@@ -95,11 +95,12 @@ public class WHSTeleOp extends OpMode{
         telemetry.addData("Max Z accel:", maxZAccel);
 
         telemetry.addData("operatePivotState", robot.omniArm.operatePivotState);
-        /*
+
         telemetry.addData("Pivot Current Pos", robot.omniArm.pivotMotor.getCurrentPosition());
         telemetry.addData("Pivot Target Pos", robot.omniArm.pivotMotor.getTargetPosition());
         telemetry.addData("OmniArm Mode", armTog.currentState());
         telemetry.addData("Lift Tog State", liftTog.currentState());
+        /*
         telemetry.addData("LimitSwitch resetPivot state", robot.omniArm.limitSwitchResetState);
         */
         i++;

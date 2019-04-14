@@ -43,7 +43,7 @@ public class DriveToTargetTest extends OpMode {
 
         switch (i){
             case 0:
-                robot.rotateToTarget(45, false);
+                robot.rotateToTarget(45, true);
                 if (!robot.rotateToTargetInProgress()) {
                     i = 1;
                 }
@@ -60,7 +60,7 @@ public class DriveToTargetTest extends OpMode {
                 }
                 break;
             case 2:
-                robot.driveToTarget(p1, backwards);
+                robot.driveToTarget(p1, true);
                 if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
                     i = 3;
                     try {
@@ -71,7 +71,7 @@ public class DriveToTargetTest extends OpMode {
                 }
                 break;
             case 3:
-                robot.driveToTarget(p2, backwards);
+                robot.driveToTarget(p2, false);
                 if (!robot.driveToTargetInProgress() && !robot.rotateToTargetInProgress()){
                     i = 4;
                 }
@@ -83,6 +83,7 @@ public class DriveToTargetTest extends OpMode {
         robot.estimatePosition();
         robot.estimateHeading();
 
+        telemetry.addData("State", i);
         telemetry.addData("Angle to Target: ", robot.angleToTargetDebug);
         telemetry.addData("DriveToTarget in progress: ", robot.driveToTargetInProgress());
         telemetry.addData("RotateToTarget in progress: ", robot.rotateToTargetInProgress());

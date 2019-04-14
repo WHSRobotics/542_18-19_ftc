@@ -1,10 +1,13 @@
 package org.whitneyrobotics.ftc.subsys;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.whitneyrobotics.ftc.lib.util.RobotConstants;
 import org.whitneyrobotics.ftc.lib.util.SimpleTimer;
 import org.whitneyrobotics.ftc.lib.util.Toggler;
 
@@ -12,7 +15,7 @@ public class OmniArm {
 
     //Motors
     public DcMotor extendMotor;
-    public DcMotor pivotMotor;
+    public DcMotorEx pivotMotor;
     private DcMotor intakeMotor;
     //Servos
     public Servo clearanceServo;
@@ -36,7 +39,8 @@ public class OmniArm {
     //Powers and Thresholds
     private final double INTAKE_POWER = 0.95;
     private final double EXTEND_POWER = 1.0;
-    private final double PIVOT_POWER = .4;
+    private final double RETRACT_POWER = 0.5;
+    private final double PIVOT_POWER = .3;
     private final double PIVOT_SLOW_POWER = .12;
     private final double EXTEND_THRESHOLD = 50;
     private final double PIVOT_THRESHOLD = 50;
@@ -49,7 +53,7 @@ public class OmniArm {
     private final int INTAKE_LENGTH = EXTEND_POSITIONS[ExtendPosition.INTAKE.ordinal()];
 
     //STORED, AUTO_INTERMEDIATE, AUTO_INTAKE, OUTTAKE, INTAKE, INTERMEDIATE
-    private final int[] PIVOT_POSITIONS = {0, 150, -295, 1602, -425, 600};
+    private final int[] PIVOT_POSITIONS = {0, 150, -295, 1542, -425, 600};
     private final int STORED_MODE = PIVOT_POSITIONS[PivotPosition.STORED.ordinal()];
     private final int AUTO_INTERMEDIATE = PIVOT_POSITIONS[PivotPosition.AUTO_INTERMEDIATE.ordinal()];
     private final int AUTO_INTAKE = PIVOT_POSITIONS[PivotPosition.AUTO_INTAKE.ordinal()];
@@ -64,9 +68,11 @@ public class OmniArm {
 
     //biases
     private int armPivotBias = 0;
-    private int armPivotBiasAmount = 300;
+    private int armPivotBiasAmount = 20;
     private int armExtendBiasAmount = 254;
     private int armExtendBias = 0;
+
+    private Toggler extendAdditionalBiasTog = new Toggler(2);
 
     private PivotPosition currentPivotPosition = PivotPosition.STORED;
     private ExtendPosition currentExtendPosition = ExtendPosition.RETRACTED;
@@ -84,7 +90,7 @@ public class OmniArm {
     public OmniArm(HardwareMap armMap) {
 
         extendMotor = armMap.dcMotor.get("extendMotor");
-        pivotMotor = armMap.dcMotor.get("pivotMotor");
+        pivotMotor = (DcMotorEx) armMap.dcMotor.get("pivotMotor");
         intakeMotor = armMap.dcMotor.get("intakeMotor");
         clearanceServo = armMap.servo.get("clearanceServo");
         //omniLimitSwitch = armMap.digitalChannel.get("omniLimitSwitch");
@@ -188,11 +194,17 @@ public class OmniArm {
     public void newOperatePivot(boolean gamepadInput, boolean gamepadInputRetractExtend) {
         pivotToggler.changeState(gamepadInput);
 
-        if (pivotToggler.currentState() == 1) {
+        if (pivotToggler.currentState() == 0) {
             switch (operatePivotState) {
                 case 0:
                     if (gamepadInput) {
                         pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        /*pivotMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, new PIDFCoefficients(
+                                pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).p + RobotConstants.A_KP,
+                                pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).i + RobotConstants.A_KI,
+                                pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).d + RobotConstants.A_KD,
+                                pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).f + RobotConstants.A_KF
+                        ));*/
                         extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         operatePivotState = 1;
                     }
@@ -205,42 +217,62 @@ public class OmniArm {
                     break;
                 case 2:
                     setExtendPosition(ExtendPosition.OUTTAKE);
-                    if (currentExtendPosition == ExtendPosition.OUTTAKE) {
-                        pivotWaitTimer.set(PIVOT_WAIT_DELAY);
+                    //if (currentExtendPosition == ExtendPosition.OUTTAKE) {
                         operatePivotState = 3;
-                    }
+                    //}
                     break;
                 case 3:
-                    if(pivotWaitTimer.isExpired()) {
-                        operatePivotState = 4;
-                    }
-                    break;
-                case 4:
                     pivotMotor.setTargetPosition(OUTTAKE_MODE);
-                    pivotMotor.setPower(PIVOT_POWER);
-                    if (Math.abs(pivotMotor.getCurrentPosition() - OUTTAKE_MODE) < PIVOT_THRESHOLD) {
-                        operatePivotState = 5;
+                    if(OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 75 && !gamepadInputRetractExtend){
+                        pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        pivotMotor.setTargetPosition(OUTTAKE_MODE + armPivotBias);
+                        pivotMotor.setPower(0.2);
                     }
-                    break;
-                case 5:
-                    if(gamepadInputRetractExtend){
-                        extendMotor.setTargetPosition(RETRACTED_LENGTH);
-                        pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
+                    else if (OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 340 && !gamepadInputRetractExtend) {
+                        pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        pivotMotor.setPower(.05);
+                    }
+                    else if(OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 1000 && !gamepadInputRetractExtend) {
+                        pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        pivotMotor.setPower(PIVOT_POWER / 1.25);
+                    } else if (!gamepadInputRetractExtend){
+                        pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         pivotMotor.setPower(PIVOT_POWER);
-                    } else {
-                        extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
                     }
-                    extendMotor.setPower(EXTEND_POWER);
+
+                if(gamepadInputRetractExtend){
+                    extendMotor.setTargetPosition(RETRACTED_LENGTH);
+                    pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
+                    pivotMotor.setPower(PIVOT_POWER);
+                } else {
+                    extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
+                }
+                    extendMotor.setPower(RETRACT_POWER);
+                    break;
             }
         }
-        else if (pivotToggler.currentState() == 0 ) {
+        else if (pivotToggler.currentState() == 1 ) {
             operatePivotState = 0;
             if (gamepadInput) {
                 pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                /*pivotMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, new PIDFCoefficients(
+                        pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).p + RobotConstants.A_KP,
+                        pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).i + RobotConstants.A_KI,
+                        pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).d + RobotConstants.A_KD,
+                        pivotMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION).f + RobotConstants.A_KF
+                ));*/
                 extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                pivotMotor.setPower(PIVOT_POWER);
-                extendMotor.setPower(EXTEND_POWER);
             }
+            if(pivotMotor.getCurrentPosition() - INTAKE_MODE < 500) {
+                pivotMotor.setPower(PIVOT_POWER / 2.5);
+            }
+            else if (pivotMotor.getCurrentPosition() - INTAKE_MODE < 1600) {
+                pivotMotor.setPower(PIVOT_POWER / 1.5);
+            } else {
+                pivotMotor.setPower(PIVOT_POWER);
+            }
+            extendMotor.setPower(EXTEND_POWER);
             extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
             pivotMotor.setTargetPosition(INTAKE_MODE + armPivotBias);
         }
@@ -259,7 +291,11 @@ public class OmniArm {
     public void setExtendPosition(ExtendPosition extendPosition) {
         extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         extendMotor.setTargetPosition(EXTEND_POSITIONS[extendPosition.ordinal()]);
-        extendMotor.setPower(EXTEND_POWER);
+        if (EXTEND_POSITIONS[extendPosition.ordinal()] < extendMotor.getCurrentPosition()){
+            extendMotor.setPower(RETRACT_POWER);
+        }else {
+            extendMotor.setPower(EXTEND_POWER);
+        }
         if (Math.abs(extendMotor.getCurrentPosition() - EXTEND_POSITIONS[extendPosition.ordinal()]) < EXTEND_THRESHOLD) {
             currentExtendPosition = extendPosition;
         }
@@ -299,20 +335,20 @@ public class OmniArm {
         return currentExtendPosition;
     }
 
-    public void operateExtendManual(boolean gamepadInput1, double gamepadInput2) {
+    public void operateExtendManual(double gamepadInput) {
 
-        if (gamepadInput1) {
+        if (gamepadInput > 0.01) {
             extendMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            extendMotor.setPower(gamepadInput2);
+            extendMotor.setPower(gamepadInput);
         } else {
             extendMotor.setPower(0.0);
         }
     }
 
-    public void operatePivotManual(boolean gamepadInput1, double gamepadInput2) {
-        if(gamepadInput1) {
+    public void operatePivotManual(double gamepadInput) {
+        if(gamepadInput > 0.01) {
             pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            pivotMotor.setPower(gamepadInput2);
+            pivotMotor.setPower(gamepadInput);
         } else {
             pivotMotor.setPower(0.0);
         }
@@ -343,17 +379,15 @@ public class OmniArm {
 
     public void operateArmPivotBias(boolean gamepadInputUp, boolean gamepadInputDown){
         if (gamepadInputUp){
-            armPivotBias = armPivotBiasAmount;
+            armPivotBias -= armPivotBiasAmount;
         }else if (gamepadInputDown){
-            armPivotBias = -armPivotBiasAmount;
-        }
-        else{
-            armPivotBias = 0;
+            armPivotBias += armPivotBiasAmount;
         }
     }
 
-    public void operateArmExtendBias(double gamepadInput){
-        armExtendBias = (int) (-(INTAKE_LENGTH - OUTTAKE_LENGTH) * gamepadInput);
+    public void operateArmExtendBias(double gamepadInput, boolean gamepadInput2){
+        extendAdditionalBiasTog.changeState(gamepadInput2);
+        armExtendBias = ((int) (-(INTAKE_LENGTH - OUTTAKE_LENGTH) * gamepadInput)) + (extendAdditionalBiasTog.currentState() == 1 ? 1120 : 0);
     }
 
     public boolean clearedParticleFlipper() {

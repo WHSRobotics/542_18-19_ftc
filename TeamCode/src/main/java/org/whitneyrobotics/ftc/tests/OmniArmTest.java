@@ -28,8 +28,8 @@ public class OmniArmTest extends OpMode {
             if (gamepad2.back) {
                 robot.omniArm.resetEncoders();
             }
-            robot.omniArm.operateExtendManual(gamepad2.left_stick_button, gamepad2.left_stick_y);
-            robot.omniArm.operatePivotManual(gamepad2.right_stick_button, gamepad2.right_stick_y);
+            robot.omniArm.operateExtendManual(gamepad2.left_stick_y);
+            robot.omniArm.operatePivotManual(gamepad2.right_stick_y);
 } else if (armTog.currentState() == 1) {
             robot.omniArm.operatePivot(gamepad2.x, gamepad2.y);
             robot.omniArm.operateExtend(gamepad2.a);

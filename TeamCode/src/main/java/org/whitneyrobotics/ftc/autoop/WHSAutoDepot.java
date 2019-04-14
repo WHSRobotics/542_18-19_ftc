@@ -18,7 +18,7 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 
 import java.util.List;
 
-@Autonomous(name = "WHSAutoDepot", group = "auto")
+@Autonomous(name = "WHSAuto", group = "auto")
 public class WHSAutoDepot extends OpMode{
 
     WHSRobotImpl robot;
@@ -116,6 +116,7 @@ public class WHSAutoDepot extends OpMode{
     static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
 
+    boolean shouldHookBeDown = false;
     /**
      * Tensorflow Variables
      */
@@ -135,9 +136,9 @@ public class WHSAutoDepot extends OpMode{
         stateEnabled[INIT] = true;
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
-        stateEnabled[SAMPLE_MINERAL] = true;
-        stateEnabled[CLAIM_DEPOT] = true;
-        stateEnabled[DRIVE_TO_CRATER] = true;
+        stateEnabled[SAMPLE_MINERAL] = false;
+        stateEnabled[CLAIM_DEPOT] = false;
+        stateEnabled[DRIVE_TO_CRATER] = false;
         stateEnabled[END] = true;
     }
 
@@ -287,6 +288,7 @@ public class WHSAutoDepot extends OpMode{
     public void loop() {
         robot.estimateHeading();
         robot.estimatePosition();
+        robot.lift.bringDownHook(shouldHookBeDown);
 
         switch (state) {
             case INIT:
@@ -338,7 +340,7 @@ public class WHSAutoDepot extends OpMode{
                         subState++;
                     case 1:
                         subStateDesc = "Driving to lander clearance";
-                        robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
+                        robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], true);
 
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
@@ -346,10 +348,8 @@ public class WHSAutoDepot extends OpMode{
                         break;
                     case 2:
                         subStateDesc = "Bringing hook down";
-                        robot.lift.bringDownHook(true);
-                        if (robot.lift.getCurrentLiftPosition() == Lift.LiftPosition.STORED) {
-                            subState++;
-                        }
+                        shouldHookBeDown = true;
+                        shouldHookBeDown = false;
                         break;
                     case 3:
                         subStateDesc = "Exit";
