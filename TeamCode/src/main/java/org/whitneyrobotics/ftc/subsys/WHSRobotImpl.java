@@ -73,12 +73,13 @@ public class WHSRobotImpl implements WHSRobot {
         DRIVE_KD = RobotConstants.D_KD;
 
         drivetrain = new TileRunner(hardwareMap);
-        currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
         imu = new IMU(hardwareMap);
         omniArm = new OmniArm(hardwareMap);
         markerDrop = new MarkerDrop(hardwareMap);
         lift = new Lift(hardwareMap);
         particleFlipper = new ParticleFlipper(hardwareMap);
+
+        currentCoord = new Coordinate(0.0, 0.0, 150.0, 0.0);
     }
 
     @Override
@@ -170,7 +171,7 @@ public class WHSRobotImpl implements WHSRobot {
 
         double power = (rotateController.getOutput() >= 0 ? 1 : -1) * (Functions.map(Math.abs(rotateController.getOutput()),  0, 180, ROTATE_MIN, ROTATE_MAX));
 
-        if (Math.abs(angleToTarget) > DEADBAND_ROTATE_TO_TARGET && rotateController.getDerivative() < 40) {
+        if (Math.abs(angleToTarget) > DEADBAND_ROTATE_TO_TARGET/* && rotateController.getDerivative() < 40*/) {
             drivetrain.operateLeft(-power);
             drivetrain.operateRight(power);
             rotateToTargetInProgress = true;

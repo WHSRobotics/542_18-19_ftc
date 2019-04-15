@@ -19,7 +19,7 @@ import org.whitneyrobotics.ftc.subsys.WHSRobotImpl;
 import java.util.List;
 
 @Autonomous(name = "WHSAuto", group = "auto")
-public class WHSAutoDepot extends OpMode{
+public class WHSAuto extends OpMode{
 
     WHSRobotImpl robot;
 
@@ -136,9 +136,9 @@ public class WHSAutoDepot extends OpMode{
         stateEnabled[INIT] = true;
         stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
-        stateEnabled[SAMPLE_MINERAL] = false;
-        stateEnabled[CLAIM_DEPOT] = false;
-        stateEnabled[DRIVE_TO_CRATER] = false;
+        stateEnabled[SAMPLE_MINERAL] = true;
+        stateEnabled[CLAIM_DEPOT] = true;
+        stateEnabled[DRIVE_TO_CRATER] = true;
         stateEnabled[END] = true;
     }
 
@@ -225,8 +225,8 @@ public class WHSAutoDepot extends OpMode{
         robot.lift.liftMotor.setPower(0);
 
         // from the perspective of blue alliance
-        startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 47.5);
-        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 137.5);
+        startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 46);
+        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
 
         // Position in which we move the robot to allow for the lift to go down
         landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
@@ -243,17 +243,17 @@ public class WHSAutoDepot extends OpMode{
         goldPositionArray[DEPOT][RIGHT]=  new Position(-600, 1220, 150);
 
         // rAndOm cRaTer and dEpOt pOsiTiOns
-        wallPosition = new Position(0, 1500, 150);
+        wallPosition = new Position(0, 1580, 150);
         depotCornerPositionArray[LEFT] = new Position(-1280, 1420, 150);
         depotCornerPositionArray[CENTER] = new Position(-1280, 1420, 150);
         depotCornerPositionArray[RIGHT] = new Position(-1280, 1420, 150);
-        depotSidePosition = new Position(-1450, 1420, 150);
+        depotSidePosition = new Position(-1580, 1420, 150);
 
         depotPositionArray[DEPOT] = new Position(-1440, 1420, 150);
-        depotPositionArray[CRATER] = new Position(-1290, 1490, 150);
+        depotPositionArray[CRATER] = new Position(-1290, 1580, 150);
 
         craterPositonArray[CRATER] = new Position(640, 1370, 150);//(750, 1365, 150);
-        craterPositonArray[DEPOT] = new Position(-1490, -640, 150);
+        craterPositonArray[DEPOT] = new Position(-1800, -640, 150);
 
         defineStateEnabledStatus();
         initVuforia();
@@ -269,11 +269,15 @@ public class WHSAutoDepot extends OpMode{
     public void init_loop() {
         // If you are using Motorola E4 phones,
         // you should send telemetry data while waiting for start.
-        telemetry.addData("Status", "Waiting for start...");
-        telemetry.addData("Starting Position", robot.getCoordinate().getPos());
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
+        if (tfod != null) {
+            tfod.activate();
+        }
+        int goldDetection = detectGoldPosition();
+        telemetry.addData("Gold Position: ", goldDetection);
+        telemetry.addData("Gold Mineral Detected: ", goldMineralDetected);
     }
 
     @Override
@@ -288,7 +292,9 @@ public class WHSAutoDepot extends OpMode{
     public void loop() {
         robot.estimateHeading();
         robot.estimatePosition();
-        robot.lift.bringDownHook(shouldHookBeDown);
+        if (robot.lift.getCurrentLiftPosition() != Lift.LiftPosition.STORED) {
+            robot.lift.bringDownHook(shouldHookBeDown);
+        }
 
         switch (state) {
             case INIT:
@@ -340,7 +346,7 @@ public class WHSAutoDepot extends OpMode{
                         subState++;
                     case 1:
                         subStateDesc = "Driving to lander clearance";
-                        robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], true);
+                        robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
 
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
                             subState++;
@@ -349,7 +355,7 @@ public class WHSAutoDepot extends OpMode{
                     case 2:
                         subStateDesc = "Bringing hook down";
                         shouldHookBeDown = true;
-                        shouldHookBeDown = false;
+                        subState++;
                         break;
                     case 3:
                         subStateDesc = "Exit";
@@ -365,15 +371,15 @@ public class WHSAutoDepot extends OpMode{
                         subState++;
                     case 1:
                         subStateDesc = "Driving to mineral";
-                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition], true);
+                        robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition], false);
                         if (!robot.rotateToTargetInProgress() && !robot.driveToTargetInProgress()) {
-                            subState++;
+                            subState = 3;
                         }
                         break;
                     case 2:
                         subStateDesc = "Kicking mineral out of the way";
                         if (goldPosition == RIGHT) {
-                            robot.rotateToTarget(robot.getCoordinate().getHeading() -60, true);
+                            robot.rotateToTarget(robot.getCoordinate().getHeading() - 60, true);
                         } else if (goldPosition == LEFT) {
                             robot.rotateToTarget(robot.getCoordinate().getHeading() + 60, true);
                         }
@@ -418,7 +424,7 @@ public class WHSAutoDepot extends OpMode{
                     case 2:
                         subStateDesc = "Driving to depot";
                         if (STARTING_POSITION == CRATER) {
-                            robot.driveToTarget(depotPositionArray[CRATER], true);
+                            robot.driveToTarget(depotPositionArray[CRATER], false);
                         } else if (STARTING_POSITION == DEPOT) {
                             robot.driveToTarget(depotSidePosition, false);
                         }

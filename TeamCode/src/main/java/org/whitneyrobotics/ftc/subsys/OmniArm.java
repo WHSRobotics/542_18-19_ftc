@@ -230,7 +230,7 @@ public class OmniArm {
                     }
                     else if (OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 340 && !gamepadInputRetractExtend) {
                         pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                        pivotMotor.setPower(.05);
+                        pivotMotor.setPower(.15);
                     }
                     else if(OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 1000 && !gamepadInputRetractExtend) {
                         pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
