@@ -40,7 +40,7 @@ public class WHSAuto extends OpMode{
     static final int LEFT = 0;
     static final int CENTER = 1;
     static final int RIGHT = 2;
-    static final int STARTING_POSITION = CRATER;
+    static final int STARTING_POSITION = DEPOT;
 
     /**
      * State Definitions
@@ -112,9 +112,11 @@ public class WHSAuto extends OpMode{
     SimpleTimer scanMineralsTimer = new SimpleTimer();
     SimpleTimer dumpMarkerDropTimer = new SimpleTimer();
     SimpleTimer storeMarkerDropTimer = new SimpleTimer();
+    SimpleTimer dropFromLanderTimer = new SimpleTimer();
 
     static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
+    static final double DROP_FROM_LANDER_DURATION = 4.0;
 
     boolean shouldHookBeDown = false;
     /**
@@ -134,7 +136,7 @@ public class WHSAuto extends OpMode{
      */
     public void defineStateEnabledStatus() {
         stateEnabled[INIT] = true;
-        stateEnabled[DROP_FROM_LANDER] = true;
+        stateEnabled[DROP_FROM_LANDER] = false;
         stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_MINERAL] = true;
         stateEnabled[CLAIM_DEPOT] = true;
@@ -226,7 +228,7 @@ public class WHSAuto extends OpMode{
 
         // from the perspective of blue alliance
         startingCoordinateArray[CRATER] = new Coordinate(350, 350, 150, 46);
-        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 135);
+        startingCoordinateArray[DEPOT] = new Coordinate(-350, 350, 150, 136);
 
         // Position in which we move the robot to allow for the lift to go down
         landerClearancePositionArray[CRATER] = new Position(590, 590, 150);
@@ -259,7 +261,11 @@ public class WHSAuto extends OpMode{
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+            /** Activate Tensor Flow Object Detection. */
             initTfod();
+            if (tfod != null) {
+                tfod.activate();
+            }
         } else {
             telemetry.addData("Sorry!", "This device is not compatible with TFOD");
         }
@@ -272,20 +278,9 @@ public class WHSAuto extends OpMode{
         if (stateEnabled[DROP_FROM_LANDER]) {
             robot.lift.setLiftPosition(Lift.LiftPosition.STORED);
         }
-        if (tfod != null) {
-            tfod.activate();
-        }
         int goldDetection = detectGoldPosition();
         telemetry.addData("Gold Position: ", goldDetection);
         telemetry.addData("Gold Mineral Detected: ", goldMineralDetected);
-    }
-
-    @Override
-    public void start(){
-        /** Activate Tensor Flow Object Detection. */
-        if (tfod != null) {
-            tfod.activate();
-        }
     }
 
     @Override
@@ -334,6 +329,10 @@ public class WHSAuto extends OpMode{
                         break;
                     case 3:
                         subStateDesc = "Exit";
+                        //dropFromLanderTimer.set(DROP_FROM_LANDER_DURATION);
+                        if (tfod != null) {
+                            tfod.shutdown();
+                        }
                         advanceState();
                         break;
                 }
@@ -343,8 +342,35 @@ public class WHSAuto extends OpMode{
                 switch (subState) {
                     case 0:
                         subStateDesc = "Entry";
+                        if (!stateEnabled[DROP_FROM_LANDER]) {
+                            scanMineralsTimer.set(SCAN_MINERALS_DURATION);
+                        }
+                        /*
+                        if (dropFromLanderTimer.isExpired()) {
+                            subState++;
+                        }
+                        */
                         subState++;
+                        break;
                     case 1:
+                        subStateDesc = "Scanning minerals";
+                        if (stateEnabled[DROP_FROM_LANDER]) {
+                            subState++;
+                        } else {
+                            int goldDetection = detectGoldPosition();
+                            if (goldDetection != 3) {
+                                goldPosition = goldDetection;
+                            }
+
+                            if (scanMineralsTimer.isExpired()) {
+                                if (goldPosition == 3) {
+                                    goldPosition = CENTER;
+                                }
+                                subState++;
+                            }
+                        }
+                        break;
+                    case 2:
                         subStateDesc = "Driving to lander clearance";
                         robot.driveToTarget(landerClearancePositionArray[STARTING_POSITION], false);
 
@@ -352,13 +378,18 @@ public class WHSAuto extends OpMode{
                             subState++;
                         }
                         break;
-                    case 2:
+                    case 3:
                         subStateDesc = "Bringing hook down";
                         shouldHookBeDown = true;
                         subState++;
                         break;
-                    case 3:
+                    case 4:
                         subStateDesc = "Exit";
+                        if (!stateEnabled[DROP_FROM_LANDER]) {
+                            if (tfod != null) {
+                                tfod.shutdown();
+                            }
+                        }
                         advanceState();
                         break;
                 }
@@ -369,6 +400,7 @@ public class WHSAuto extends OpMode{
                     case 0:
                         subStateDesc = "Entry";
                         subState++;
+                        break;
                     case 1:
                         subStateDesc = "Driving to mineral";
                         robot.driveToTarget(goldPositionArray[STARTING_POSITION][goldPosition], false);
@@ -386,6 +418,7 @@ public class WHSAuto extends OpMode{
                         if (!robot.rotateToTargetInProgress()) {
                             subState++;
                         }
+                        break;
                     case 3:
                         subStateDesc = "Driving back to lander clearance";
                         if (STARTING_POSITION == CRATER) {
@@ -483,7 +516,6 @@ public class WHSAuto extends OpMode{
             case DRIVE_TO_CRATER:
                 stateDesc = "Drive to crater";
                 switch (subState) {
-
                     case 0:
                         subStateDesc = "Entry";
                         subState++;
@@ -516,9 +548,6 @@ public class WHSAuto extends OpMode{
                 break;
             case END:
                 stateDesc = "Ending Auto";
-                if (tfod != null) {
-                    tfod.shutdown();
-                }
                 break;
             default:
                 break;

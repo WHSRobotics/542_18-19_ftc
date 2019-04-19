@@ -230,17 +230,17 @@ public class OmniArm {
                     }
                     else if (OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 340 && !gamepadInputRetractExtend) {
                         pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                        pivotMotor.setPower(.15);
+                        pivotMotor.setPower(.17);
                     }
                     else if(OUTTAKE_MODE - pivotMotor.getCurrentPosition() < 1000 && !gamepadInputRetractExtend) {
                         pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        pivotMotor.setPower(PIVOT_POWER / 1.25);
+                        pivotMotor.setPower(PIVOT_POWER / 1.2);
                     } else if (!gamepadInputRetractExtend){
                         pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         pivotMotor.setPower(PIVOT_POWER);
                     }
 
-                if(gamepadInputRetractExtend){
+                if (gamepadInputRetractExtend){
                     extendMotor.setTargetPosition(RETRACTED_LENGTH);
                     pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
@@ -264,7 +264,7 @@ public class OmniArm {
                 ));*/
                 extendMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
-            if(pivotMotor.getCurrentPosition() - INTAKE_MODE < 500) {
+            if (pivotMotor.getCurrentPosition() - INTAKE_MODE < 500) {
                 pivotMotor.setPower(PIVOT_POWER / 2.5);
             }
             else if (pivotMotor.getCurrentPosition() - INTAKE_MODE < 1600) {
@@ -273,8 +273,17 @@ public class OmniArm {
                 pivotMotor.setPower(PIVOT_POWER);
             }
             extendMotor.setPower(EXTEND_POWER);
-            extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
-            pivotMotor.setTargetPosition(INTAKE_MODE + armPivotBias);
+
+
+            if (gamepadInputRetractExtend){
+                extendMotor.setTargetPosition(RETRACTED_LENGTH);
+                pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                pivotMotor.setTargetPosition(INTERMEDIATE_MODE);
+                pivotMotor.setPower(PIVOT_POWER);
+            } else {
+                extendMotor.setTargetPosition(OUTTAKE_LENGTH + armExtendBias);
+                pivotMotor.setTargetPosition(INTAKE_MODE + armPivotBias);
+            }
         }
     }
 

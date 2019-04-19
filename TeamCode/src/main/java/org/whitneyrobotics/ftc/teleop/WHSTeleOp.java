@@ -72,8 +72,9 @@ public class WHSTeleOp extends OpMode{
         }
 
         /* LIFT  */
+        /*
         liftTog.changeState(gamepad2.dpad_right);
-        if (liftTog.currentState() == 0) {
+        if (liftTog.currentState() == 0) { */
             if (gamepad1.dpad_up || gamepad1.right_bumper) {
                 robot.lift.setLiftMotorPower(1.0);
             } else if (gamepad1.dpad_down || gamepad1.right_trigger > 0.01) {
@@ -81,10 +82,12 @@ public class WHSTeleOp extends OpMode{
             } else {
                 robot.lift.setLiftMotorPower(0.0);
             }
+        /*
         } else if (liftTog.currentState() == 1){
             robot.lift.liftUpRobot(gamepad1.dpad_right);
            // robot.lift.bringDownHook(gamepad1.dpad_left);
         }
+        */
 
         zAccel = robot.imu.getZAcceleration();
         if (Math.abs(zAccel) > Math.abs(maxZAccel)) {
