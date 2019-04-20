@@ -112,15 +112,14 @@ public class WHSAuto extends OpMode{
     SimpleTimer scanMineralsTimer = new SimpleTimer();
     SimpleTimer dumpMarkerDropTimer = new SimpleTimer();
     SimpleTimer storeMarkerDropTimer = new SimpleTimer();
-    SimpleTimer dropFromLanderTimer = new SimpleTimer();
 
     static final double SCAN_MINERALS_DURATION = 2.0;
     static final double MOVE_MARKER_DROP_DURATION = 0.75;
-    static final double DROP_FROM_LANDER_DURATION = 4.0;
 
     boolean shouldHookBeDown = false;
     /**
      * Tensorflow Variables
+     *
      */
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
@@ -136,7 +135,7 @@ public class WHSAuto extends OpMode{
      */
     public void defineStateEnabledStatus() {
         stateEnabled[INIT] = true;
-        stateEnabled[DROP_FROM_LANDER] = false;
+        stateEnabled[DROP_FROM_LANDER] = true;
         stateEnabled[DRIVE_FROM_LANDER] = true;
         stateEnabled[SAMPLE_MINERAL] = true;
         stateEnabled[CLAIM_DEPOT] = true;
@@ -329,7 +328,6 @@ public class WHSAuto extends OpMode{
                         break;
                     case 3:
                         subStateDesc = "Exit";
-                        //dropFromLanderTimer.set(DROP_FROM_LANDER_DURATION);
                         if (tfod != null) {
                             tfod.shutdown();
                         }
@@ -345,11 +343,6 @@ public class WHSAuto extends OpMode{
                         if (!stateEnabled[DROP_FROM_LANDER]) {
                             scanMineralsTimer.set(SCAN_MINERALS_DURATION);
                         }
-                        /*
-                        if (dropFromLanderTimer.isExpired()) {
-                            subState++;
-                        }
-                        */
                         subState++;
                         break;
                     case 1:
