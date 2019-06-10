@@ -5,8 +5,8 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 19
+        minSdkVersion 23
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
 
@@ -17,6 +17,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility = '1.7'
+        targetCompatibility = '1.7'
     }
 }
 repositories {
